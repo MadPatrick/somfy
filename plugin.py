@@ -22,12 +22,14 @@ import Domoticz
 import urllib.parse
 import json
 import sys
+import requests
 
 class BasePlugin:
     enabled = False
     def __init__(self):
         self.httpConn = None
         self.srvaddr = "tahomalink.com"
+        self.base_url = "https://tahomalink.com:443"
         self.cookie = ""
         self.listenerId = None
         self.logged_in = False
@@ -43,15 +45,20 @@ class BasePlugin:
         self.command = False
         self.refresh = True
         self.actions_serialized = []
+        self.timeout = 10
         return
 
     def onStart(self):
         Domoticz.Status("Starting Tahoma blind plugin")
         if Parameters["Mode6"] == "Debug":
-           Domoticz.Debugging(1)
-        self.httpConn = Domoticz.Connection(Name="Secure Connection", Transport="TCP/IP", Protocol="HTTPS", Address=self.srvaddr, Port="443")
-        self.httpConn.Connect()
-
+            Domoticz.Debugging(1)
+            DumpConfigToLog()
+        #self.httpConn = Domoticz.Connection(Name="Secure Connection", Transport="TCP/IP", Protocol="HTTPS", Address=self.srvaddr, Port="443")
+        #self.httpConn.Connect()
+        Domoticz.Debug("starting to log in")
+        response = self.tahoma_login(str(Parameters["Username"]), str(Parameters["Password"]))
+        self.handle_reponse(response)
+        
     def onStop(self):
         self.heartbeat = False
         self.httpConn = None
@@ -72,6 +79,144 @@ class BasePlugin:
           Domoticz.Log("Failed to connect to tahoma api")
 
 
+    def handle_reponse(self, response):
+        Status = response.status_code #int(Data["Status"])
+        Data = response.json()
+        Domoticz.Debug("Status_code: '"+str(Status)+"' reponse: '"+str(Data)+"'")
+
+        if (Status == 200 and not self.logged_in):
+          self.logged_in = True
+          Domoticz.Status("Tahoma auth succeed")
+          tmp = Data["Headers"]
+          self.cookie = tmp["Set-Cookie"]
+          register_listener(self)
+
+        elif ((Status == 401) or (Status == 400)):
+          #strData = Data["Data"].decode("utf-8", "ignore")
+          strData = Data["error"]
+          Domoticz.Error("Tahoma error must reconnect")
+          self.logged_in = False
+          self.cookie = None
+          self.listenerId = None
+
+          if ("Too many" in strData):
+            Domoticz.Error("Too much connexions must wait")
+            self.heartbeat = True
+            return
+          if ("Bad credentials" in strData):
+            Domoticz.Error("Bad credentials please update credentials and restart plugin")
+            self.heartbeat =  False
+            return
+
+          if (not self.logged_in):
+            tahoma_login(self)
+            return
+
+        elif (Status == 200 and self.logged_in and (not self.listenerId)):
+            strData = Data["Data"].decode("utf-8", "ignore")
+            id = json.loads(strData)
+            self.listenerId = id['id']
+            Domoticz.Status("Tahoma listener registred")
+            self.refresh = False
+            Domoticz.Status("Check setup status at statup")
+            Headers = { 'Host': self.srvaddr,"Connection": "keep-alive","Accept-Encoding": "gzip, deflate", "Accept": "*/*", "Content-Type": "application/x-www-form-urlencoded", "Cookie": self.cookie}
+            self.httpConn.Send({'Verb':'GET', 'Headers': Headers, 'URL':'/enduser-mobile-web/enduserAPI/setup/devices'})
+
+        elif (Status == 200 and self.logged_in and self.startup and (not self.refresh)):
+          strData = Data["Data"].decode("utf-8", "ignore")
+
+          if (not "uiClass" in strData):
+            Domoticz.Debug(str(strData))
+            return
+
+          self.devices = json.loads(strData)
+
+          self.filtered_devices = list()
+          for device in self.devices:
+             Domoticz.Debug("Device name: "+device["label"]+" Device class: "+device["uiClass"])
+             if (((device["uiClass"] == "RollerShutter") or (device["uiClass"] == "ExteriorScreen") or (device["uiClass"] == "Screen") or (device["uiClass"] == "Awning") or (device["uiClass"] == "Pergola") or (device["uiClass"] == "GarageDoor") or (device["uiClass"] == "Window") or (device["uiClass"] == "VenetianBlind") or (device["uiClass"] == "ExteriorVenetianBlind")) and ((device["deviceURL"].startswith("io://")) or (device["deviceURL"].startswith("rts://")))):
+               self.filtered_devices.append(device)
+
+          if (len(Devices) == 0 and self.startup):
+            count = 1
+            for device in self.filtered_devices:
+               Domoticz.Status("Creating device: "+device["label"])
+               swtype = None
+
+               if (device["deviceURL"].startswith("io://")):
+                   if (device["uiClass"] == "Awning"):
+                    swtype = 13
+                   else:
+                    swtype = 16
+               elif (device["deviceURL"].startswith("rts://")):
+                    swtype = 6
+
+               Domoticz.Device(Name=device["label"], Unit=count, Type=244, Subtype=73, Switchtype=swtype, DeviceID=device["deviceURL"]).Create()
+
+               if not (count in Devices):
+                   Domoticz.Error("Device creation not allowed, please allow device creation")
+               else:
+                   Domoticz.Status("Device created: "+device["label"])
+                   count += 1
+
+          if ((len(Devices) < len(self.filtered_devices)) and len(Devices) != 0 and self.startup):
+            Domoticz.Log("New device(s) detected")
+            found = False
+
+            for device in self.filtered_devices:
+               for dev in Devices:
+                  UnitID = Devices[dev].Unit
+                  if Devices[dev].DeviceID == device["deviceURL"]:
+                    found = True
+                    break
+               if (not found):
+                 idx = firstFree()
+                 swtype = None
+
+                 Domoticz.Status("Must create device: "+device["label"])
+
+                 if (device["deviceURL"].startswith("io://")):
+                    if (device["uiClass"] == "Awning"):
+                     swtype = 13
+                    else:
+                     swtype = 16
+                 elif (device["deviceURL"].startswith("rts://")):
+                    swtype = 6
+
+                 Domoticz.Device(Name=device["label"], Unit=idx, Type=244, Subtype=73, Switchtype=swtype, DeviceID=device["deviceURL"]).Create()
+
+                 if not (idx in Devices):
+                     Domoticz.Error("Device creation not allowed, please allow device creation")
+                 else:
+                     Domoticz.Status("New device created: "+device["label"])
+               else:
+                  found = False
+          update_devices_status(self,self.filtered_devices)
+          self.startup = False
+
+        elif (Status == 200 and self.logged_in and self.heartbeat and (not self.startup)):
+            strData = Data["Data"].decode("utf-8", "ignore")
+
+            if (not "DeviceStateChangedEvent" in strData):
+              Domoticz.Debug(str(strData))
+              return
+
+            self.events = json.loads(strData)
+
+            if (self.events):
+                filtered_events = list()
+
+                for event in self.events:
+                    if (event["name"] == "DeviceStateChangedEvent"):
+                        filtered_events.append(event)
+
+                update_devices_status(self,filtered_events)
+
+        elif (Status == 200 and (not self.heartbeat)):
+          return
+        else:
+          Domoticz.Log("Return status"+str(Status))
+ 
     def onMessage(self, Connection, Data):
         Status = int(Data["Status"])
 
@@ -263,6 +408,32 @@ class BasePlugin:
           self.heartbeat =True
           self.con_delay = 0
 
+    def tahoma_login(self, username, password):
+
+        url = self.base_url + '/enduser-mobile-web/enduserAPI/login'
+        headers = { 'Host': self.srvaddr,"Connection": "keep-alive","Accept-Encoding": "gzip, deflate", "Accept": "*/*", "Content-Type": "application/x-www-form-urlencoded"}
+        data = "userId="+urllib.parse.quote(username)+"&userPassword="+urllib.parse.quote(password)+""
+        response = requests.post(url, data=data, headers=headers, timeout=self.timeout)
+        Domoticz.Debug("login response: status code: '"+ str(response.status_code)+"'")
+
+
+        # Login = str(Parameters["Username"])
+        # pwd = str(Parameters["Password"])
+        # postData = "userId="+urllib.parse.quote(Login)+"&userPassword="+urllib.parse.quote(pwd)+""
+        # self.httpConn.Send({'Verb':'POST', 'Headers': Headers, 'URL':'/enduser-mobile-web/enduserAPI/login', 'Data': postData})
+        return response
+
+    def tahoma_command(self):
+        Headers = { 'Host': self.srvaddr,"Connection": "keep-alive","Accept-Encoding": "gzip, deflate", "Accept": "*/*", "Content-Type": "application/json", "Cookie": self.cookie}
+        self.httpConn.Send({'Verb':'POST', 'Headers': Headers, 'URL':'/enduser-mobile-web/enduserAPI/exec/apply', 'Data': self.json_data})
+        Domoticz.Log("Sending command to tahoma api")
+        return
+
+    def register_listener(self):
+        Headers = { 'Host': self.srvaddr,"Connection": "keep-alive","Accept-Encoding": "gzip, deflate", "Accept": "*/*", "Content-Type": "application/json", "Cookie": self.cookie}
+        self.httpConn.Send({'Verb':'POST', 'Headers': Headers, 'URL':'/enduser-mobile-web/enduserAPI/events/register', 'Data': None})
+        return
+
 global _plugin
 _plugin = BasePlugin()
 
@@ -294,20 +465,23 @@ def onHeartbeat():
     global _plugin
     _plugin.onHeartbeat()
 
-    # Generic helper functions
+# Generic helper functions
 def DumpConfigToLog():
+    Domoticz.Debug("Parameters count: " + str(len(Parameters)))
     for x in Parameters:
         if Parameters[x] != "":
-            Domoticz.Debug( "'" + x + "':'" + str(Parameters[x]) + "'")
+            Domoticz.Debug("Parameter: '" + x + "':'" + str(Parameters[x]) + "'")
+    # Domoticz.Debug("Settings count: " + str(len(Settings)))
+    # for x in Settings:
+        # Domoticz.Debug("Setting: '" + x + "':'" + str(Settings[x]) + "'")
+    # Domoticz.Debug("Image count: " + str(len(Images)))
+    # for x in Images:
+        # Domoticz.Debug("'" + x + "':'" + str(Images[x]) + "'")
     Domoticz.Debug("Device count: " + str(len(Devices)))
     for x in Devices:
         Domoticz.Debug("Device:           " + str(x) + " - " + str(Devices[x]))
-        Domoticz.Debug("Device ID:       '" + str(Devices[x].ID) + "'")
-        Domoticz.Debug("Device Name:     '" + Devices[x].Name + "'")
-        Domoticz.Debug("Device nValue:    " + str(Devices[x].nValue))
-        Domoticz.Debug("Device sValue:   '" + Devices[x].sValue + "'")
-        Domoticz.Debug("Device LastLevel: " + str(Devices[x].LastLevel))
     return
+
 
 def DumpHTTPResponseToLog(httpResp, level=0):
     if (level==0): Domoticz.Debug("HTTP Details ("+str(len(httpResp))+"):")
@@ -378,21 +552,3 @@ def update_devices_status(self,Updated_devices):
                     Devices[dev].Update(2,str(level))
     return
 
-def tahoma_login(self):
-    Login = str(Parameters["Username"])
-    pwd = str(Parameters["Password"])
-    Headers = { 'Host': self.srvaddr,"Connection": "keep-alive","Accept-Encoding": "gzip, deflate", "Accept": "*/*", "Content-Type": "application/x-www-form-urlencoded"}
-    postData = "userId="+urllib.parse.quote(Login)+"&userPassword="+urllib.parse.quote(pwd)+""
-    self.httpConn.Send({'Verb':'POST', 'Headers': Headers, 'URL':'/enduser-mobile-web/enduserAPI/login', 'Data': postData})
-    return
-
-def tahoma_command(self):
-    Headers = { 'Host': self.srvaddr,"Connection": "keep-alive","Accept-Encoding": "gzip, deflate", "Accept": "*/*", "Content-Type": "application/json", "Cookie": self.cookie}
-    self.httpConn.Send({'Verb':'POST', 'Headers': Headers, 'URL':'/enduser-mobile-web/enduserAPI/exec/apply', 'Data': self.json_data})
-    Domoticz.Log("Sending command to tahoma api")
-    return
-
-def register_listener(self):
-    Headers = { 'Host': self.srvaddr,"Connection": "keep-alive","Accept-Encoding": "gzip, deflate", "Accept": "*/*", "Content-Type": "application/json", "Cookie": self.cookie}
-    self.httpConn.Send({'Verb':'POST', 'Headers': Headers, 'URL':'/enduser-mobile-web/enduserAPI/events/register', 'Data': None})
-    return
