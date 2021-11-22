@@ -3,8 +3,8 @@
 # Author: Nonolk, 2019-2020
 # FirstFree function courtesy of @moroen https://github.com/moroen/IKEA-Tradfri-plugin
 """
-<plugin key="tahomaIO" name="Tahoma or conexoon IO blind plugin" author="nonolk" version="2.0.2" externallink="https://github.com/nonolk/domoticz_tahoma_blind">
-    <description>Tahoma/Conexoon plugin for IO blinds, this plugin require internet connexion.<br/>Please provide your email and password used to connect Tahoma/Conexoon</description>
+<plugin key="tahomaIO" name="Tahoma or conexoon IO blind plugin" author="MadPatrick" version="0.1.0" externallink="https://github.com/MadPatrick/somfy">
+    <description>Somfy/Tahoma/Conexoon plugin for IO blinds, this plugin require internet connexion.<br/>Please provide your email and password used to connect Tahoma/Conexoon</description>
     <params>
         <param field="Username" label="Username" width="200px" required="true" default=""/>
         <param field="Password" label="Password" width="200px" required="true" default="" password="true"/>
@@ -23,6 +23,7 @@ import urllib.parse
 import json
 import sys
 import requests
+import logging
 
 class BasePlugin:
     enabled = False
@@ -46,16 +47,24 @@ class BasePlugin:
         self.refresh = True
         self.actions_serialized = []
         self.timeout = 10
+        self.logger = None
         return
 
     def onStart(self):
-        Domoticz.Status("Starting Tahoma blind plugin")
+        Domoticz.Status("Starting Tahoma blind plugin, logging to file somfy.logs")
+        self.logger = logging.getLogger('root')
         if Parameters["Mode6"] == "Debug":
             Domoticz.Debugging(1)
             DumpConfigToLog()
+            logging.basicConfig(format='%(asctime)s - %(levelname)-8s - %(filename)-18s - %(message)s', filename='somfy.log',level=logging.DEBUG)
+        else:
+            logging.basicConfig(format='%(asctime)s - %(levelname)-8s - %(filename)-18s - %(message)s', filename='somfy.log',level=logging.INFO)
+        logging.info('started plugin')
+        
         #self.httpConn = Domoticz.Connection(Name="Secure Connection", Transport="TCP/IP", Protocol="HTTPS", Address=self.srvaddr, Port="443")
         #self.httpConn.Connect()
-        Domoticz.Debug("starting to log in")
+        #self.logger.debug("starting to log in")
+        logging.debug("starting to log in")
         response = self.tahoma_login(str(Parameters["Username"]), str(Parameters["Password"]))
         self.handle_reponse(response)
         
@@ -76,35 +85,47 @@ class BasePlugin:
           self.heartbeat = False
           self.actions_serialized = []
         else:
-          Domoticz.Log("Failed to connect to tahoma api")
+          logging.info("Failed to connect to tahoma api")
 
 
     def handle_reponse(self, response):
         Status = response.status_code #int(Data["Status"])
         Data = response.json()
-        Domoticz.Debug("Status_code: '"+str(Status)+"' reponse: '"+str(Data)+"'")
+        logging.debug("Respone: status_code: '"+str(Status)+"' reponse body: '"+str(Data)+"'")
 
         if (Status == 200 and not self.logged_in):
           self.logged_in = True
           Domoticz.Status("Tahoma auth succeed")
-          tmp = Data["Headers"]
-          self.cookie = tmp["Set-Cookie"]
+          if "Headers" in Data:
+              tmp = Data["Headers"]
+              self.cookie = tmp["Set-Cookie"]
+          else:
+              logging.error("Headers expected but not received")
+              return
           register_listener(self)
 
         elif ((Status == 401) or (Status == 400)):
-          #strData = Data["Data"].decode("utf-8", "ignore")
-          strData = Data["error"]
-          Domoticz.Error("Tahoma error must reconnect")
+          if "Data" in Data:
+            strData = Data["Data"]
+          elif "error" in Data:
+            strData = Data["error"]
+          else:
+            logging.error("no usable response data found")
+            return
+          Domoticz.Error("Tahoma error: must reconnect")
+          logging.error("Tahoma error: must reconnect")
           self.logged_in = False
           self.cookie = None
           self.listenerId = None
 
           if ("Too many" in strData):
             Domoticz.Error("Too much connexions must wait")
+            logging.error("Too much connexions must wait")
             self.heartbeat = True
             return
           if ("Bad credentials" in strData):
             Domoticz.Error("Bad credentials please update credentials and restart plugin")
+            logging.error("Bad credentials please update credentials and restart plugin")
             self.heartbeat =  False
             return
 
@@ -113,27 +134,36 @@ class BasePlugin:
             return
 
         elif (Status == 200 and self.logged_in and (not self.listenerId)):
-            strData = Data["Data"].decode("utf-8", "ignore")
-            id = json.loads(strData)
+            #strData = Data["Data"].decode("utf-8", "ignore")
+            if "Data" in Data:
+                strData = Data["Data"]
+            else:
+                logging.error("Data expected in response but  not found")
+                return
+            #id = json.loads(strData)
+            id = strData
             self.listenerId = id['id']
             Domoticz.Status("Tahoma listener registred")
+            logging.info("Tahoma listener registred")
             self.refresh = False
             Domoticz.Status("Check setup status at statup")
+            logging.info("Check setup status at statup")
             Headers = { 'Host': self.srvaddr,"Connection": "keep-alive","Accept-Encoding": "gzip, deflate", "Accept": "*/*", "Content-Type": "application/x-www-form-urlencoded", "Cookie": self.cookie}
             self.httpConn.Send({'Verb':'GET', 'Headers': Headers, 'URL':'/enduser-mobile-web/enduserAPI/setup/devices'})
+            
 
         elif (Status == 200 and self.logged_in and self.startup and (not self.refresh)):
           strData = Data["Data"].decode("utf-8", "ignore")
 
           if (not "uiClass" in strData):
-            Domoticz.Debug(str(strData))
+            logging.debug(str(strData))
             return
 
           self.devices = json.loads(strData)
 
           self.filtered_devices = list()
           for device in self.devices:
-             Domoticz.Debug("Device name: "+device["label"]+" Device class: "+device["uiClass"])
+             logging.debug("Device name: "+device["label"]+" Device class: "+device["uiClass"])
              if (((device["uiClass"] == "RollerShutter") or (device["uiClass"] == "ExteriorScreen") or (device["uiClass"] == "Screen") or (device["uiClass"] == "Awning") or (device["uiClass"] == "Pergola") or (device["uiClass"] == "GarageDoor") or (device["uiClass"] == "Window") or (device["uiClass"] == "VenetianBlind") or (device["uiClass"] == "ExteriorVenetianBlind")) and ((device["deviceURL"].startswith("io://")) or (device["deviceURL"].startswith("rts://")))):
                self.filtered_devices.append(device)
 
@@ -160,7 +190,7 @@ class BasePlugin:
                    count += 1
 
           if ((len(Devices) < len(self.filtered_devices)) and len(Devices) != 0 and self.startup):
-            Domoticz.Log("New device(s) detected")
+            self.logger.info("New device(s) detected")
             found = False
 
             for device in self.filtered_devices:
@@ -198,7 +228,7 @@ class BasePlugin:
             strData = Data["Data"].decode("utf-8", "ignore")
 
             if (not "DeviceStateChangedEvent" in strData):
-              Domoticz.Debug(str(strData))
+              self.logger.debug(str(strData))
               return
 
             self.events = json.loads(strData)
@@ -215,7 +245,7 @@ class BasePlugin:
         elif (Status == 200 and (not self.heartbeat)):
           return
         else:
-          Domoticz.Log("Return status"+str(Status))
+          self.logger.info("Return status"+str(Status))
  
     def onMessage(self, Connection, Data):
         Status = int(Data["Status"])
@@ -261,14 +291,14 @@ class BasePlugin:
           strData = Data["Data"].decode("utf-8", "ignore")
 
           if (not "uiClass" in strData):
-            Domoticz.Debug(str(strData))
+            self.logger.debug(str(strData))
             return
 
           self.devices = json.loads(strData)
 
           self.filtered_devices = list()
           for device in self.devices:
-             Domoticz.Debug("Device name: "+device["label"]+" Device class: "+device["uiClass"])
+             self.logger.debug("Device name: "+device["label"]+" Device class: "+device["uiClass"])
              if (((device["uiClass"] == "RollerShutter") or (device["uiClass"] == "ExteriorScreen") or (device["uiClass"] == "Screen") or (device["uiClass"] == "Awning") or (device["uiClass"] == "Pergola") or (device["uiClass"] == "GarageDoor") or (device["uiClass"] == "Window") or (device["uiClass"] == "VenetianBlind") or (device["uiClass"] == "ExteriorVenetianBlind")) and ((device["deviceURL"].startswith("io://")) or (device["deviceURL"].startswith("rts://")))):
                self.filtered_devices.append(device)
 
@@ -295,7 +325,7 @@ class BasePlugin:
                    count += 1
 
           if ((len(Devices) < len(self.filtered_devices)) and len(Devices) != 0 and self.startup):
-            Domoticz.Log("New device(s) detected")
+            self.logger.info("New device(s) detected")
             found = False
 
             for device in self.filtered_devices:
@@ -333,7 +363,7 @@ class BasePlugin:
             strData = Data["Data"].decode("utf-8", "ignore")
 
             if (not "DeviceStateChangedEvent" in strData):
-              Domoticz.Debug(str(strData))
+              self.logger.debug(str(strData))
               return
 
             self.events = json.loads(strData)
@@ -350,7 +380,7 @@ class BasePlugin:
         elif (Status == 200 and (not self.heartbeat)):
           return
         else:
-          Domoticz.Log("Return status"+str(Status))
+          self.logger.info("Return status"+str(Status))
 
     def onCommand(self, Unit, Command, Level, Hue):
         commands_serialized = []
@@ -377,7 +407,7 @@ class BasePlugin:
         self.json_data = json.dumps(data, indent=None, sort_keys=True)
 
         if (not self.httpConn.Connected()):
-          Domoticz.Log("Not connected before processing command, must connect")
+          self.logger.info("Not connected before processing command, must connect")
           self.command = True
           self.httpConn.Connect()
         else:
@@ -414,7 +444,8 @@ class BasePlugin:
         headers = { 'Host': self.srvaddr,"Connection": "keep-alive","Accept-Encoding": "gzip, deflate", "Accept": "*/*", "Content-Type": "application/x-www-form-urlencoded"}
         data = "userId="+urllib.parse.quote(username)+"&userPassword="+urllib.parse.quote(password)+""
         response = requests.post(url, data=data, headers=headers, timeout=self.timeout)
-        Domoticz.Debug("login response: status code: '"+ str(response.status_code)+"'")
+        #self.logger.debug("login response: status code: '"+ str(response.status_code)+"'")
+        logging.debug("login response: status code: '"+ str(response.status_code)+"'")
 
 
         # Login = str(Parameters["Username"])
@@ -426,7 +457,7 @@ class BasePlugin:
     def tahoma_command(self):
         Headers = { 'Host': self.srvaddr,"Connection": "keep-alive","Accept-Encoding": "gzip, deflate", "Accept": "*/*", "Content-Type": "application/json", "Cookie": self.cookie}
         self.httpConn.Send({'Verb':'POST', 'Headers': Headers, 'URL':'/enduser-mobile-web/enduserAPI/exec/apply', 'Data': self.json_data})
-        Domoticz.Log("Sending command to tahoma api")
+        logging.info("Sending command to tahoma api")
         return
 
     def register_listener(self):
@@ -471,12 +502,12 @@ def DumpConfigToLog():
     for x in Parameters:
         if Parameters[x] != "":
             Domoticz.Debug("Parameter: '" + x + "':'" + str(Parameters[x]) + "'")
-    # Domoticz.Debug("Settings count: " + str(len(Settings)))
+    # logger.debug("Settings count: " + str(len(Settings)))
     # for x in Settings:
-        # Domoticz.Debug("Setting: '" + x + "':'" + str(Settings[x]) + "'")
-    # Domoticz.Debug("Image count: " + str(len(Images)))
+        # logger.debug("Setting: '" + x + "':'" + str(Settings[x]) + "'")
+    # logger.debug("Image count: " + str(len(Images)))
     # for x in Images:
-        # Domoticz.Debug("'" + x + "':'" + str(Images[x]) + "'")
+        # logger.debug("'" + x + "':'" + str(Images[x]) + "'")
     Domoticz.Debug("Device count: " + str(len(Devices)))
     for x in Devices:
         Domoticz.Debug("Device:           " + str(x) + " - " + str(Devices[x]))
@@ -543,7 +574,7 @@ def update_devices_status(self,Updated_devices):
                   int_level = 0
                 if (level != int_level):
 
-                  Domoticz.Log("Updating device:"+Devices[dev].Name)
+                  Domoticz.Info("Updating device:"+Devices[dev].Name)
                   if (level == 0):
                     Devices[dev].Update(0,"0")
                   if (level == 100):
