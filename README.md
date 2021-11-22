@@ -20,3 +20,28 @@ https://www.tahomalink.com/enduser-mobile-web/steer-html5-client/tahoma/
 
 
 
+## Installation
+### Prerequisites
+Python version 3.4 or higher required & Domoticz version 4.10717 or greater. 
+To install:
+```
+sudo apt-get update
+sudo apt-get install python3 libpython3-dev libpython3.7-dev
+sudo apt-get install python3-requests
+```
+
+###plugin
+Then go in your Domoticz directory using a command line and open the plugins directory.
+```
+cd domoticz/plugins
+git clone git@github.com:MadPatrick/somfy.git
+```
+to update:
+```
+cd domoticz/plugins/DysonPureLink
+git pull git@github.com:JanJaapKo/DysonPureLink
+```
+
+Restart Domoticz with sudo systemctl restart domoticz.
+
+In the web UI, navigate to the Hardware page. In the hardware dropdown list there will be an entry called "Tahoma or conexoon IO blind plugin".
