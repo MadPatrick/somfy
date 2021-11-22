@@ -11,6 +11,12 @@ The plugin currently support the following device types: roller Shutters, screen
 ## Somfy login
 
 You need to register you Somfy products and add them to your Tahoma or Connexxoon box
+
+
+https://www.somfy.nl/nieuw-account-aanmaken
+
 https://www.tahomalink.com/enduser-mobile-web/steer-html5-client/tahoma/
+
+
 
 
