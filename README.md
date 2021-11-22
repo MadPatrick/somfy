@@ -38,7 +38,7 @@ git clone git@github.com:MadPatrick/somfy.git
 ```
 to update:
 ```
-cd domoticz/plugins/DysonPureLink
+cd domoticz/plugins/somfy
 git pull git@github.com:JanJaapKo/DysonPureLink
 ```
 
