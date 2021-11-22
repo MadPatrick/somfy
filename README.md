@@ -30,7 +30,7 @@ sudo apt-get install python3 libpython3-dev libpython3.7-dev
 sudo apt-get install python3-requests
 ```
 
-###plugin
+### plugin
 Then go in your Domoticz directory using a command line and open the plugins directory.
 ```
 cd domoticz/plugins
