@@ -6,6 +6,8 @@ To use this plugin you need to install the last stable release of Domoticz https
 
 The plugin currently support the following device types: roller Shutters, screens (interior/exterior), awning, pergolas, garage door, windows and blinds(postions only, no slats control).
 
+Original script was written by Nonolk : https://github.com/nonolk/domoticz_tahoma_blind.git
+
 
 
 ## Somfy login
