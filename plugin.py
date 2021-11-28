@@ -63,25 +63,23 @@ class BasePlugin:
         
         #self.httpConn = Domoticz.Connection(Name="Secure Connection", Transport="TCP/IP", Protocol="HTTPS", Address=self.srvaddr, Port="443")
         #self.httpConn.Connect()
-        #self.logger.debug("starting to log in")
         logging.debug("starting to log in")
         self.tahoma_login(str(Parameters["Username"]), str(Parameters["Password"]))
-        #self.handle_reponse_login(response)
         
     def onStop(self):
-        self.logging("stopping plugin")
+        logging.info("stopping plugin")
         self.heartbeat = False
-        self.httpConn = None
+        #self.httpConn = None
 
     def onConnect(self, Connection, Status, Description):
 
         if (Status == 0 and not self.logged_in):
-          tahoma_login(self)
+          self.tahoma_login(str(Parameters["Username"]), str(Parameters["Password"]))
         elif (self.cookie and self.logged_in and (not self.command)):
           self.get_events(self)
 
         elif (self.command):
-          tahoma_command(self)
+          self.tahoma_command()
           self.command = False
           self.heartbeat = False
           self.actions_serialized = []
@@ -232,7 +230,7 @@ class BasePlugin:
             return
 
           if (not self.logged_in):
-            tahoma_login(self)
+            self.tahoma_login(str(Parameters["Username"]), str(Parameters["Password"]))
             return
 
         elif (Status == 200 and self.logged_in and (not self.listenerId)):
@@ -370,7 +368,7 @@ class BasePlugin:
           self.command = True
           self.tahoma_login(str(Parameters["Username"]), str(Parameters["Password"]))
         else:
-          tahoma_command(self)
+          self.tahoma_command(self)
           self.heartbeat = False
           self.actions_serialized = []
 
@@ -381,19 +379,19 @@ class BasePlugin:
     def onHeartbeat(self):
 
         if (self.cookie and self.logged_in and (not self.startup)):
-          if (not self.httpConn.Connected()):
-            self.httpConn.Connect()
+          if (not self.logged_in):
+            self.tahoma_login(str(Parameters["Username"]), str(Parameters["Password"]))
           else:
             self.get_events(self)
           self.heartbeat =True
 
         elif (self.heartbeat and (self.con_delay < self.wait_delay) and (not self.logged_in)):
           self.con_delay +=1
-          Domoticz.Status("Too much connections waiting before authenticating again")
+          Domoticz.Status("Too many connections waiting before authenticating again")
 
         elif (self.heartbeat and (self.con_delay == self.wait_delay) and (not self.logged_in)):
-          if (not self.httpConn.Connected()):
-            self.httpConn.Connect()
+          if (not self.logged_in):
+            self.tahoma_login(str(Parameters["Username"]), str(Parameters["Password"]))
           self.heartbeat =True
           self.con_delay = 0
 
@@ -450,7 +448,7 @@ class BasePlugin:
                 return
 
             if (not self.logged_in):
-                tahoma_login(self)
+                self.tahoma_login(str(Parameters["Username"]), str(Parameters["Password"]))
                 return
         return self.logged_in
 
@@ -488,8 +486,8 @@ class BasePlugin:
         Domoticz.Status("Tahoma listener registred")
         logging.info("Tahoma listener registred")
         self.refresh = False
-        Domoticz.Status("Check setup status at statup")
-        logging.info("Check setup status at statup")
+        Domoticz.Status("Checking setup status at statup")
+        logging.info("Checking setup status at statup")
         self.get_devices()
 
     def get_devices(self):
@@ -503,13 +501,13 @@ class BasePlugin:
             logging.error("error during get devices, status: " + str(response.status_code))
             return
 
-        
         #strData = Data["Data"].decode("utf-8", "ignore")
         Data = response.json()
         if "Data" in Data:
             strData = Data["Data"]
 
         if (not "uiClass" in strData):
+            logging.error("missing uiClass in response")
             logging.debug(str(strData))
             return
 
@@ -626,12 +624,6 @@ def DumpConfigToLog():
     for x in Parameters:
         if Parameters[x] != "":
             Domoticz.Debug("Parameter: '" + x + "':'" + str(Parameters[x]) + "'")
-    # logger.debug("Settings count: " + str(len(Settings)))
-    # for x in Settings:
-        # logger.debug("Setting: '" + x + "':'" + str(Settings[x]) + "'")
-    # logger.debug("Image count: " + str(len(Images)))
-    # for x in Images:
-        # logger.debug("'" + x + "':'" + str(Images[x]) + "'")
     Domoticz.Debug("Device count: " + str(len(Devices)))
     for x in Devices:
         Domoticz.Debug("Device:           " + str(x) + " - " + str(Devices[x]))
