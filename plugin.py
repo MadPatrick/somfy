@@ -76,7 +76,7 @@ class BasePlugin:
         if (Status == 0 and not self.logged_in):
           self.tahoma_login(str(Parameters["Username"]), str(Parameters["Password"]))
         elif (self.cookie and self.logged_in and (not self.command)):
-          self.get_events(self)
+          self.get_events()
 
         elif (self.command):
           self.tahoma_command()
@@ -203,140 +203,140 @@ class BasePlugin:
         else:
           self.logger.info("Return status"+str(Status))
  
-    def onMessage(self, Connection, Data):
-        Status = int(Data["Status"])
+    # def onMessage(self, Connection, Data):
+        # Status = int(Data["Status"])
 
-        if (Status == 200 and not self.logged_in):
-          self.logged_in = True
-          Domoticz.Status("Tahoma auth succeed")
-          tmp = Data["Headers"]
-          self.cookie = tmp["Set-Cookie"]
-          register_listener(self)
+        # if (Status == 200 and not self.logged_in):
+          # self.logged_in = True
+          # Domoticz.Status("Tahoma auth succeed")
+          # tmp = Data["Headers"]
+          # self.cookie = tmp["Set-Cookie"]
+          # register_listener(self)
 
-        elif ((Status == 401) or (Status == 400)):
-          strData = Data["Data"].decode("utf-8", "ignore")
-          Domoticz.Error("Tahoma error must reconnect")
-          self.logged_in = False
-          self.cookie = None
-          self.listenerId = None
+        # elif ((Status == 401) or (Status == 400)):
+          # strData = Data["Data"].decode("utf-8", "ignore")
+          # Domoticz.Error("Tahoma error must reconnect")
+          # self.logged_in = False
+          # self.cookie = None
+          # self.listenerId = None
 
-          if ("Too many" in strData):
-            Domoticz.Error("Too much connexions must wait")
-            self.heartbeat = True
-            return
-          if ("Bad credentials" in strData):
-            Domoticz.Error("Bad credentials please update credentials and restart plugin")
-            self.heartbeat =  False
-            return
+          # if ("Too many" in strData):
+            # Domoticz.Error("Too much connexions must wait")
+            # self.heartbeat = True
+            # return
+          # if ("Bad credentials" in strData):
+            # Domoticz.Error("Bad credentials please update credentials and restart plugin")
+            # self.heartbeat =  False
+            # return
 
-          if (not self.logged_in):
-            self.tahoma_login(str(Parameters["Username"]), str(Parameters["Password"]))
-            return
+          # if (not self.logged_in):
+            # self.tahoma_login(str(Parameters["Username"]), str(Parameters["Password"]))
+            # return
 
-        elif (Status == 200 and self.logged_in and (not self.listenerId)):
-            strData = Data["Data"].decode("utf-8", "ignore")
-            id = json.loads(strData)
-            self.listenerId = id['id']
-            Domoticz.Status("Tahoma listener registred")
-            self.refresh = False
-            Domoticz.Status("Check setup status at statup")
-            Headers = { 'Host': self.srvaddr,"Connection": "keep-alive","Accept-Encoding": "gzip, deflate", "Accept": "*/*", "Content-Type": "application/x-www-form-urlencoded", "Cookie": self.cookie}
-            self.httpConn.Send({'Verb':'GET', 'Headers': Headers, 'URL':'/enduser-mobile-web/enduserAPI/setup/devices'})
+        # elif (Status == 200 and self.logged_in and (not self.listenerId)):
+            # strData = Data["Data"].decode("utf-8", "ignore")
+            # id = json.loads(strData)
+            # self.listenerId = id['id']
+            # Domoticz.Status("Tahoma listener registred")
+            # self.refresh = False
+            # Domoticz.Status("Check setup status at statup")
+            # Headers = { 'Host': self.srvaddr,"Connection": "keep-alive","Accept-Encoding": "gzip, deflate", "Accept": "*/*", "Content-Type": "application/x-www-form-urlencoded", "Cookie": self.cookie}
+            # self.httpConn.Send({'Verb':'GET', 'Headers': Headers, 'URL':'/enduser-mobile-web/enduserAPI/setup/devices'})
 
-        elif (Status == 200 and self.logged_in and self.startup and (not self.refresh)):
-          strData = Data["Data"].decode("utf-8", "ignore")
+        # elif (Status == 200 and self.logged_in and self.startup and (not self.refresh)):
+          # strData = Data["Data"].decode("utf-8", "ignore")
 
-          if (not "uiClass" in strData):
-            self.logger.debug(str(strData))
-            return
+          # if (not "uiClass" in strData):
+            # self.logger.debug(str(strData))
+            # return
 
-          self.devices = json.loads(strData)
+          # self.devices = json.loads(strData)
 
-          self.filtered_devices = list()
-          for device in self.devices:
-             self.logger.debug("Device name: "+device["label"]+" Device class: "+device["uiClass"])
-             if (((device["uiClass"] == "RollerShutter") or (device["uiClass"] == "ExteriorScreen") or (device["uiClass"] == "Screen") or (device["uiClass"] == "Awning") or (device["uiClass"] == "Pergola") or (device["uiClass"] == "GarageDoor") or (device["uiClass"] == "Window") or (device["uiClass"] == "VenetianBlind") or (device["uiClass"] == "ExteriorVenetianBlind")) and ((device["deviceURL"].startswith("io://")) or (device["deviceURL"].startswith("rts://")))):
-               self.filtered_devices.append(device)
+          # self.filtered_devices = list()
+          # for device in self.devices:
+             # self.logger.debug("Device name: "+device["label"]+" Device class: "+device["uiClass"])
+             # if (((device["uiClass"] == "RollerShutter") or (device["uiClass"] == "ExteriorScreen") or (device["uiClass"] == "Screen") or (device["uiClass"] == "Awning") or (device["uiClass"] == "Pergola") or (device["uiClass"] == "GarageDoor") or (device["uiClass"] == "Window") or (device["uiClass"] == "VenetianBlind") or (device["uiClass"] == "ExteriorVenetianBlind")) and ((device["deviceURL"].startswith("io://")) or (device["deviceURL"].startswith("rts://")))):
+               # self.filtered_devices.append(device)
 
-          if (len(Devices) == 0 and self.startup):
-            count = 1
-            for device in self.filtered_devices:
-               Domoticz.Status("Creating device: "+device["label"])
-               swtype = None
+          # if (len(Devices) == 0 and self.startup):
+            # count = 1
+            # for device in self.filtered_devices:
+               # Domoticz.Status("Creating device: "+device["label"])
+               # swtype = None
 
-               if (device["deviceURL"].startswith("io://")):
-                   if (device["uiClass"] == "Awning"):
-                    swtype = 13
-                   else:
-                    swtype = 16
-               elif (device["deviceURL"].startswith("rts://")):
-                    swtype = 6
+               # if (device["deviceURL"].startswith("io://")):
+                   # if (device["uiClass"] == "Awning"):
+                    # swtype = 13
+                   # else:
+                    # swtype = 16
+               # elif (device["deviceURL"].startswith("rts://")):
+                    # swtype = 6
 
-               Domoticz.Device(Name=device["label"], Unit=count, Type=244, Subtype=73, Switchtype=swtype, DeviceID=device["deviceURL"]).Create()
+               # Domoticz.Device(Name=device["label"], Unit=count, Type=244, Subtype=73, Switchtype=swtype, DeviceID=device["deviceURL"]).Create()
 
-               if not (count in Devices):
-                   Domoticz.Error("Device creation not allowed, please allow device creation")
-               else:
-                   Domoticz.Status("Device created: "+device["label"])
-                   count += 1
+               # if not (count in Devices):
+                   # Domoticz.Error("Device creation not allowed, please allow device creation")
+               # else:
+                   # Domoticz.Status("Device created: "+device["label"])
+                   # count += 1
 
-          if ((len(Devices) < len(self.filtered_devices)) and len(Devices) != 0 and self.startup):
-            self.logger.info("New device(s) detected")
-            found = False
+          # if ((len(Devices) < len(self.filtered_devices)) and len(Devices) != 0 and self.startup):
+            # self.logger.info("New device(s) detected")
+            # found = False
 
-            for device in self.filtered_devices:
-               for dev in Devices:
-                  UnitID = Devices[dev].Unit
-                  if Devices[dev].DeviceID == device["deviceURL"]:
-                    found = True
-                    break
-               if (not found):
-                 idx = firstFree()
-                 swtype = None
+            # for device in self.filtered_devices:
+               # for dev in Devices:
+                  # UnitID = Devices[dev].Unit
+                  # if Devices[dev].DeviceID == device["deviceURL"]:
+                    # found = True
+                    # break
+               # if (not found):
+                 # idx = firstFree()
+                 # swtype = None
 
-                 Domoticz.Status("Must create device: "+device["label"])
+                 # Domoticz.Status("Must create device: "+device["label"])
 
-                 if (device["deviceURL"].startswith("io://")):
-                    if (device["uiClass"] == "Awning"):
-                     swtype = 13
-                    else:
-                     swtype = 16
-                 elif (device["deviceURL"].startswith("rts://")):
-                    swtype = 6
+                 # if (device["deviceURL"].startswith("io://")):
+                    # if (device["uiClass"] == "Awning"):
+                     # swtype = 13
+                    # else:
+                     # swtype = 16
+                 # elif (device["deviceURL"].startswith("rts://")):
+                    # swtype = 6
 
-                 Domoticz.Device(Name=device["label"], Unit=idx, Type=244, Subtype=73, Switchtype=swtype, DeviceID=device["deviceURL"]).Create()
+                 # Domoticz.Device(Name=device["label"], Unit=idx, Type=244, Subtype=73, Switchtype=swtype, DeviceID=device["deviceURL"]).Create()
 
-                 if not (idx in Devices):
-                     Domoticz.Error("Device creation not allowed, please allow device creation")
-                 else:
-                     Domoticz.Status("New device created: "+device["label"])
-               else:
-                  found = False
-          update_devices_status(self,self.filtered_devices)
-          self.startup = False
+                 # if not (idx in Devices):
+                     # Domoticz.Error("Device creation not allowed, please allow device creation")
+                 # else:
+                     # Domoticz.Status("New device created: "+device["label"])
+               # else:
+                  # found = False
+          # update_devices_status(self,self.filtered_devices)
+          # self.startup = False
 
-        elif (Status == 200 and self.logged_in and self.heartbeat and (not self.startup)):
-            strData = Data["Data"].decode("utf-8", "ignore")
+        # elif (Status == 200 and self.logged_in and self.heartbeat and (not self.startup)):
+            # strData = Data["Data"].decode("utf-8", "ignore")
 
-            if (not "DeviceStateChangedEvent" in strData):
-              self.logger.debug(str(strData))
-              return
+            # if (not "DeviceStateChangedEvent" in strData):
+              # self.logger.debug(str(strData))
+              # return
 
-            self.events = json.loads(strData)
+            # self.events = json.loads(strData)
 
-            if (self.events):
-                filtered_events = list()
+            # if (self.events):
+                # filtered_events = list()
 
-                for event in self.events:
-                    if (event["name"] == "DeviceStateChangedEvent"):
-                        filtered_events.append(event)
+                # for event in self.events:
+                    # if (event["name"] == "DeviceStateChangedEvent"):
+                        # filtered_events.append(event)
 
-                update_devices_status(self,filtered_events)
+                # update_devices_status(self,filtered_events)
 
-        elif (Status == 200 and (not self.heartbeat)):
-          return
-        else:
-          self.logger.info("Return status"+str(Status))
+        # elif (Status == 200 and (not self.heartbeat)):
+          # return
+        # else:
+          # self.logger.info("Return status"+str(Status))
 
     def onCommand(self, Unit, Command, Level, Hue):
         commands_serialized = []
@@ -368,10 +368,9 @@ class BasePlugin:
           self.command = True
           self.tahoma_login(str(Parameters["Username"]), str(Parameters["Password"]))
         else:
-          self.tahoma_command(self)
+          self.tahoma_command()
           self.heartbeat = False
           self.actions_serialized = []
-
 
     def onDisconnect(self, Connection):
         return
@@ -382,8 +381,8 @@ class BasePlugin:
           if (not self.logged_in):
             self.tahoma_login(str(Parameters["Username"]), str(Parameters["Password"]))
           else:
-            self.get_events(self)
-          self.heartbeat =True
+            self.get_events()
+          self.heartbeat = True
 
         elif (self.heartbeat and (self.con_delay < self.wait_delay) and (not self.logged_in)):
           self.con_delay +=1
@@ -461,7 +460,7 @@ class BasePlugin:
         logging.info("Sending command to tahoma api")
         logging.debug("command response: status '" + str(response.status_code) + "' response body: '"+str(response.json())+"'")
         if response.status_code != 200:
-            logging.error("error during register, status: " + str(response.status_code))
+            logging.error("error during command, status: " + str(response.status_code))
         return
 
     def register_listener(self):
@@ -585,7 +584,32 @@ class BasePlugin:
         logging.debug("register response: status '" + str(response.status_code) + "' response body: '"+str(response.json())+"'")
         if response.status_code != 200:
             logging.error("error during get events, status: " + str(response.status_code))
-        return
+            return
+        #elif (Status == 200 and self.logged_in and self.heartbeat and (not self.startup)):
+        elif (Status == 200 and self.logged_in and self.heartbeat and (not self.startup)):
+            #strData = Data["Data"].decode("utf-8", "ignore")
+            strData = response.json().["Data"]
+
+            if (not "DeviceStateChangedEvent" in strData):
+              logging.debug("no DeviceStateChangedEvent found: " + str(strData))
+              return
+
+            #self.events = json.loads(strData)
+            self.events = strData
+
+            if (self.events):
+                filtered_events = list()
+
+                for event in self.events:
+                    if (event["name"] == "DeviceStateChangedEvent"):
+                        filtered_events.append(event)
+
+                update_devices_status(self,filtered_events)
+
+        elif (Status == 200 and (not self.heartbeat)):
+          return
+        else:
+          self.logger.info("Return status"+str(Status))
 
 global _plugin
 _plugin = BasePlugin()
