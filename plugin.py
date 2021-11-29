@@ -28,7 +28,7 @@ import logging
 class BasePlugin:
     enabled = False
     def __init__(self):
-        self.httpConn = None
+        #self.httpConn = None
         self.srvaddr = "tahomalink.com"
         self.base_url = "https://tahomalink.com:443"
         self.cookie = ""
@@ -412,7 +412,7 @@ class BasePlugin:
 
         if (Status == 200 and not self.logged_in):
             self.logged_in = True
-            Domoticz.Status("Tahoma auth succeed")
+            logging.info("Tahoma auth succeed")
             if "Headers" in Data:
                 tmp = Data["Headers"]
                 self.cookie = tmp["Set-Cookie"]
@@ -482,10 +482,8 @@ class BasePlugin:
         #id = json.loads(strData)
         id = strData
         self.listenerId = id['id']
-        Domoticz.Status("Tahoma listener registred")
         logging.info("Tahoma listener registred")
         self.refresh = False
-        Domoticz.Status("Checking setup status at statup")
         logging.info("Checking setup status at statup")
         self.get_devices()
 
@@ -521,7 +519,7 @@ class BasePlugin:
         if (len(Devices) == 0 and self.startup):
             count = 1
             for device in self.filtered_devices:
-                Domoticz.Status("Creating device: "+device["label"])
+                logging.info("Creating device: "+device["label"])
                 swtype = None
 
                 if (device["deviceURL"].startswith("io://")):
@@ -535,9 +533,10 @@ class BasePlugin:
                 Domoticz.Device(Name=device["label"], Unit=count, Type=244, Subtype=73, Switchtype=swtype, DeviceID=device["deviceURL"]).Create()
 
                 if not (count in Devices):
+                    logging.error("Device creation not allowed, please allow device creation")
                     Domoticz.Error("Device creation not allowed, please allow device creation")
                 else:
-                    Domoticz.Status("Device created: "+device["label"])
+                    logging.info("Device created: "+device["label"])
                     count += 1
 
         if ((len(Devices) < len(self.filtered_devices)) and len(Devices) != 0 and self.startup):
@@ -554,7 +553,7 @@ class BasePlugin:
                  idx = firstFree()
                  swtype = None
 
-                 Domoticz.Status("Must create device: "+device["label"])
+                 logging.debug("Must create device: "+device["label"])
 
                  if (device["deviceURL"].startswith("io://")):
                     if (device["uiClass"] == "Awning"):
@@ -567,9 +566,10 @@ class BasePlugin:
                  Domoticz.Device(Name=device["label"], Unit=idx, Type=244, Subtype=73, Switchtype=swtype, DeviceID=device["deviceURL"]).Create()
 
                  if not (idx in Devices):
+                     logging.error("Device creation not allowed, please allow device creation")
                      Domoticz.Error("Device creation not allowed, please allow device creation")
                  else:
-                     Domoticz.Status("New device created: "+device["label"])
+                     logging.info("New device created: "+device["label"])
                 else:
                   found = False
         update_devices_status(self,self.filtered_devices)
@@ -588,7 +588,7 @@ class BasePlugin:
         #elif (Status == 200 and self.logged_in and self.heartbeat and (not self.startup)):
         elif (Status == 200 and self.logged_in and self.heartbeat and (not self.startup)):
             #strData = Data["Data"].decode("utf-8", "ignore")
-            strData = response.json().["Data"]
+            strData = response.json()["Data"]
 
             if (not "DeviceStateChangedEvent" in strData):
               logging.debug("no DeviceStateChangedEvent found: " + str(strData))
@@ -609,7 +609,7 @@ class BasePlugin:
         elif (Status == 200 and (not self.heartbeat)):
           return
         else:
-          self.logger.info("Return status"+str(Status))
+          logging.info("Return status"+str(Status))
 
 global _plugin
 _plugin = BasePlugin()
