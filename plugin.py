@@ -486,6 +486,7 @@ class BasePlugin:
         #id = json.loads(strData)
         id = strData
         self.listenerId = id['id']
+        self.listenerId = Data['id']
         logging.info("Tahoma listener registred")
         self.refresh = False
         logging.info("Checking setup status at statup")
