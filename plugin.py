@@ -413,12 +413,14 @@ class BasePlugin:
         if (Status == 200 and not self.logged_in):
             self.logged_in = True
             logging.info("Tahoma auth succeed")
-            if "Headers" in Data:
-                tmp = Data["Headers"]
-                self.cookie = tmp["Set-Cookie"]
-            else:
-                logging.error("Headers expected but not received")
-                return
+            self.cookie = response.cookies
+            logging.debug("login: cookies: '"+ str(response.cookies)+"', headers: '"+str(response.headers)+"'")
+            # if "Headers" in Data:
+                # tmp = Data["Headers"]
+                # self.cookie = tmp["Set-Cookie"]
+            # else:
+                # logging.error("Headers expected but not received")
+                # return
             self.register_listener(self)
 
         elif ((Status == 401) or (Status == 400)):
