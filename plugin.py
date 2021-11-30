@@ -456,9 +456,10 @@ class BasePlugin:
 
     def tahoma_command(self):
         logging.debug("start command")
-        Headers = { 'Host': self.srvaddr,"Connection": "keep-alive","Accept-Encoding": "gzip, deflate", "Accept": "*/*", "Content-Type": "application/json", "Cookie": self.cookie}
+        Headers = { 'Host': self.srvaddr, "Connection": "keep-alive","Accept-Encoding": "gzip, deflate", "Accept": "*/*", "Content-Type": "application/json", "Cookie": self.cookie}
         url = self.base_url + '/enduser-mobile-web/enduserAPI/exec/apply'
         #self.httpConn.Send({'Verb':'POST', 'Headers': Headers, 'URL':'/enduser-mobile-web/enduserAPI/exec/apply', 'Data': self.json_data})
+        logging.debug("onCommand: headers: '"+str(Headers)+"', data '"+str(self.json_data)+"'")
         response = requests.post(url, headers=Headers, data=self.json_data, timeout=self.timeout)
         logging.info("Sending command to tahoma api")
         logging.debug("command response: status '" + str(response.status_code) + "' response body: '"+str(response.json())+"'")
