@@ -421,7 +421,7 @@ class BasePlugin:
             # else:
                 # logging.error("Headers expected but not received")
                 # return
-            self.register_listener(self)
+            self.register_listener()
 
         elif ((Status == 401) or (Status == 400)):
             if "Data" in Data:
