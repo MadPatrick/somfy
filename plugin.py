@@ -414,6 +414,7 @@ class BasePlugin:
             self.logged_in = True
             logging.info("Tahoma auth succeed")
             self.cookie = response.cookies
+            self.cookie = response.headers["Set-Cookie"]
             logging.debug("login: cookies: '"+ str(response.cookies)+"', headers: '"+str(response.headers)+"'")
             # if "Headers" in Data:
                 # tmp = Data["Headers"]
