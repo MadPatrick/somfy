@@ -489,7 +489,7 @@ class BasePlugin:
         self.listenerId = Data['id']
         logging.info("Tahoma listener registred")
         self.refresh = False
-        logging.info("Checking setup status at statup")
+        logging.info("Checking setup status at startup")
         self.get_devices()
 
     def get_devices(self):
