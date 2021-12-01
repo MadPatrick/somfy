@@ -26,7 +26,6 @@
 </plugin>
 """
 
-
 import Domoticz
 import urllib.parse
 import json
