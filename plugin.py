@@ -2,10 +2,17 @@
 #
 # Author: Nonolk, 2019-2020
 # FirstFree function courtesy of @moroen https://github.com/moroen/IKEA-Tradfri-plugin
-# All credits for the plugin are for Nonolk, who is the origin pluginm creator
+# All credits for the plugin are for Nonolk, who is the origin plugin creator
 """
-<plugin key="tahomaIO" name="Somfy Tahoma or conexoon plugin" author="MadPatrick" version="0.1.1" externallink="https://github.com/MadPatrick/somfy">
-    <description>Somfy Tahoma/Conexoon plugin for IO blinds<br/>This plugin require internet connection at all time.<br/>Please provide your email and password used to connect Tahoma/Conexoon</description>
+<plugin key="tahomaIO" name="Somfy Tahoma or Conexoon plugin" author="MadPatrick" version="0.1.1" externallink="https://github.com/MadPatrick/somfy">
+    <description>
+	<br/><h2>Somfy Tahoma/Conexoon plugin</h2><br/>
+        <ul style="list-style-type:square">
+            <li>This plugin require internet connection at all time.</li>
+            <li>It controls the Somfy for IO Blinds or Screens</li>
+            <li>Please provide your email and password used to connect Tahoma/Conexoon</li>
+        </ul>
+</description>
     <params>
         <param field="Username" label="Username" width="200px" required="true" default=""/>
         <param field="Password" label="Password" width="200px" required="true" default="" password="true"/>
@@ -18,6 +25,7 @@
     </params>
 </plugin>
 """
+
 
 import Domoticz
 import urllib.parse
