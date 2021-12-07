@@ -2,9 +2,17 @@
 #
 # Author: Nonolk, 2019-2020
 # FirstFree function courtesy of @moroen https://github.com/moroen/IKEA-Tradfri-plugin
+# All credits for the plugin are for Nonolk, who is the origin plugin creator
 """
-<plugin key="tahomaIO" name="Tahoma or conexoon IO blind plugin" author="MadPatrick" version="0.1.0" externallink="https://github.com/MadPatrick/somfy">
-    <description>Somfy/Tahoma/Conexoon plugin for IO blinds, this plugin require internet connexion.<br/>Please provide your email and password used to connect Tahoma/Conexoon</description>
+<plugin key="tahomaIO" name="Somfy Tahoma or Conexoon plugin" author="MadPatrick" version="0.1.1" externallink="https://github.com/MadPatrick/somfy">
+    <description>
+	<br/><h2>Somfy Tahoma/Conexoon plugin</h2><br/>
+        <ul style="list-style-type:square">
+            <li>This plugin require internet connection at all time.</li>
+            <li>It controls the Somfy for IO Blinds or Screens</li>
+            <li>Please provide your email and password used to connect Tahoma/Conexoon</li>
+        </ul>
+</description>
     <params>
         <param field="Username" label="Username" width="200px" required="true" default=""/>
         <param field="Password" label="Password" width="200px" required="true" default="" password="true"/>
@@ -507,7 +515,7 @@ class BasePlugin:
         self.listenerId = Data['id']
         logging.info("Tahoma listener registred")
         self.refresh = False
-        logging.info("Checking setup status at statup")
+        logging.info("Checking setup status at startup")
         self.get_devices()
 
     def get_devices(self):
