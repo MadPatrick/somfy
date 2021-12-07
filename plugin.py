@@ -8,6 +8,15 @@
     <params>
         <param field="Username" label="Username" width="200px" required="true" default=""/>
         <param field="Password" label="Password" width="200px" required="true" default="" password="true"/>
+        <param field="Mode2" label="Refresh interval" width="75px">
+            <options>
+                <option label="20s" value="2"/>
+                <option label="1m" value="6"/>
+                <option label="5m" value="30" default="true"/>
+                <option label="10m" value="60"/>
+                <option label="15m" value="90"/>
+            </options>
+        </param>
         <param field="Mode6" label="Debug" width="75px">
             <options>
                 <option label="True" value="Debug"/>
@@ -60,6 +69,7 @@ class BasePlugin:
         else:
             logging.basicConfig(format='%(asctime)s - %(levelname)-8s - %(filename)-18s - %(message)s', filename='somfy.log',level=logging.INFO)
         logging.info('started plugin')
+        self.runCounter = int(Parameters['Mode2'])
         
         #self.httpConn = Domoticz.Connection(Name="Secure Connection", Transport="TCP/IP", Protocol="HTTPS", Address=self.srvaddr, Port="443")
         #self.httpConn.Connect()
@@ -376,23 +386,29 @@ class BasePlugin:
         return
 
     def onHeartbeat(self):
+        self.runCounter = self.runCounter - 1
+        if self.runCounter <= 0:
+            logging.debug("Poll unit")
+            self.runCounter = int(Parameters['Mode2'])            
 
-        if (self.cookie and self.logged_in and (not self.startup)):
-          if (not self.logged_in):
-            self.tahoma_login(str(Parameters["Username"]), str(Parameters["Password"]))
-          else:
-            self.get_events()
-          self.heartbeat = True
+            if (self.cookie and self.logged_in and (not self.startup)):
+              if (not self.logged_in):
+                self.tahoma_login(str(Parameters["Username"]), str(Parameters["Password"]))
+              else:
+                self.get_events()
+              self.heartbeat = True
 
-        elif (self.heartbeat and (self.con_delay < self.wait_delay) and (not self.logged_in)):
-          self.con_delay +=1
-          Domoticz.Status("Too many connections waiting before authenticating again")
+            elif (self.heartbeat and (self.con_delay < self.wait_delay) and (not self.logged_in)):
+              self.con_delay +=1
+              Domoticz.Status("Too many connections waiting before authenticating again")
 
-        elif (self.heartbeat and (self.con_delay == self.wait_delay) and (not self.logged_in)):
-          if (not self.logged_in):
-            self.tahoma_login(str(Parameters["Username"]), str(Parameters["Password"]))
-          self.heartbeat =True
-          self.con_delay = 0
+            elif (self.heartbeat and (self.con_delay == self.wait_delay) and (not self.logged_in)):
+              if (not self.logged_in):
+                self.tahoma_login(str(Parameters["Username"]), str(Parameters["Password"]))
+              self.heartbeat =True
+              self.con_delay = 0
+        else:
+            logging.debug("Polling unit in " + str(self.runCounter) + " heartbeats.")
 
     def tahoma_login(self, username, password):
 
@@ -465,6 +481,8 @@ class BasePlugin:
         logging.debug("command response: status '" + str(response.status_code) + "' response body: '"+str(response.json())+"'")
         if response.status_code != 200:
             logging.error("error during command, status: " + str(response.status_code))
+            return
+        self.get_events()
         return
 
     def register_listener(self):
