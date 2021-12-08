@@ -504,14 +504,14 @@ class BasePlugin:
             logging.error("error during register, status: " + str(response.status_code))
             return
         Data = response.json()
-        if "Data" in Data:
-            strData = Data["Data"]
+        if "id" in Data:
+            strData = Data["id"]
         else:
             logging.error("Data expected in response but  not found")
             return
-        #id = json.loads(strData)
-        id = strData
-        self.listenerId = id['id']
+        # #id = json.loads(strData)
+        # id = strData
+        # self.listenerId = id['id']
         self.listenerId = Data['id']
         logging.info("Tahoma listener registred")
         self.refresh = False
