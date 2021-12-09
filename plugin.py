@@ -432,7 +432,7 @@ class BasePlugin:
         # self.httpConn.Send({'Verb':'POST', 'Headers': Headers, 'URL':'/enduser-mobile-web/enduserAPI/login', 'Data': postData})
         Status = response.status_code #int(Data["Status"])
         Data = response.json()
-        logging.debug("Respone: status_code: '"+str(Status)+"' reponse body: '"+str(Data)+"'")
+        logging.debug("Login respone: status_code: '"+str(Status)+"' reponse body: '"+str(Data)+"'")
 
         if (Status == 200 and not self.logged_in):
             self.logged_in = True
@@ -449,13 +449,7 @@ class BasePlugin:
             self.register_listener()
 
         elif ((Status == 401) or (Status == 400)):
-            if "Data" in Data:
-                strData = Data["Data"]
-            elif "error" in Data:
-                strData = Data["error"]
-            else:
-                logging.error("no usable response data found")
-                return
+            strData = Data["error"]
             Domoticz.Error("Tahoma error: must reconnect")
             logging.error("Tahoma error: must reconnect")
             self.logged_in = False
@@ -531,15 +525,15 @@ class BasePlugin:
 
         #strData = Data["Data"].decode("utf-8", "ignore")
         Data = response.json()
-        if "Data" in Data:
-            strData = Data["Data"]
+        #if "Data" in Data:
+        #strData = Data["Data"]
 
-        if (not "uiClass" in strData):
+        if (not "uiClass" in Data):
             logging.error("missing uiClass in response")
-            logging.debug(str(strData))
+            logging.debug(str(Data))
             return
 
-        self.devices = strData
+        self.devices = Data
 
         self.filtered_devices = list()
         for device in self.devices:
@@ -617,9 +611,10 @@ class BasePlugin:
             logging.error("error during get events, status: " + str(response.status_code))
             return
         #elif (Status == 200 and self.logged_in and self.heartbeat and (not self.startup)):
-        elif (Status == 200 and self.logged_in and self.heartbeat and (not self.startup)):
+        elif (response.status_code == 200 and self.logged_in and self.heartbeat and (not self.startup)):
             #strData = Data["Data"].decode("utf-8", "ignore")
-            strData = response.json()["Data"]
+            #strData = response.json()["Data"]
+            strData = response.json()
 
             if (not "DeviceStateChangedEvent" in strData):
               logging.debug("no DeviceStateChangedEvent found: " + str(strData))
@@ -637,10 +632,10 @@ class BasePlugin:
 
                 update_devices_status(self,filtered_events)
 
-        elif (Status == 200 and (not self.heartbeat)):
+        elif (response.status_code == 200 and (not self.heartbeat)):
           return
         else:
-          logging.info("Return status"+str(Status))
+          logging.info("Return status"+str(response.status_code))
 
 global _plugin
 _plugin = BasePlugin()
