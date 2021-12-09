@@ -214,7 +214,7 @@ class BasePlugin:
                     if (event["name"] == "DeviceStateChangedEvent"):
                         filtered_events.append(event)
 
-                update_devices_status(self,filtered_events)
+                self.update_devices_status(self,filtered_events)
 
         elif (Status == 200 and (not self.heartbeat)):
           return
@@ -597,7 +597,7 @@ class BasePlugin:
                      logging.info("New device created: "+device["label"])
                 else:
                   found = False
-        update_devices_status(self,self.filtered_devices)
+        self.update_devices_status(self,self.filtered_devices)
         self.startup = False
 
     def get_events(self):
@@ -630,12 +630,55 @@ class BasePlugin:
                     if (event["name"] == "DeviceStateChangedEvent"):
                         filtered_events.append(event)
 
-                update_devices_status(self,filtered_events)
+                self.update_devices_status(self,filtered_events)
 
         elif (response.status_code == 200 and (not self.heartbeat)):
           return
         else:
           logging.info("Return status"+str(response.status_code))
+
+    def update_devices_status(self,Updated_devices):
+        logging.debug("updating device status on data: '"+str(Updated_devices)+"'")
+        for dev in Devices:
+           for device in Updated_devices:
+
+             if (Devices[dev].DeviceID == device["deviceURL"]) and (device["deviceURL"].startswith("io://")):
+               level = 0
+               status_l = False
+               status = None
+
+               if (self.startup):
+                   states = device["states"]
+               else:
+                   states = device["deviceStates"]
+                   if (device["name"] != "DeviceStateChangedEvent"):
+                       break
+
+               for state in states:
+                  status_l = False
+
+                  if ((state["name"] == "core:ClosureState") or (state["name"] == "core:DeploymentState")):
+                    level = int(state["value"])
+                    level = 100 - level
+                    status_l = True
+                    
+                  if status_l:
+                    if (Devices[dev].sValue):
+                      int_level = int(Devices[dev].sValue)
+                    else:
+                      int_level = 0
+                    if (level != int_level):
+
+                      Domoticz.Info("Updating device:"+Devices[dev].Name)
+                      logging.info("Updating device:"+Devices[dev].Name)
+                      if (level == 0):
+                        Devices[dev].Update(0,"0")
+                      if (level == 100):
+                        Devices[dev].Update(1,"100")
+                      if (level != 0 and level != 100):
+                        Devices[dev].Update(2,str(level))
+        return
+
 
 global _plugin
 _plugin = BasePlugin()
@@ -702,45 +745,5 @@ def firstFree():
     for num in range(1, 250):
         if num not in Devices:
             return num
-    return
-
-def update_devices_status(self,Updated_devices):
-    for dev in Devices:
-       for device in Updated_devices:
-
-         if (Devices[dev].DeviceID == device["deviceURL"]) and (device["deviceURL"].startswith("io://")):
-           level = 0
-           status_l = False
-           status = None
-
-           if (self.startup):
-               states = device["states"]
-           else:
-               states = device["deviceStates"]
-               if (device["name"] != "DeviceStateChangedEvent"):
-                   break
-
-           for state in states:
-              status_l = False
-
-              if ((state["name"] == "core:ClosureState") or (state["name"] == "core:DeploymentState")):
-                level = int(state["value"])
-                level = 100 - level
-                status_l = True
-                
-              if status_l:
-                if (Devices[dev].sValue):
-                  int_level = int(Devices[dev].sValue)
-                else:
-                  int_level = 0
-                if (level != int_level):
-
-                  Domoticz.Info("Updating device:"+Devices[dev].Name)
-                  if (level == 0):
-                    Devices[dev].Update(0,"0")
-                  if (level == 100):
-                    Devices[dev].Update(1,"100")
-                  if (level != 0 and level != 100):
-                    Devices[dev].Update(2,str(level))
     return
 
