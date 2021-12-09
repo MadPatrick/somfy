@@ -517,7 +517,7 @@ class BasePlugin:
         Headers = { 'Host': self.srvaddr,"Connection": "keep-alive","Accept-Encoding": "gzip, deflate", "Accept": "*/*", "Content-Type": "application/x-www-form-urlencoded", "Cookie": self.cookie}
         #self.httpConn.Send({'Verb':'GET', 'Headers': Headers, 'URL':'/enduser-mobile-web/enduserAPI/setup/devices'})
         url = self.base_url + '/enduser-mobile-web/enduserAPI/setup/devices'
-        response = requests.post(url, headers=Headers, timeout=self.timeout)
+        response = requests.get(url, headers=Headers, timeout=self.timeout)
         logging.debug("get device response: status '" + str(response.status_code) + "' response body: '"+str(response.json())+"'")
         if response.status_code != 200:
             logging.error("error during get devices, status: " + str(response.status_code))
