@@ -619,7 +619,7 @@ class BasePlugin:
 
             if (not "DeviceStateChangedEvent" in response.text):
               logging.debug("get_events: no DeviceStateChangedEvent found in response: " + str(strData))
-              #return
+              return
 
             self.events = strData
 
