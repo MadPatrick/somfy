@@ -4,7 +4,7 @@
 # FirstFree function courtesy of @moroen https://github.com/moroen/IKEA-Tradfri-plugin
 # All credits for the plugin are for Nonolk, who is the origin plugin creator
 """
-<plugin key="tahomaIO" name="Somfy Tahoma or Conexoon plugin" author="MadPatrick" version="1.0.20" externallink="https://github.com/MadPatrick/somfy">
+<plugin key="tahomaIO" name="Somfy Tahoma or Conexoon plugin" author="MadPatrick" version="1.0.21" externallink="https://github.com/MadPatrick/somfy">
     <description>
 	<br/><h2>Somfy Tahoma/Conexoon plugin</h2><br/>
         <ul style="list-style-type:square">
@@ -612,7 +612,8 @@ class BasePlugin:
             logging.error("error during get events, status: " + str(response.status_code))
             return
         #elif (Status == 200 and self.logged_in and self.heartbeat and (not self.startup)):
-        elif (response.status_code == 200 and self.logged_in and self.heartbeat and (not self.startup)):
+        #elif (response.status_code == 200 and self.logged_in and self.heartbeat and (not self.startup)):
+        elif (response.status_code == 200 and self.logged_in and (not self.startup)):
             #strData = Data["Data"].decode("utf-8", "ignore")
             strData = response.json()
 
@@ -627,12 +628,13 @@ class BasePlugin:
 
                 for event in self.events:
                     if (event["name"] == "DeviceStateChangedEvent"):
+                        logging.debug("get_events: add event: URL: '"+event["deviceURL"]+"' num states: '"+str(len(event["deviceStates"]))+"'")
                         filtered_events.append(event)
 
                 self.update_devices_status(filtered_events)
 
-        elif (response.status_code == 200 and (not self.heartbeat)):
-          return
+        # elif (response.status_code == 200 and (not self.heartbeat)):
+          # return
         else:
           logging.info("Return status"+str(response.status_code))
 
