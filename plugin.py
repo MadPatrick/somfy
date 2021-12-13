@@ -195,7 +195,7 @@ class BasePlugin:
                      # Domoticz.Status("New device created: "+device["label"])
                # else:
                   # found = False
-          # update_devices_status(self,self.filtered_devices)
+          # update_devices_status(self.filtered_devices)
           # self.startup = False
 
         elif (Status == 200 and self.logged_in and self.heartbeat and (not self.startup)):
@@ -214,7 +214,7 @@ class BasePlugin:
                     if (event["name"] == "DeviceStateChangedEvent"):
                         filtered_events.append(event)
 
-                self.update_devices_status(self,filtered_events)
+                self.update_devices_status(filtered_events)
 
         elif (Status == 200 and (not self.heartbeat)):
           return
@@ -521,13 +521,13 @@ class BasePlugin:
         response = requests.get(url, headers=Headers, timeout=self.timeout)
         logging.debug("get device response: status '" + str(response.status_code) + "' response body: '"+str(response.json())+"'")
         if response.status_code != 200:
-            logging.error("error during get devices, status: " + str(response.status_code))
+            logging.error("get_devices: error during get devices, status: " + str(response.status_code))
             return
 
         Data = response.json()
 
         if (not "uiClass" in response.text):
-            logging.error("missing uiClass in response")
+            logging.error("get_devices: missing uiClass in response")
             logging.debug(str(Data))
             return
 
@@ -535,14 +535,15 @@ class BasePlugin:
 
         self.filtered_devices = list()
         for device in self.devices:
-            logging.debug("Device name: "+device["label"]+" Device class: "+device["uiClass"])
+            logging.debug("get_devices: Device name: "+device["label"]+" Device class: "+device["uiClass"])
             if (((device["uiClass"] == "RollerShutter") or (device["uiClass"] == "ExteriorScreen") or (device["uiClass"] == "Screen") or (device["uiClass"] == "Awning") or (device["uiClass"] == "Pergola") or (device["uiClass"] == "GarageDoor") or (device["uiClass"] == "Window") or (device["uiClass"] == "VenetianBlind") or (device["uiClass"] == "ExteriorVenetianBlind")) and ((device["deviceURL"].startswith("io://")) or (device["deviceURL"].startswith("rts://")))):
                 self.filtered_devices.append(device)
 
+        logging.debug("get_devices: devices found: "+str(len(Devices))+" self.startup: "+str(self.startup))
         if (len(Devices) == 0 and self.startup):
             count = 1
             for device in self.filtered_devices:
-                logging.info("Creating device: "+device["label"])
+                logging.info("get_devices: Creating device: "+device["label"])
                 swtype = None
 
                 if (device["deviceURL"].startswith("io://")):
@@ -576,7 +577,7 @@ class BasePlugin:
                  idx = firstFree()
                  swtype = None
 
-                 logging.debug("Must create device: "+device["label"])
+                 logging.debug("get_devices: Must create device: "+device["label"])
 
                  if (device["deviceURL"].startswith("io://")):
                     if (device["uiClass"] == "Awning"):
@@ -595,8 +596,8 @@ class BasePlugin:
                      logging.info("New device created: "+device["label"])
                 else:
                   found = False
-        self.update_devices_status(self,self.filtered_devices)
         self.startup = False
+        self.update_devices_status(self.filtered_devices)
 
     def get_events(self):
         logging.debug("start get events")
@@ -615,7 +616,7 @@ class BasePlugin:
             strData = response.json()
 
             if (not "DeviceStateChangedEvent" in response.text):
-              logging.debug("no DeviceStateChangedEvent found in response: " + str(strData))
+              logging.debug("get_events: no DeviceStateChangedEvent found in response: " + str(strData))
               #return
 
             self.events = strData
@@ -627,14 +628,14 @@ class BasePlugin:
                     if (event["name"] == "DeviceStateChangedEvent"):
                         filtered_events.append(event)
 
-                self.update_devices_status(self,filtered_events)
+                self.update_devices_status(filtered_events)
 
         elif (response.status_code == 200 and (not self.heartbeat)):
           return
         else:
           logging.info("Return status"+str(response.status_code))
 
-    def update_devices_status(self,Updated_devices):
+    def update_devices_status(self, Updated_devices):
         logging.debug("updating device status on data: '"+str(Updated_devices)+"'")
         for dev in Devices:
            for device in Updated_devices:
