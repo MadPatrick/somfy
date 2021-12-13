@@ -484,6 +484,7 @@ class BasePlugin:
         if response.status_code != 200:
             logging.error("error during command, status: " + str(response.status_code))
             return
+        self.executionId = response.json()['execId']
         self.get_events()
         return
 
@@ -523,12 +524,9 @@ class BasePlugin:
             logging.error("error during get devices, status: " + str(response.status_code))
             return
 
-        #strData = Data["Data"].decode("utf-8", "ignore")
         Data = response.json()
-        #if "Data" in Data:
-        #strData = Data["Data"]
 
-        if (not "uiClass" in Data):
+        if (not "uiClass" in response.text):
             logging.error("missing uiClass in response")
             logging.debug(str(Data))
             return
@@ -606,21 +604,20 @@ class BasePlugin:
         url = self.base_url + '/enduser-mobile-web/enduserAPI/events/'+self.listenerId+'/fetch'
         response = requests.post(url, headers=Headers, timeout=self.timeout)
         #self.httpConn.Send({'Verb':'POST', 'Headers': Headers, 'URL':'/enduser-mobile-web/enduserAPI/events/'+self.listenerId+'/fetch', 'Data': None})
-        logging.debug("register response: status '" + str(response.status_code) + "' response body: '"+str(response.json())+"'")
+        logging.debug("get events response: status '" + str(response.status_code) + "' response body: '"+str(response.json())+"'")
+        logging.debug("get events: self.logged_in = '"+str(self.logged_in)+"' and self.heartbeat = '"+str(self.heartbeat+"' and self.startup = '"+str(self.startup))
         if response.status_code != 200:
             logging.error("error during get events, status: " + str(response.status_code))
             return
         #elif (Status == 200 and self.logged_in and self.heartbeat and (not self.startup)):
         elif (response.status_code == 200 and self.logged_in and self.heartbeat and (not self.startup)):
             #strData = Data["Data"].decode("utf-8", "ignore")
-            #strData = response.json()["Data"]
             strData = response.json()
 
-            if (not "DeviceStateChangedEvent" in strData):
-              logging.debug("no DeviceStateChangedEvent found: " + str(strData))
-              return
+            if (not "DeviceStateChangedEvent" in response.text):
+              logging.debug("no DeviceStateChangedEvent found in response: " + str(strData))
+              #return
 
-            #self.events = json.loads(strData)
             self.events = strData
 
             if (self.events):
