@@ -17,7 +17,11 @@ First: sudo apt-get install python3 libpython3-dev libpython3.7-dev
 
 Then go in your Domoticz directory using a command line and open the plugins directory.
 
-Run: git clone https://github.com/nonolk/domoticz_tahoma_blind.git
+Run: git clone https://github.com/MadPatrick/somfy
+
+cd somfy/
+
+git checkout refactorTahoma
 
 Restart Domoticz with sudo systemctl restart domoticz.
 
