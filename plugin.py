@@ -605,7 +605,7 @@ class BasePlugin:
         response = requests.post(url, headers=Headers, timeout=self.timeout)
         #self.httpConn.Send({'Verb':'POST', 'Headers': Headers, 'URL':'/enduser-mobile-web/enduserAPI/events/'+self.listenerId+'/fetch', 'Data': None})
         logging.debug("get events response: status '" + str(response.status_code) + "' response body: '"+str(response.json())+"'")
-        logging.debug("get events: self.logged_in = '"+str(self.logged_in)+"' and self.heartbeat = '"+str(self.heartbeat+"' and self.startup = '"+str(self.startup))
+        logging.debug("get events: self.logged_in = '"+str(self.logged_in)+"' and self.heartbeat = '"+str(self.heartbeat)+"' and self.startup = '"+str(self.startup))
         if response.status_code != 200:
             logging.error("error during get events, status: " + str(response.status_code))
             return
