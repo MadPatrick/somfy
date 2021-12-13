@@ -598,7 +598,7 @@ class BasePlugin:
                 else:
                   found = False
         self.startup = False
-        self.update_devices_status(self.filtered_devices)
+        self.get_events()
 
     def get_events(self):
         logging.debug("start get events")
