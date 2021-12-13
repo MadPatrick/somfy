@@ -4,7 +4,7 @@
 # FirstFree function courtesy of @moroen https://github.com/moroen/IKEA-Tradfri-plugin
 # All credits for the plugin are for Nonolk, who is the origin plugin creator
 """
-<plugin key="tahomaIO" name="Somfy Tahoma or Conexoon plugin" author="MadPatrick" version="1.0.22" externallink="https://github.com/MadPatrick/somfy">
+<plugin key="tahomaIO" name="Somfy Tahoma or Conexoon plugin" author="MadPatrick" version="1.0.23" externallink="https://github.com/MadPatrick/somfy">
     <description>
 	<br/><h2>Somfy Tahoma/Conexoon plugin</h2><br/>
         <ul style="list-style-type:square">
@@ -387,8 +387,9 @@ class BasePlugin:
           logging.info("Return status"+str(response.status_code))
 
     def update_devices_status(self, Updated_devices):
-        logging.debug("updating device status on data: '"+str(Updated_devices)+"'")
+        logging.debug("updating device status self.startup = "+str(self.startup)+"on data: "+str(Updated_devices))
         for dev in Devices:
+           logging.debug("update_devices_status: checking Domoticz device: "+Devices[dev].Name)
            for device in Updated_devices:
 
              if (Devices[dev].DeviceID == device["deviceURL"]) and (device["deviceURL"].startswith("io://")):
@@ -401,6 +402,7 @@ class BasePlugin:
                else:
                    states = device["deviceStates"]
                    if (device["name"] != "DeviceStateChangedEvent"):
+                       logging.debug("update_devices_status: device['name'] != DeviceStateChangedEvent: "+str(device["name"])+": breaking out")
                        break
 
                for state in states:
@@ -418,7 +420,7 @@ class BasePlugin:
                       int_level = 0
                     if (level != int_level):
 
-                      Domoticz.Info("Updating device:"+Devices[dev].Name)
+                      Domoticz.Status("Updating device:"+Devices[dev].Name)
                       logging.info("Updating device:"+Devices[dev].Name)
                       if (level == 0):
                         Devices[dev].Update(0,"0")
