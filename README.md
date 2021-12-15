@@ -1,6 +1,6 @@
 # Somfy plugin for Domoticz
 Original script was written by Nonolk : https://github.com/nonolk/domoticz_tahoma_blind.git
-
+Special thanks to JanJaap who did the rewritting of the plugin
 
 Domoticz plugin writen in Python to first support Somfy IO roller shutters using Tahoma/Connexoon. 
 Basic support of RTS (Open/Close) is also included without return state (limitation due to RTS), it means for RTS the state of the device won't be updated if the device state is modified outside of domoticz.
