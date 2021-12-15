@@ -1,4 +1,4 @@
-# domoticz_tahoma_blind
+# Somfy plugin for Domoticz
 Original script was written by Nonolk : https://github.com/nonolk/domoticz_tahoma_blind.git
 
 
