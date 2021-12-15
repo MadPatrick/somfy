@@ -1,5 +1,6 @@
 # Somfy plugin for Domoticz
 Original script was written by Nonolk : https://github.com/nonolk/domoticz_tahoma_blind.git
+
 Special thanks to JanJaap who did the rewritting of the plugin
 
 Domoticz plugin writen in Python to first support Somfy IO roller shutters using Tahoma/Connexoon. 
