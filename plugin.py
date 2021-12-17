@@ -359,6 +359,7 @@ class BasePlugin:
         logging.debug("start get events")
         Headers = { 'Host': self.srvaddr,"Connection": "keep-alive","Accept-Encoding": "gzip, deflate", "Accept": "*/*", "Content-Type": "application/json", "Cookie": self.cookie}
         url = self.base_url + '/enduser-mobile-web/enduserAPI/events/'+self.listenerId+'/fetch'
+
         for i in range(1,4):
             try:
                 response = requests.post(url, headers=Headers, timeout=self.timeout)
