@@ -4,7 +4,7 @@
 # FirstFree function courtesy of @moroen https://github.com/moroen/IKEA-Tradfri-plugin
 # All credits for the plugin are for Nonolk, who is the origin plugin creator
 """
-<plugin key="tahomaIO" name="Somfy Tahoma or Conexoon plugin" author="MadPatrick" version="1.0.23" externallink="https://github.com/MadPatrick/somfy">
+<plugin key="tahomaIO" name="Somfy Tahoma or Conexoon plugin" author="MadPatrick" version="1.1.0" externallink="https://github.com/MadPatrick/somfy">
     <description>
 	<br/><h2>Somfy Tahoma/Conexoon plugin</h2><br/>
         <ul style="list-style-type:square">
@@ -41,6 +41,8 @@ import json
 import sys
 import requests
 import logging
+import exceptions
+import time
 
 class BasePlugin:
     enabled = False
@@ -148,21 +150,26 @@ class BasePlugin:
             self.runCounter = int(Parameters['Mode2'])            
 
             if (self.cookie and self.logged_in and (not self.startup)):
-              if (not self.logged_in):
-                self.tahoma_login(str(Parameters["Username"]), str(Parameters["Password"]))
-              else:
-                self.get_events()
-              self.heartbeat = True
+                if (not self.logged_in):
+                    self.tahoma_login(str(Parameters["Username"]), str(Parameters["Password"]))
+                else:
+                    try:
+                        self.get_events()
+                    except (exceptions.TooManyRetries, exceptions.FailureWithErrorCode, exceptions.FailureWithoutErrorCode) as exp:
+                        Domoticz.Error("Failed to request data: " + str(exp))
+                        logging.error("Failed to request data: " + str(exp))
+                        return
+                self.heartbeat = True
 
             elif (self.heartbeat and (self.con_delay < self.wait_delay) and (not self.logged_in)):
-              self.con_delay +=1
-              Domoticz.Status("Too many connections waiting before authenticating again")
+                self.con_delay +=1
+                Domoticz.Status("Too many connections waiting before authenticating again")
 
             elif (self.heartbeat and (self.con_delay == self.wait_delay) and (not self.logged_in)):
-              if (not self.logged_in):
-                self.tahoma_login(str(Parameters["Username"]), str(Parameters["Password"]))
-              self.heartbeat =True
-              self.con_delay = 0
+                if (not self.logged_in):
+                    self.tahoma_login(str(Parameters["Username"]), str(Parameters["Password"]))
+                self.heartbeat =True
+                self.con_delay = 0
         else:
             logging.debug("Polling unit in " + str(self.runCounter) + " heartbeats.")
 
@@ -352,39 +359,44 @@ class BasePlugin:
         logging.debug("start get events")
         Headers = { 'Host': self.srvaddr,"Connection": "keep-alive","Accept-Encoding": "gzip, deflate", "Accept": "*/*", "Content-Type": "application/json", "Cookie": self.cookie}
         url = self.base_url + '/enduser-mobile-web/enduserAPI/events/'+self.listenerId+'/fetch'
-        response = requests.post(url, headers=Headers, timeout=self.timeout)
-        #self.httpConn.Send({'Verb':'POST', 'Headers': Headers, 'URL':'/enduser-mobile-web/enduserAPI/events/'+self.listenerId+'/fetch', 'Data': None})
-        logging.debug("get events response: status '" + str(response.status_code) + "' response body: '"+str(response.json())+"'")
-        logging.debug("get events: self.logged_in = '"+str(self.logged_in)+"' and self.heartbeat = '"+str(self.heartbeat)+"' and self.startup = '"+str(self.startup))
-        if response.status_code != 200:
-            logging.error("error during get events, status: " + str(response.status_code))
-            return
-        #elif (Status == 200 and self.logged_in and self.heartbeat and (not self.startup)):
-        #elif (response.status_code == 200 and self.logged_in and self.heartbeat and (not self.startup)):
-        elif (response.status_code == 200 and self.logged_in and (not self.startup)):
-            #strData = Data["Data"].decode("utf-8", "ignore")
-            strData = response.json()
 
-            if (not "DeviceStateChangedEvent" in response.text):
-              logging.debug("get_events: no DeviceStateChangedEvent found in response: " + str(strData))
-              return
+        for i in range(1,4):
+            try:
+                response = requests.post(url, headers=Headers, timeout=self.timeout)
+                #self.httpConn.Send({'Verb':'POST', 'Headers': Headers, 'URL':'/enduser-mobile-web/enduserAPI/events/'+self.listenerId+'/fetch', 'Data': None})
+                logging.debug("get events response: status '" + str(response.status_code) + "' response body: '"+str(response.json())+"'")
+                logging.debug("get events: self.logged_in = '"+str(self.logged_in)+"' and self.heartbeat = '"+str(self.heartbeat)+"' and self.startup = '"+str(self.startup))
+                if response.status_code != 200:
+                    logging.error("error during get events, status: " + str(response.status_code))
+                    return
+                elif (response.status_code == 200 and self.logged_in and (not self.startup)):
+                    strData = response.json()
 
-            self.events = strData
+                    if (not "DeviceStateChangedEvent" in response.text):
+                      logging.debug("get_events: no DeviceStateChangedEvent found in response: " + str(strData))
+                      return
 
-            if (self.events):
-                filtered_events = list()
+                    self.events = strData
 
-                for event in self.events:
-                    if (event["name"] == "DeviceStateChangedEvent"):
-                        logging.debug("get_events: add event: URL: '"+event["deviceURL"]+"' num states: '"+str(len(event["deviceStates"]))+"'")
-                        filtered_events.append(event)
+                    if (self.events):
+                        filtered_events = list()
 
-                self.update_devices_status(filtered_events)
+                        for event in self.events:
+                            if (event["name"] == "DeviceStateChangedEvent"):
+                                logging.debug("get_events: add event: URL: '"+event["deviceURL"]+"' num states: '"+str(len(event["deviceStates"]))+"'")
+                                filtered_events.append(event)
 
-        # elif (response.status_code == 200 and (not self.heartbeat)):
-          # return
+                        self.update_devices_status(filtered_events)
+
+                # elif (response.status_code == 200 and (not self.heartbeat)):
+                  # return
+                else:
+                  logging.info("Return status"+str(response.status_code))
+            except requests.exceptions.RequestException as exp:
+                logging.error("get_events RequestException: " + str(exp))
+            time.sleep(i ** 3)
         else:
-          logging.info("Return status"+str(response.status_code))
+            raise exceptions.TooManyRetries
 
     def update_devices_status(self, Updated_devices):
         logging.debug("updating device status self.startup = "+str(self.startup)+"on data: "+str(Updated_devices))
