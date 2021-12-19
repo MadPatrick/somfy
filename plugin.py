@@ -114,14 +114,14 @@ class BasePlugin:
         params = []
 
         if (str(Command) == "Off"):
-          commands["name"] = "close"
+            commands["name"] = "close"
         elif (str(Command) == "On"):
-          commands["name"] = "open"
+            commands["name"] = "open"
         elif ("Set Level" in str(Command)):
-          commands["name"] = "setClosure"
-          tmp = 100 - int(Level)
-          params.append(tmp)
-          commands["parameters"] = params
+            commands["name"] = "setClosure"
+            tmp = 100 - int(Level)
+            params.append(tmp)
+            commands["parameters"] = params
 
         commands_serialized.append(commands)
         action["deviceURL"] = Devices[Unit].DeviceID
@@ -132,13 +132,18 @@ class BasePlugin:
 
         #if (not self.httpConn.Connected()):
         if (not self.logged_in):
-          logging.info("Not logged in, must connect")
-          self.command = True
-          self.tahoma_login(str(Parameters["Username"]), str(Parameters["Password"]))
+            logging.info("Not logged in, must connect")
+            self.command = True
+            self.tahoma_login(str(Parameters["Username"]), str(Parameters["Password"]))
         else:
-          self.tahoma_command()
-          self.heartbeat = False
-          self.actions_serialized = []
+            try:
+                self.tahoma_command()
+            except (exceptions.TooManyRetries, exceptions.FailureWithErrorCode, exceptions.FailureWithoutErrorCode) as exp:
+                Domoticz.Error("Failed to send command: " + str(exp))
+                logging.error("Failed to send command: " + str(exp))
+                return
+            self.heartbeat = False
+            self.actions_serialized = []
 
     def onDisconnect(self, Connection):
         return
@@ -228,13 +233,19 @@ class BasePlugin:
         return self.logged_in
 
     def tahoma_command(self):
+        timeout = 4
         logging.debug("start command")
         Headers = { 'Host': self.srvaddr, "Connection": "keep-alive","Accept-Encoding": "gzip, deflate", "Accept": "*/*", "Content-Type": "application/json", "Cookie": self.cookie}
         url = self.base_url + '/enduser-mobile-web/enduserAPI/exec/apply'
         #self.httpConn.Send({'Verb':'POST', 'Headers': Headers, 'URL':'/enduser-mobile-web/enduserAPI/exec/apply', 'Data': self.json_data})
         logging.debug("onCommand: headers: '"+str(Headers)+"', data '"+str(self.json_data)+"'")
-        response = requests.post(url, headers=Headers, data=self.json_data, timeout=self.timeout)
         logging.info("Sending command to tahoma api")
+        try:
+            response = requests.post(url, headers=Headers, data=self.json_data, timeout=timeout)
+        except requests.exceptions.RequestException as exp:
+            logging.error("Send command returns RequestException: " + str(exp))
+            Domoticz.Error("Send command returns RequestException: " + str(exp))
+
         logging.debug("command response: status '" + str(response.status_code) + "' response body: '"+str(response.json())+"'")
         if response.status_code != 200:
             logging.error("error during command, status: " + str(response.status_code))
