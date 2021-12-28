@@ -28,3 +28,9 @@ class FailureWithoutErrorCode(TahomaException):
     def __init__(self):
         self.message = "Failed to call Tahoma/Somfy API (no return code )"
         super().__init__(self.message)
+
+class LoginFailure(TahomaException):
+    """Too many retries to call API"""
+    def __init__(self, login_message = "Failed to login"):
+        self.message = login_message
+        super().__init__(self.message)
