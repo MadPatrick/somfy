@@ -4,7 +4,7 @@
 # FirstFree function courtesy of @moroen https://github.com/moroen/IKEA-Tradfri-plugin
 # All credits for the plugin are for Nonolk, who is the origin plugin creator
 """
-<plugin key="tahomaIO" name="Somfy Tahoma or Conexoon plugin" author="MadPatrick" version="1.1.1" externallink="https://github.com/MadPatrick/somfy">
+<plugin key="tahomaIO" name="Somfy Tahoma or Conexoon plugin" author="MadPatrick" version="1.1.2" externallink="https://github.com/MadPatrick/somfy">
     <description>
 	<br/><h2>Somfy Tahoma/Conexoon plugin</h2><br/>
         <ul style="list-style-type:square">
@@ -47,7 +47,6 @@ import time
 class BasePlugin:
     enabled = False
     def __init__(self):
-        #self.httpConn = None
         self.srvaddr = "tahomalink.com"
         self.base_url = "https://tahomalink.com:443"
         self.cookie = ""
@@ -81,15 +80,12 @@ class BasePlugin:
         logging.info('started plugin')
         self.runCounter = int(Parameters['Mode2'])
         
-        #self.httpConn = Domoticz.Connection(Name="Secure Connection", Transport="TCP/IP", Protocol="HTTPS", Address=self.srvaddr, Port="443")
-        #self.httpConn.Connect()
         logging.debug("starting to log in")
         self.tahoma_login(str(Parameters["Username"]), str(Parameters["Password"]))
         
     def onStop(self):
         logging.info("stopping plugin")
         self.heartbeat = False
-        #self.httpConn = None
 
     def onConnect(self, Connection, Status, Description):
         logging.debug("onConnect: Connection: '"+str(Connection)+"', Status: '"+str(Status)+"', Description: '"+str(Description)+"' self.logged_in: '"+str(self.logged_in)+"'")
@@ -132,7 +128,6 @@ class BasePlugin:
         data = {"label": "Domoticz - "+Devices[Unit].Name+" - "+commands["name"], "actions": self.actions_serialized}
         self.json_data = json.dumps(data, indent=None, sort_keys=True)
 
-        #if (not self.httpConn.Connected()):
         if (not self.logged_in):
             logging.info("Not logged in, must connect")
             self.command = True
@@ -188,26 +183,16 @@ class BasePlugin:
         response = requests.post(url, data=data, headers=headers, timeout=self.timeout)
         logging.debug("login response: status code: '"+ str(response.status_code)+"'")
 
-        # Login = str(Parameters["Username"])
-        # pwd = str(Parameters["Password"])
-        # postData = "userId="+urllib.parse.quote(Login)+"&userPassword="+urllib.parse.quote(pwd)+""
-        # self.httpConn.Send({'Verb':'POST', 'Headers': Headers, 'URL':'/enduser-mobile-web/enduserAPI/login', 'Data': postData})
-        Status = response.status_code #int(Data["Status"])
+        Status = response.status_code 
         Data = response.json()
         logging.debug("Login respone: status_code: '"+str(Status)+"' reponse body: '"+str(Data)+"'")
 
         if (Status == 200 and not self.logged_in):
             self.logged_in = True
-            logging.info("Tahoma auth succeed")
-            self.cookie = response.cookies
+            logging.info("Tahoma authentication succeeded")
+            #self.cookie = response.cookies
             self.cookie = response.headers["Set-Cookie"]
             logging.debug("login: cookies: '"+ str(response.cookies)+"', headers: '"+str(response.headers)+"'")
-            # if "Headers" in Data:
-                # tmp = Data["Headers"]
-                # self.cookie = tmp["Set-Cookie"]
-            # else:
-                # logging.error("Headers expected but not received")
-                # return
             self.register_listener()
 
         elif ((Status == 401) or (Status == 400)):
@@ -239,7 +224,6 @@ class BasePlugin:
         logging.debug("start command")
         Headers = { 'Host': self.srvaddr, "Connection": "keep-alive","Accept-Encoding": "gzip, deflate", "Accept": "*/*", "Content-Type": "application/json", "Cookie": self.cookie}
         url = self.base_url + '/enduser-mobile-web/enduserAPI/exec/apply'
-        #self.httpConn.Send({'Verb':'POST', 'Headers': Headers, 'URL':'/enduser-mobile-web/enduserAPI/exec/apply', 'Data': self.json_data})
         logging.debug("onCommand: headers: '"+str(Headers)+"', data '"+str(self.json_data)+"'")
         logging.info("Sending command to tahoma api")
         try:
@@ -261,7 +245,6 @@ class BasePlugin:
         Headers = { 'Host': self.srvaddr,"Connection": "keep-alive","Accept-Encoding": "gzip, deflate", "Accept": "*/*", "Content-Type": "application/json", "Cookie": self.cookie}
         url = self.base_url + '/enduser-mobile-web/enduserAPI/events/register'
         response = requests.post(url, headers=Headers, timeout=self.timeout)
-        #self.httpConn.Send({'Verb':'POST', 'Headers': Headers, 'URL':'/enduser-mobile-web/enduserAPI/events/register', 'Data': None})
         logging.debug("register response: status '" + str(response.status_code) + "' response body: '"+str(response.json())+"'")
         if response.status_code != 200:
             logging.error("error during register, status: " + str(response.status_code))
@@ -272,9 +255,6 @@ class BasePlugin:
         else:
             logging.error("Data expected in response but  not found")
             return
-        # #id = json.loads(strData)
-        # id = strData
-        # self.listenerId = id['id']
         self.listenerId = Data['id']
         logging.info("Tahoma listener registred")
         self.refresh = False
@@ -284,7 +264,6 @@ class BasePlugin:
     def get_devices(self):
         logging.debug("start get devices")
         Headers = { 'Host': self.srvaddr,"Connection": "keep-alive","Accept-Encoding": "gzip, deflate", "Accept": "*/*", "Content-Type": "application/x-www-form-urlencoded", "Cookie": self.cookie}
-        #self.httpConn.Send({'Verb':'GET', 'Headers': Headers, 'URL':'/enduser-mobile-web/enduserAPI/setup/devices'})
         url = self.base_url + '/enduser-mobile-web/enduserAPI/setup/devices'
         response = requests.get(url, headers=Headers, timeout=self.timeout)
         logging.debug("get device response: url '" + str(response.url) + "' response headers: '"+str(response.headers)+"'")
@@ -376,7 +355,6 @@ class BasePlugin:
         for i in range(1,4):
             try:
                 response = requests.post(url, headers=Headers, timeout=self.timeout)
-                #self.httpConn.Send({'Verb':'POST', 'Headers': Headers, 'URL':'/enduser-mobile-web/enduserAPI/events/'+self.listenerId+'/fetch', 'Data': None})
                 logging.debug("get events response: status '" + str(response.status_code) + "' response body: '"+str(response.json())+"'")
                 logging.debug("get events: self.logged_in = '"+str(self.logged_in)+"' and self.heartbeat = '"+str(self.heartbeat)+"' and self.startup = '"+str(self.startup))
                 if response.status_code != 200:
