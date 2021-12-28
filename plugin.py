@@ -4,7 +4,7 @@
 # FirstFree function courtesy of @moroen https://github.com/moroen/IKEA-Tradfri-plugin
 # All credits for the plugin are for Nonolk, who is the origin plugin creator
 """
-<plugin key="tahomaIO" name="Somfy Tahoma or Conexoon plugin" author="MadPatrick" version="1.1.0" externallink="https://github.com/MadPatrick/somfy">
+<plugin key="tahomaIO" name="Somfy Tahoma or Conexoon plugin" author="MadPatrick" version="1.1.1" externallink="https://github.com/MadPatrick/somfy">
     <description>
 	<br/><h2>Somfy Tahoma/Conexoon plugin</h2><br/>
         <ul style="list-style-type:square">
@@ -380,7 +380,7 @@ class BasePlugin:
                 logging.debug("get events response: status '" + str(response.status_code) + "' response body: '"+str(response.json())+"'")
                 logging.debug("get events: self.logged_in = '"+str(self.logged_in)+"' and self.heartbeat = '"+str(self.heartbeat)+"' and self.startup = '"+str(self.startup))
                 if response.status_code != 200:
-                    logging.error("error during get events, status: " + str(response.status_code))
+                    logging.error("error during get events, status: " + str(response.status_code) + ", " + str(response.text))
                     return
                 elif (response.status_code == 200 and self.logged_in and (not self.startup)):
                     strData = response.json()
