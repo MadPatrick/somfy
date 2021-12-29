@@ -8,7 +8,7 @@ class Tahoma:
     def __init__(self):
         self.srvaddr = "tahomalink.com"
         self.base_url = "https://tahomalink.com:443"
-        self.cookie = ""
+        self.cookie = None
         self.listenerId = None
         self.__logged_in = False
         self.startup = True
@@ -50,7 +50,7 @@ class Tahoma:
             #self.cookie = response.cookies
             self.cookie = response.headers["Set-Cookie"]
             logging.debug("login: cookies: '"+ str(response.cookies)+"', headers: '"+str(response.headers)+"'")
-            self.register_listener()
+            #self.register_listener()
 
         elif ((Status == 401) or (Status == 400)):
             strData = Data["error"]
@@ -116,9 +116,9 @@ class Tahoma:
         logging.info("Tahoma listener registred")
         self.refresh = False
         logging.info("Checking setup status at startup")
-        self.get_devices()
+        #self.get_devices()
 
-    def get_devices(self):
+    def get_devices(self, Devices):
         logging.debug("start get devices")
         Headers = { 'Host': self.srvaddr,"Connection": "keep-alive","Accept-Encoding": "gzip, deflate", "Accept": "*/*", "Content-Type": "application/x-www-form-urlencoded", "Cookie": self.cookie}
         url = self.base_url + '/enduser-mobile-web/enduserAPI/setup/devices'

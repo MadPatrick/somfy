@@ -4,7 +4,7 @@
 # FirstFree function courtesy of @moroen https://github.com/moroen/IKEA-Tradfri-plugin
 # All credits for the plugin are for Nonolk, who is the origin plugin creator
 """
-<plugin key="tahomaIO" name="Somfy Tahoma or Conexoon plugin" author="MadPatrick" version="2.0.0" externallink="https://github.com/MadPatrick/somfy">
+<plugin key="tahomaIO" name="Somfy Tahoma or Conexoon plugin" author="MadPatrick" version="2.0.1" externallink="https://github.com/MadPatrick/somfy">
     <description>
 	<br/><h2>Somfy Tahoma/Conexoon plugin</h2><br/>
         <ul style="list-style-type:square">
@@ -86,6 +86,14 @@ class BasePlugin:
             self.tahoma.tahoma_login(str(Parameters["Username"]), str(Parameters["Password"]))
         except exceptions.LoginFailure as exp:
             Domoticz.Error("Failed to login: " + str(exp))
+            return
+        
+        if self.tahoma.logged_in:
+            self.tahoma.register_listener()
+
+        if self.tahoma.logged_in:
+            self.tahoma.self.get_devices(Devices)
+            
         
     def onStop(self):
         logging.info("stopping plugin")
@@ -138,6 +146,8 @@ class BasePlugin:
             logging.info("Not logged in, must connect")
             self.command = True
             self.tahoma.tahoma_login(str(Parameters["Username"]), str(Parameters["Password"]))
+            if self.tahoma.logged_in:
+                self.tahoma.register_listener()
         else:
             try:
                 event_list = self.tahoma.tahoma_command(self.json_data)
@@ -162,6 +172,8 @@ class BasePlugin:
             if (self.tahoma.logged_in and (not self.tahoma.startup)):
                 if (not self.tahoma.logged_in):
                     self.tahoma.tahoma_login(str(Parameters["Username"]), str(Parameters["Password"]))
+                    if self.tahoma.logged_in:
+                        self.tahoma.register_listener()
                 else:
                     try:
                         event_list = self.tahoma.get_events()
@@ -180,6 +192,8 @@ class BasePlugin:
             elif (self.heartbeat and (self.con_delay == self.wait_delay) and (not self.tahoma.logged_in)):
                 if (not self.tahoma.logged_in):
                     self.tahoma.tahoma_login(str(Parameters["Username"]), str(Parameters["Password"]))
+                    if self.tahoma.logged_in:
+                        self.tahoma.register_listener()
                 self.heartbeat = True
                 self.con_delay = 0
         else:
