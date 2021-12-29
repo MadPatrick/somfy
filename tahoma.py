@@ -27,7 +27,8 @@ class Tahoma:
 
     @property
     def logged_in(self):
-        if self.__logged_in and (self.__expiry_date < datetime.datetime.now()):
+        logging.debug("checking logged in status: self.__logged_in = 3"+str(self.__logged_in)+" and self.__expiry_date <= datetime.datetime.now() = " + str(self.__expiry_date <= datetime.datetime.now()))
+        if self.__logged_in and (self.__expiry_date <= datetime.datetime.now()):
             return True
         else:
             return False
