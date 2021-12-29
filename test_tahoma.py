@@ -8,7 +8,7 @@ import exceptions
 logging.basicConfig(format='%(asctime)s - %(levelname)-8s - %(filename)-18s - %(message)s', filename='somfy_test.log',
                     level=logging.DEBUG)
 
-menuoptions = ['0 exit',"1 log in", "2 register", "3 get devices", "4 get events", "5 send command"]
+menuoptions = ['0 exit',"1 log in", "2 register", "3 get devices", "4 get events", "5 send command", "6 check log in"]
 mymenu = consolemenu.SelectionMenu(menuoptions)
 
 tahoma = tahoma.Tahoma()
@@ -36,6 +36,7 @@ if True:
         if x == 5: 
             data = '{"actions": [{"commands": [{"name": "open"}], "deviceURL": "io://1237-2024-7920/10464619"}], "label": "Domoticz - Somfy - Kamer_Klein - open"}'
             print(tahoma.tahoma_command(json.dumps(data)))
+        if x == 6: print(str(tahoma.logged_in))
         input("Press Enter to continue...")
         # except (ValueError) as err:
             # print("error in menu keuze")
