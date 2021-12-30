@@ -148,17 +148,17 @@ class BasePlugin:
             self.tahoma.tahoma_login(str(Parameters["Username"]), str(Parameters["Password"]))
             if self.tahoma.logged_in:
                 self.tahoma.register_listener()
-        else:
-            try:
-                event_list = self.tahoma.tahoma_command(self.json_data)
-            except (exceptions.TooManyRetries, exceptions.FailureWithErrorCode, exceptions.FailureWithoutErrorCode) as exp:
-                Domoticz.Error("Failed to send command: " + str(exp))
-                logging.error("Failed to send command: " + str(exp))
-                return
-            if len(event_list) > 0:
-                self.update_devices_status(event_list)
-            self.heartbeat = False
-            self.actions_serialized = []
+
+        try:
+            event_list = self.tahoma.tahoma_command(self.json_data)
+        except (exceptions.TooManyRetries, exceptions.FailureWithErrorCode, exceptions.FailureWithoutErrorCode) as exp:
+            Domoticz.Error("Failed to send command: " + str(exp))
+            logging.error("Failed to send command: " + str(exp))
+            return
+        if len(event_list) > 0:
+            self.update_devices_status(event_list)
+        self.heartbeat = False
+        self.actions_serialized = []
 
     def onDisconnect(self, Connection):
         return
