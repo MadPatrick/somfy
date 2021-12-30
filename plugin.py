@@ -4,7 +4,7 @@
 # FirstFree function courtesy of @moroen https://github.com/moroen/IKEA-Tradfri-plugin
 # All credits for the plugin are for Nonolk, who is the origin plugin creator
 """
-<plugin key="tahomaIO" name="Somfy Tahoma or Conexoon plugin" author="MadPatrick" version="2.0.2" externallink="https://github.com/MadPatrick/somfy">
+<plugin key="tahomaIO" name="Somfy Tahoma or Conexoon plugin" author="MadPatrick" version="2.0.3" externallink="https://github.com/MadPatrick/somfy">
     <description>
 	<br/><h2>Somfy Tahoma/Conexoon plugin</h2><br/>
         <ul style="list-style-type:square">
@@ -181,8 +181,8 @@ class BasePlugin:
                         Domoticz.Error("Failed to request data: " + str(exp))
                         logging.error("Failed to request data: " + str(exp))
                         return
-                if len(event_list) > 0:
-                    self.update_devices_status(event_list)
+                    if len(event_list) > 0:
+                        self.update_devices_status(event_list)
                 self.heartbeat = True
 
             elif (self.heartbeat and (self.con_delay < self.wait_delay) and (not self.tahoma.logged_in)):
