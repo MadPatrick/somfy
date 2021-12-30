@@ -4,7 +4,7 @@
 # FirstFree function courtesy of @moroen https://github.com/moroen/IKEA-Tradfri-plugin
 # All credits for the plugin are for Nonolk, who is the origin plugin creator
 """
-<plugin key="tahomaIO" name="Somfy Tahoma or Conexoon plugin" author="MadPatrick" version="2.0.3" externallink="https://github.com/MadPatrick/somfy">
+<plugin key="tahomaIO" name="Somfy Tahoma or Conexoon plugin" author="MadPatrick" version="2.0.4" externallink="https://github.com/MadPatrick/somfy">
     <description>
 	<br/><h2>Somfy Tahoma/Conexoon plugin</h2><br/>
         <ul style="list-style-type:square">
@@ -77,7 +77,7 @@ class BasePlugin:
             logging.basicConfig(format='%(asctime)s - %(levelname)-8s - %(filename)-18s - %(message)s', filename='somfy.log',level=logging.DEBUG)
         else:
             logging.basicConfig(format='%(asctime)s - %(levelname)-8s - %(filename)-18s - %(message)s', filename='somfy.log',level=logging.INFO)
-        logging.info('started plugin')
+        logging.info("starting plugin version "+Parameters["Version"])
         self.runCounter = int(Parameters['Mode2'])
         
         logging.debug("starting to log in")
@@ -149,6 +149,7 @@ class BasePlugin:
             if self.tahoma.logged_in:
                 self.tahoma.register_listener()
 
+        event_list = []
         try:
             event_list = self.tahoma.tahoma_command(self.json_data)
         except (exceptions.TooManyRetries, exceptions.FailureWithErrorCode, exceptions.FailureWithoutErrorCode) as exp:
