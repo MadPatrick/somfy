@@ -116,7 +116,7 @@ class BasePlugin:
         else:
           logging.info("Failed to connect to tahoma api")
 
-    def onMessage(self, Connection, Data)
+    def onMessage(self, Connection, Data):
         Domoticz.Error("onMessage called but not implemented")
         Domoticz.Debug("onMessage data: "+str(Data))
 
