@@ -179,15 +179,15 @@ class BasePlugin:
                     self.tahoma.tahoma_login(str(Parameters["Username"]), str(Parameters["Password"]))
                     if self.tahoma.logged_in:
                         self.tahoma.register_listener()
-                else:
-                    try:
-                        event_list = self.tahoma.get_events()
-                    except (exceptions.TooManyRetries, exceptions.FailureWithErrorCode, exceptions.FailureWithoutErrorCode) as exp:
-                        Domoticz.Error("Failed to request data: " + str(exp))
-                        logging.error("Failed to request data: " + str(exp))
-                        return
-                    if len(event_list) > 0:
-                        self.update_devices_status(event_list)
+                event_list = []
+                try:
+                    event_list = self.tahoma.get_events()
+                except (exceptions.TooManyRetries, exceptions.FailureWithErrorCode, exceptions.FailureWithoutErrorCode) as exp:
+                    Domoticz.Error("Failed to request data: " + str(exp))
+                    logging.error("Failed to request data: " + str(exp))
+                    return
+                if event_list is not None and len(event_list) > 0:
+                    self.update_devices_status(event_list)
                 self.heartbeat = True
 
             elif (self.heartbeat and (self.con_delay < self.wait_delay) and (not self.tahoma.logged_in)):
