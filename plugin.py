@@ -8,6 +8,7 @@
     <description>
 	<br/><h2>Somfy Tahoma/Conexoon plugin</h2><br/>
         <ul style="list-style-type:square">
+	    <li>version: 1.1.2</li>
             <li>This plugin require internet connection at all time.</li>
             <li>It controls the Somfy for IO Blinds or Screens</li>
             <li>Please provide your email and password used to connect Tahoma/Conexoon</li>
