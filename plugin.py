@@ -116,6 +116,10 @@ class BasePlugin:
         else:
           logging.info("Failed to connect to tahoma api")
 
+    def onMessage(self, Connection, Data)
+        Domoticz.Error("onMessage called but not implemented")
+        Domoticz.Debug("onMessage data: "+str(Data))
+
     def onCommand(self, Unit, Command, Level, Hue):
         logging.debug("onCommand: Unit: '"+str(Unit)+"', Command: '"+str(Command)+"', Level: '"+str(Level)+"', Hue: '"+str(Hue)+"'")
         commands_serialized = []
