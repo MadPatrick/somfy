@@ -3,6 +3,7 @@ import logging
 import exceptions
 import urllib.parse
 import datetime
+import Domoticz
 
 class Tahoma:
     def __init__(self):
@@ -119,7 +120,7 @@ class Tahoma:
         logging.info("Checking setup status at startup")
         #self.get_devices()
 
-    def get_devices(self, Devices):
+    def get_devices(self, Devices, firstFree):
         logging.debug("start get devices")
         Headers = { 'Host': self.srvaddr,"Connection": "keep-alive","Accept-Encoding": "gzip, deflate", "Accept": "*/*", "Content-Type": "application/x-www-form-urlencoded", "Cookie": self.cookie}
         url = self.base_url + '/enduser-mobile-web/enduserAPI/setup/devices'
@@ -180,7 +181,7 @@ class Tahoma:
                     found = True
                     break
                 if (not found):
-                 idx = firstFree()
+                 idx = firstFree
                  swtype = None
 
                  logging.debug("get_devices: Must create device: "+device["label"])
