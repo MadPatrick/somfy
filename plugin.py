@@ -4,14 +4,14 @@
 # FirstFree function courtesy of @moroen https://github.com/moroen/IKEA-Tradfri-plugin
 # All credits for the plugin are for Nonolk, who is the origin plugin creator
 """
-<plugin key="tahomaIO" name="Somfy Tahoma or Conexoon plugin" author="MadPatrick" version="1.1.2" externallink="https://github.com/MadPatrick/somfy">
+<plugin key="tahomaIO" name="Somfy Tahoma or Connexoon plugin" author="MadPatrick" version="1.1.2" externallink="https://github.com/MadPatrick/somfy">
     <description>
-	<br/><h2>Somfy Tahoma/Conexoon plugin</h2><br/>
+	<br/><h2>Somfy Tahoma/Connexoon plugin</h2><br/>
         <ul style="list-style-type:square">
 	    <li>version: 1.1.2</li>
             <li>This plugin require internet connection at all time.</li>
             <li>It controls the Somfy for IO Blinds or Screens</li>
-            <li>Please provide your email and password used to connect Tahoma/Conexoon</li>
+            <li>Please provide your email and password used to connect Tahoma/Connexoon</li>
         </ul>
 </description>
     <params>
@@ -70,7 +70,7 @@ class BasePlugin:
         return
 
     def onStart(self):
-        Domoticz.Status("Starting Tahoma blind plugin, logging to file somfy.logs")
+        Domoticz.Status("Starting Tahoma blind plugin, logging to file somfy.log")
         self.logger = logging.getLogger('root')
         if Parameters["Mode6"] == "Debug":
             Domoticz.Debugging(1)
