@@ -42,6 +42,9 @@ cd domoticz/plugins/somfy
 git pull
 ```
 
-Restart Domoticz with sudo systemctl restart domoticz.
+Restart Domoticz with 
+```
+sudo systemctl restart domoticz.
+```
 
 In the web UI, navigate to the Hardware page. In the hardware dropdown list there will be an entry called "Somfy Tahoma or conexoon IO blind plugin".
