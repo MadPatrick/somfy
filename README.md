@@ -12,7 +12,7 @@ The plugin currently support the following device types: roller Shutters, screen
 
 ## Somfy login
 
-You need to register you Somfy products and add them to your Tahoma or Connexxoon box
+You need to register you Somfy products and add them to your Tahoma or Connexoon box
 
 https://www.somfy.nl/nieuw-account-aanmaken
 
@@ -47,4 +47,4 @@ Restart Domoticz with
 sudo systemctl restart domoticz.
 ```
 
-In the web UI, navigate to the Hardware page. In the hardware dropdown list there will be an entry called "Somfy Tahoma or conexoon IO blind plugin".
+In the web UI, navigate to the Hardware page. In the hardware dropdown list there will be an entry called "Somfy Tahoma or Connexoon plugin".
