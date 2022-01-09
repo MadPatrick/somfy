@@ -218,6 +218,7 @@ class Tahoma:
                 #logging.debug("get events: self.__logged_in = '"+str(self.__logged_in)+"' and self.heartbeat = '"+str(self.heartbeat)+"' and self.startup = '"+str(self.startup))
                 if response.status_code != 200:
                     logging.error("error during get events, status: " + str(response.status_code) + ", " + str(response.text))
+                    self.__logged_in = False
                     return
                 elif (response.status_code == 200 and self.__logged_in and (not self.startup)):
                     strData = response.json()
