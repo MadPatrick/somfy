@@ -69,6 +69,7 @@ class BasePlugin:
         if os.path.exists(Parameters["Mode5"]):
             log_dir = Parameters["Mode5"] 
         else:
+            Domoticz.Status("Location {0} does not exist, logging to default location".format(Parameters["Mode5"]))
             log_dir = ""
         log_fullname = os.path.join(log_dir, self.log_filename)
         Domoticz.Status("Starting Tahoma blind plugin, logging to file {0}".format(log_fullname))
