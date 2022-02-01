@@ -4,16 +4,16 @@
 # FirstFree function courtesy of @moroen https://github.com/moroen/IKEA-Tradfri-plugin
 # All credits for the plugin are for Nonolk, who is the origin plugin creator
 """
-<plugin key="tahomaIO" name="Somfy Tahoma or Connexoon plugin" author="MadPatrick" version="2.0.8" externallink="https://github.com/MadPatrick/somfy">
+<plugin key="tahomaIO" name="Somfy Tahoma or Connexoon plugin" author="MadPatrick" version="2.0.9" externallink="https://github.com/MadPatrick/somfy">
     <description>
 	<br/><h2>Somfy Tahoma/Connexoon plugin</h2><br/>
         <ul style="list-style-type:square">
-	    <li>version: 2.0.8</li>
+	    <li>version: 2.0.9</li>
             <li>This plugin require internet connection at all time.</li>
             <li>It controls the Somfy for IO Blinds or Screens</li>
             <li>Please provide your email and password used to connect Tahoma/Connexoon</li>
         </ul>
-</description>
+    </description>
     <params>
         <param field="Username" label="Username" width="200px" required="true" default=""/>
         <param field="Password" label="Password" width="200px" required="true" default="" password="true"/>
@@ -25,6 +25,10 @@
                 <option label="10m" value="60"/>
                 <option label="15m" value="90"/>
             </options>
+        </param>
+        <param field="Mode5" label="Log file location" width="300px">
+            <description>Enter a location for the logfile (omit final /), or leave empty to create logfile in the domoticz directory.
+            <br/>Default directory: '/home/user/domoticz' for raspberry pi</description>
         </param>
         <param field="Mode6" label="Debug" width="75px">
             <options>
@@ -39,25 +43,17 @@
 import Domoticz
 import json
 import sys
-#import requests
 import logging
 import exceptions
 import time
 import tahoma
+import os
 
 class BasePlugin:
     enabled = False
     def __init__(self):
-        # self.srvaddr = "tahomalink.com"
-        # self.base_url = "https://tahomalink.com:443"
-        # self.cookie = ""
-        # self.listenerId = None
-        # self.logged_in = False
-        # self.startup = True
         self.heartbeat = False
         self.devices = None
-        # self.filtered_devices = None
-        # self.events = None
         self.heartbeat_delay = 1
         self.con_delay = 0
         self.wait_delay = 30
@@ -65,19 +61,25 @@ class BasePlugin:
         self.command = False
         self.refresh = True
         self.actions_serialized = []
-        #self.timeout = 10
         self.logger = None
+        self.log_filename = "somfy.log"
         return
 
     def onStart(self):
-        Domoticz.Status("Starting Tahoma blind plugin, logging to file somfy.log")
+        if os.path.exists(Parameters["Mode5"]):
+            log_dir = Parameters["Mode5"] 
+        else:
+            log_dir = ""
+        log_fullname = os.path.join(log_dir, self.log_filename)
+        Domoticz.Status("Starting Tahoma blind plugin, logging to file {0}".format(log_fullname))
         self.logger = logging.getLogger('root')
         if Parameters["Mode6"] == "Debug":
-            Domoticz.Debugging(1)
+            Domoticz.Debugging(2)
             DumpConfigToLog()
-            logging.basicConfig(format='%(asctime)s - %(levelname)-8s - %(filename)-18s - %(message)s', filename='somfy.log',level=logging.DEBUG)
+            logging.basicConfig(format='%(asctime)s - %(levelname)-8s - %(filename)-18s - %(message)s', filename=log_fullname,level=logging.DEBUG)
         else:
-            logging.basicConfig(format='%(asctime)s - %(levelname)-8s - %(filename)-18s - %(message)s', filename='somfy.log',level=logging.INFO)
+            logging.basicConfig(format='%(asctime)s - %(levelname)-8s - %(filename)-18s - %(message)s', filename=log_fullname,level=logging.INFO)
+        Domoticz.Debug("os.path.exists(Parameters['Mode5']) = {}".format(os.path.exists(Parameters["Mode5"])))
         logging.info("starting plugin version "+Parameters["Version"])
         self.runCounter = int(Parameters['Mode2'])
         
