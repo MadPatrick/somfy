@@ -3,7 +3,10 @@ import logging
 import exceptions
 import urllib.parse
 import datetime
-import Domoticz
+try:
+	import Domoticz
+except ImportError:
+	import fakeDomoticz as Domoticz
 
 class Tahoma:
     def __init__(self):
@@ -143,7 +146,16 @@ class Tahoma:
         self.filtered_devices = list()
         for device in self.devices:
             logging.debug("get_devices: Device name: "+device["label"]+" Device class: "+device["uiClass"])
-            if (((device["uiClass"] == "RollerShutter") or (device["uiClass"] == "ExteriorScreen") or (device["uiClass"] == "Screen") or (device["uiClass"] == "Awning") or (device["uiClass"] == "Pergola") or (device["uiClass"] == "GarageDoor") or (device["uiClass"] == "Window") or (device["uiClass"] == "VenetianBlind") or (device["uiClass"] == "ExteriorVenetianBlind")) and ((device["deviceURL"].startswith("io://")) or (device["deviceURL"].startswith("rts://")))):
+            if (((device["uiClass"] == "RollerShutter") 
+                or (device["uiClass"] == "ExteriorScreen") 
+                or (device["uiClass"] == "Screen") 
+                or (device["uiClass"] == "Awning") 
+                or (device["uiClass"] == "Pergola") 
+                or (device["uiClass"] == "GarageDoor") 
+                or (device["uiClass"] == "Window") 
+                or (device["uiClass"] == "VenetianBlind") 
+                or (device["uiClass"] == "ExteriorVenetianBlind")) 
+                and ((device["deviceURL"].startswith("io://")) or (device["deviceURL"].startswith("rts://")))):
                 self.filtered_devices.append(device)
 
         logging.debug("get_devices: devices found: "+str(len(Devices))+" self.startup: "+str(self.startup))
