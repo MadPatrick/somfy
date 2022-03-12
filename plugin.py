@@ -124,7 +124,52 @@ class BasePlugin:
         Domoticz.Error("onMessage called but not implemented")
         Domoticz.Debug("onMessage data: "+str(Data))
 
-    def onCommand(self, Unit, Command, Level, Hue):
+    def onCommand(self, DeviceId, Unit, Command, Level, Hue):
+        logging.debug("onCommand: DeviceId: '"+str(DeviceId)+"' Unit: '"+str(Unit)+"', Command: '"+str(Command)+"', Level: '"+str(Level)+"', Hue: '"+str(Hue)+"'")
+        commands_serialized = []
+        action = {}
+        commands = {}
+        params = []
+
+        if (str(Command) == "Off"):
+            commands["name"] = "close"
+        elif (str(Command) == "On"):
+            commands["name"] = "open"
+        elif ("Set Level" in str(Command)):
+            commands["name"] = "setClosure"
+            tmp = 100 - int(Level)
+            params.append(tmp)
+            commands["parameters"] = params
+
+        commands_serialized.append(commands)
+        action["deviceURL"] = DeviceID
+        action["commands"] = commands_serialized
+        self.actions_serialized.append(action)
+        logging.debug("preparing command: # commands: "+str(len(commands)))
+        logging.debug("preparing command: # actions_serialized: "+str(len(self.actions_serialized)))
+        data = {"label": "Domoticz - "+Devices[Unit].Name+" - "+commands["name"], "actions": self.actions_serialized}
+        self.json_data = json.dumps(data, indent=None, sort_keys=True)
+
+        if (not self.tahoma.logged_in):
+            logging.info("Not logged in, must connect")
+            self.command = True
+            self.tahoma.tahoma_login(str(Parameters["Username"]), str(Parameters["Password"]))
+            if self.tahoma.logged_in:
+                self.tahoma.register_listener()
+
+        event_list = []
+        try:
+            event_list = self.tahoma.tahoma_command(self.json_data)
+        except (exceptions.TooManyRetries, exceptions.FailureWithErrorCode, exceptions.FailureWithoutErrorCode) as exp:
+            Domoticz.Error("Failed to send command: " + str(exp))
+            logging.error("Failed to send command: " + str(exp))
+            return
+        if event_list is not None and len(event_list) > 0:
+            self.update_devices_status(event_list)
+        self.heartbeat = False
+        self.actions_serialized = []
+
+    def onCommand_legacy(self, Unit, Command, Level, Hue):
         logging.debug("onCommand: Unit: '"+str(Unit)+"', Command: '"+str(Command)+"', Level: '"+str(Level)+"', Hue: '"+str(Hue)+"'")
         commands_serialized = []
         action = {}
@@ -317,9 +362,9 @@ def onMessage(Connection, Data):
     global _plugin
     _plugin.onMessage(Connection, Data)
 
-def onCommand(Unit, Command, Level, Hue):
+def onCommand(DeviceId, Unit, Command, Level, Color):
     global _plugin
-    _plugin.onCommand(Unit, Command, Level, Hue)
+    _plugin.onCommand(DeviceId, Unit, Command, Level, Color)
 
 def onDisconnect(Connection):
     global _plugin
