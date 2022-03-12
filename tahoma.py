@@ -157,9 +157,12 @@ class Tahoma:
                 or (device["uiClass"] == "ExteriorVenetianBlind")) 
                 and ((device["deviceURL"].startswith("io://")) or (device["deviceURL"].startswith("rts://")))):
                 self.filtered_devices.append(device)
+            else:
+                logging.error("unsupported device found: "+ str(device))
 
         logging.debug("get_devices: devices found: "+str(len(Devices))+" self.startup: "+str(self.startup))
         if (len(Devices) == 0 and self.startup):
+            #no Domoticz Devices created yet, start definition
             count = 1
             for device in self.filtered_devices:
                 logging.info("get_devices: Creating device: "+device["label"])
@@ -172,8 +175,11 @@ class Tahoma:
                         swtype = 16
                 elif (device["deviceURL"].startswith("rts://")):
                     swtype = 6
-
-                Domoticz.Device(Name=device["label"], Unit=count, Type=244, Subtype=73, Switchtype=swtype, DeviceID=device["deviceURL"]).Create()
+                    
+                # extended framework: create first device then unit? or create device+unit in one go?
+                Domoticz.Device(DeviceID=device["deviceURL"]).Create()
+                Domoticz.Unit(Name=device["label"], Unit=1, Type=244, Subtype=73, Switchtype=swtype, DeviceID=device["deviceURL"]).Create()
+                # legacy: Domoticz.Device(Name=device["label"], Unit=count, Type=244, Subtype=73, Switchtype=swtype, DeviceID=device["deviceURL"]).Create()
 
                 if not (count in Devices):
                     logging.error("Device creation not allowed, please allow device creation")
@@ -183,6 +189,7 @@ class Tahoma:
                     count += 1
 
         if ((len(Devices) < len(self.filtered_devices)) and len(Devices) != 0 and self.startup):
+            #Domoticz devices already present but less than from API
             logging.info("New device(s) detected")
             found = False
 
@@ -206,7 +213,11 @@ class Tahoma:
                  elif (device["deviceURL"].startswith("rts://")):
                     swtype = 6
 
-                 Domoticz.Device(Name=device["label"], Unit=idx, Type=244, Subtype=73, Switchtype=swtype, DeviceID=device["deviceURL"]).Create()
+                 # extended framework: create first device then unit? or create device+unit in one go?
+                 Domoticz.Device(DeviceID=device["deviceURL"]).Create()
+                 Domoticz.Unit(Name=device["label"], Unit=1, Type=244, Subtype=73, Switchtype=swtype, DeviceID=device["deviceURL"]).Create()
+                 
+                 # legacy:  Domoticz.Device(Name=device["label"], Unit=idx, Type=244, Subtype=73, Switchtype=swtype, DeviceID=device["deviceURL"]).Create()
 
                  if not (idx in Devices):
                      logging.error("Device creation not allowed, please allow device creation")

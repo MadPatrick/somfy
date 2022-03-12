@@ -4,7 +4,7 @@
 # FirstFree function courtesy of @moroen https://github.com/moroen/IKEA-Tradfri-plugin
 # All credits for the plugin are for Nonolk, who is the origin plugin creator
 """
-<plugin key="tahomaIO" name="Somfy Tahoma or Connexoon plugin" author="MadPatrick" version="2.0.9" externallink="https://github.com/MadPatrick/somfy">
+<plugin key="tahomaIO" name="Somfy Tahoma or Connexoon plugin" author="MadPatrick" version="3.0.0" externallink="https://github.com/MadPatrick/somfy">
     <description>
 	<br/><h2>Somfy Tahoma/Connexoon plugin</h2><br/>
         <ul style="list-style-type:square">
@@ -40,7 +40,7 @@
 </plugin>
 """
 
-import Domoticz
+import DomoticzEx as Domoticz
 import json
 import sys
 import logging
@@ -209,6 +209,51 @@ class BasePlugin:
             logging.debug("Polling unit in " + str(self.runCounter) + " heartbeats.")
 
     def update_devices_status(self, Updated_devices):
+        logging.debug("updating device status self.tahoma.startup = "+str(self.tahoma.startup)+"on data: "+str(Updated_devices))
+        for device in Updated_devices:
+            if device["deviceURL"] not in Devices:
+                Domoticz.Error("device not found for URL: "+str(device["deviceURL"])+" called "+str(device["label"]))
+                return
+            if (device["deviceURL"].startswith("io://")):
+                dev = device["deviceURL"]
+                level = 0
+                status_l = False
+                status = None
+
+                if (self.tahoma.startup):
+                    states = device["states"]
+                else:
+                    states = device["deviceStates"]
+                    if (device["name"] != "DeviceStateChangedEvent"):
+                        logging.debug("update_devices_status: device['name'] != DeviceStateChangedEvent: "+str(device["name"])+": breaking out")
+                        break
+
+                for state in states:
+                    status_l = False
+
+                    if ((state["name"] == "core:ClosureState") or (state["name"] == "core:DeploymentState")):
+                      level = int(state["value"])
+                      level = 100 - level
+                      status_l = True
+                      
+                    if status_l:
+                      if (Devices[dev].Unit[1].sValue):
+                        int_level = int(Devices[dev].Unit[1].sValue)
+                      else:
+                        int_level = 0
+                      if (level != int_level):
+
+                        Domoticz.Status("Updating device:"+Devices[dev].Unit[1].Name)
+                        logging.info("Updating device:"+Devices[dev].Unit[1].Name)
+                        if (level == 0):
+                          Devices[dev].Unit[1].Update(0,"0")
+                        if (level == 100):
+                          Devices[dev].Unit[1].Update(1,"100")
+                        if (level != 0 and level != 100):
+                          Devices[dev].Unit[1].Update(2,str(level))
+        return
+
+    def update_devices_status_legacy(self, Updated_devices):
         logging.debug("updating device status self.tahoma.startup = "+str(self.tahoma.startup)+"on data: "+str(Updated_devices))
         for dev in Devices:
            logging.debug("update_devices_status: checking Domoticz device: "+Devices[dev].Name)
