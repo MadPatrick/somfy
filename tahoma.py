@@ -4,7 +4,7 @@ import exceptions
 import urllib.parse
 import datetime
 try:
-	import Domoticz
+	import DomoticzEx as Domoticz
 except ImportError:
 	import fakeDomoticz as Domoticz
 

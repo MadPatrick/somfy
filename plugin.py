@@ -51,19 +51,31 @@ import os
 
 class BasePlugin:
     enabled = False
-    def __init__(self):
-        self.heartbeat = False
-        self.devices = None
-        self.heartbeat_delay = 1
-        self.con_delay = 0
-        self.wait_delay = 30
-        self.json_data = None
-        self.command = False
-        self.refresh = True
-        self.actions_serialized = []
-        self.logger = None
-        self.log_filename = "somfy.log"
-        return
+    heartbeat = False
+    devices = None
+    heartbeat_delay = 1
+    con_delay = 0
+    wait_delay = 30
+    json_data = None
+    command = False
+    refresh = True
+    actions_serialized = []
+    logger = None
+    log_filename = "somfy.log"
+    
+    # def __init__(self):
+        # self.heartbeat = False
+        # self.devices = None
+        # self.heartbeat_delay = 1
+        # self.con_delay = 0
+        # self.wait_delay = 30
+        # self.json_data = None
+        # self.command = False
+        # self.refresh = True
+        # self.actions_serialized = []
+        # self.logger = None
+        # self.log_filename = "somfy.log"
+        # return
 
     def onStart(self):
         if os.path.exists(Parameters["Mode5"]):
