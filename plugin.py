@@ -159,8 +159,9 @@ class BasePlugin:
         self.actions_serialized.append(action)
         logging.debug("preparing command: # commands: "+str(len(commands)))
         logging.debug("preparing command: # actions_serialized: "+str(len(self.actions_serialized)))
-        data = {"label": "Domoticz - "+Devices[Unit].Name+" - "+commands["name"], "actions": self.actions_serialized}
+        data = {"label": "Domoticz - "+Devices[DeviceId].Units[Unit].Name+" - "+commands["name"], "actions": self.actions_serialized}
         self.json_data = json.dumps(data, indent=None, sort_keys=True)
+        logging.debug("preparing command: json data: "+str(self.json_data))
 
         if (not self.tahoma.logged_in):
             logging.info("Not logged in, must connect")
