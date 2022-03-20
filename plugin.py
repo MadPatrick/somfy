@@ -142,6 +142,10 @@ class BasePlugin:
         action = {}
         commands = {}
         params = []
+        
+        if Unit > 1:
+            logging.error("unit not supported")
+            return
 
         if (str(Command) == "Off"):
             commands["name"] = "close"
