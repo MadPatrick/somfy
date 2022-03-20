@@ -154,7 +154,7 @@ class BasePlugin:
             commands["parameters"] = params
 
         commands_serialized.append(commands)
-        action["deviceURL"] = DeviceID
+        action["deviceURL"] = DeviceId
         action["commands"] = commands_serialized
         self.actions_serialized.append(action)
         logging.debug("preparing command: # commands: "+str(len(commands)))

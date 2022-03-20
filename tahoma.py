@@ -161,6 +161,86 @@ class Tahoma:
                 logging.error("unsupported device found: "+ str(device))
 
         logging.debug("get_devices: devices found: "+str(len(Devices))+" self.startup: "+str(self.startup))
+
+        #if ((len(Devices) < len(self.filtered_devices)) and len(Devices) != 0 and self.startup):
+        if ((len(Devices) <= len(self.filtered_devices)) and self.startup):
+            #Domoticz devices already present but less than from API
+            logging.info("New device(s) detected")
+            found = False
+
+            for device in self.filtered_devices:
+                for domo_dev in Devices:
+                    if domo_dev.DeviceID == device["deviceURL"]:
+                        logging.debug("get_devices: do not create new device: "+device["label"])
+                        found = True
+                        break
+                    if (not found):
+                        #DeviceID not found, create new one
+                        swtype = None
+
+                        logging.debug("get_devices: Must create new device: "+device["label"])
+
+                        if (device["deviceURL"].startswith("io://")):
+                            if (device["uiClass"] == "Awning"):
+                                swtype = 13
+                            else:
+                                swtype = 16
+                        elif (device["deviceURL"].startswith("rts://")):
+                            swtype = 6
+
+                        # extended framework: create first device then unit? or create device+unit in one go?
+                        Domoticz.Device(DeviceID=device["deviceURL"]).Create()
+                        if (device["uiClass"] == "VenetianBlind"):
+                            #create unit for up/down and open/close
+                            Domoticz.Unit(Name=device["label"] + " up/down", Unit=1, Type=244, Subtype=73, Switchtype=swtype, DeviceID=device["deviceURL"]).Create()
+                            Domoticz.Unit(Name=device["label"] + " open/close", Unit=2, Type=244, Subtype=73, Switchtype=swtype, DeviceID=device["deviceURL"]).Create()
+                        else:
+                            Domoticz.Unit(Name=device["label"], Unit=1, Type=244, Subtype=73, Switchtype=swtype, DeviceID=device["deviceURL"]).Create()
+                         
+                        logging.info("New device created: "+device["label"])
+                    else:
+                        found = False
+        self.startup = False
+        self.get_events()
+
+    def get_devices_old(self, Devices, firstFree):
+        logging.debug("start get devices")
+        Headers = { 'Host': self.srvaddr,"Connection": "keep-alive","Accept-Encoding": "gzip, deflate", "Accept": "*/*", "Content-Type": "application/x-www-form-urlencoded", "Cookie": self.cookie}
+        url = self.base_url + '/enduser-mobile-web/enduserAPI/setup/devices'
+        response = requests.get(url, headers=Headers, timeout=self.timeout)
+        logging.debug("get device response: url '" + str(response.url) + "' response headers: '"+str(response.headers)+"'")
+        logging.debug("get device response: status '" + str(response.status_code) + "' response body: '"+str(response.json())+"'")
+        if response.status_code != 200:
+            logging.error("get_devices: error during get devices, status: " + str(response.status_code))
+            return
+
+        Data = response.json()
+
+        if (not "uiClass" in response.text):
+            logging.error("get_devices: missing uiClass in response")
+            logging.debug(str(Data))
+            return
+
+        self.devices = Data
+
+        self.filtered_devices = list()
+        for device in self.devices:
+            logging.debug("get_devices: Device name: "+device["label"]+" Device class: "+device["uiClass"])
+            if (((device["uiClass"] == "RollerShutter") 
+                or (device["uiClass"] == "ExteriorScreen") 
+                or (device["uiClass"] == "Screen") 
+                or (device["uiClass"] == "Awning") 
+                or (device["uiClass"] == "Pergola") 
+                or (device["uiClass"] == "GarageDoor") 
+                or (device["uiClass"] == "Window") 
+                or (device["uiClass"] == "VenetianBlind") 
+                or (device["uiClass"] == "ExteriorVenetianBlind")) 
+                and ((device["deviceURL"].startswith("io://")) or (device["deviceURL"].startswith("rts://")))):
+                self.filtered_devices.append(device)
+            else:
+                logging.error("unsupported device found: "+ str(device))
+
+        logging.debug("get_devices: devices found: "+str(len(Devices))+" self.startup: "+str(self.startup))
         if (len(Devices) == 0 and self.startup):
             #no Domoticz Devices created yet, start definition
             count = 1
@@ -198,34 +278,29 @@ class Tahoma:
                   UnitID = Devices[dev].Unit
                   if Devices[dev].DeviceID == device["deviceURL"]:
                     found = True
-                    break
+                    #break
                 if (not found):
-                 idx = firstFree
-                 swtype = None
+                    idx = firstFree
+                    swtype = None
 
-                 logging.debug("get_devices: Must create device: "+device["label"])
+                    logging.debug("get_devices: Must create device: "+device["label"])
 
-                 if (device["deviceURL"].startswith("io://")):
-                    if (device["uiClass"] == "Awning"):
-                     swtype = 13
+                    if (device["deviceURL"].startswith("io://")):
+                        if (device["uiClass"] == "Awning"):
+                            swtype = 13
+                        else:
+                            swtype = 16
+                    elif (device["deviceURL"].startswith("rts://")):
+                        swtype = 6
+
+
+                    if not (idx in Devices):
+                        logging.error("Device creation not allowed, please allow device creation")
+                        Domoticz.Error("Device creation not allowed, please allow device creation")
                     else:
-                     swtype = 16
-                 elif (device["deviceURL"].startswith("rts://")):
-                    swtype = 6
-
-                 # extended framework: create first device then unit? or create device+unit in one go?
-                 Domoticz.Device(DeviceID=device["deviceURL"]).Create()
-                 Domoticz.Unit(Name=device["label"], Unit=1, Type=244, Subtype=73, Switchtype=swtype, DeviceID=device["deviceURL"]).Create()
-                 
-                 # legacy:  Domoticz.Device(Name=device["label"], Unit=idx, Type=244, Subtype=73, Switchtype=swtype, DeviceID=device["deviceURL"]).Create()
-
-                 if not (idx in Devices):
-                     logging.error("Device creation not allowed, please allow device creation")
-                     Domoticz.Error("Device creation not allowed, please allow device creation")
-                 else:
-                     logging.info("New device created: "+device["label"])
+                        logging.info("New device created: "+device["label"])
                 else:
-                  found = False
+                    found = False
         self.startup = False
         self.get_events()
 
