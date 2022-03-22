@@ -143,19 +143,30 @@ class BasePlugin:
         commands = {}
         params = []
         
-        if Unit > 1:
+        if Unit == 1:
+            # unit 1 used for up/down movement
+            if (str(Command) == "Off"):
+                commands["name"] = "close"
+            elif (str(Command) == "On"):
+                commands["name"] = "open"
+            elif ("Set Level" in str(Command)):
+                commands["name"] = "setClosure"
+                tmp = 100 - int(Level)
+                params.append(tmp)
+                commands["parameters"] = params
+        elif Unit == 2:
+            # unit 2 used for orientation in venetian blinds
+            if ("Set Level" in str(Command)):
+                commands["name"] = "setOrientation"
+                tmp = 100 - int(Level)
+                params.append(tmp)
+                commands["parameters"] = params
+            else:
+                logging.error("command "+str(Command)+" not supported")
+                return
+        else:
             logging.error("unit not supported")
             return
-
-        if (str(Command) == "Off"):
-            commands["name"] = "close"
-        elif (str(Command) == "On"):
-            commands["name"] = "open"
-        elif ("Set Level" in str(Command)):
-            commands["name"] = "setClosure"
-            tmp = 100 - int(Level)
-            params.append(tmp)
-            commands["parameters"] = params
 
         commands_serialized.append(commands)
         action["deviceURL"] = DeviceId
