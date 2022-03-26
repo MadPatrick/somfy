@@ -159,9 +159,9 @@ class Tahoma:
                 or (device["uiClass"] == "ExteriorVenetianBlind")) 
                 and ((device["deviceURL"].startswith("io://")) or (device["deviceURL"].startswith("rts://")))):
                 self.filtered_devices.append(device)
+                logging.info("supported device found: "+ str(device))
             else:
-                logging.error("unsupported device found: "+ str(device))
-                Domoticz.Error("unsupported device found: "+ str(device))
+                logging.debug("unsupported device found: "+ str(device))
 
         logging.debug("get_devices: devices found: "+str(len(Devices))+" self.startup: "+str(self.startup))
 
