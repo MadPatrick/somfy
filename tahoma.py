@@ -163,19 +163,19 @@ class Tahoma:
             else:
                 logging.debug("unsupported device found: "+ str(device))
 
-        logging.debug("get_devices: devices found: "+str(len(Devices))+" self.startup: "+str(self.startup))
+        logging.debug("get_devices: devices found, domoticz: "+str(len(Devices))+" API: "+str(len(self.filtered_devices))+", self.startup: "+str(self.startup))
 
         #if ((len(Devices) < len(self.filtered_devices)) and len(Devices) != 0 and self.startup):
-        if ((len(Devices) <= len(self.filtered_devices)) and self.startup):
+        if ((len(Devices) <= len(self.filtered_devices)) or self.startup):
             #Domoticz devices already present but less than from API
-            logging.info("New device(s) detected")
+            logging.debug("New device(s) detected")
             found = False
 
             for device in self.filtered_devices:
                 for domo_dev in Devices:
                     if type(domo_dev) is str:
-                        logging.error("Domoticz device incompatible: "+str(Device)+"please delete device and retry")
-                        Domoticz.Error("Domoticz device incompatible: "+str(Device)+"please delete device and retry")
+                        logging.error("Domoticz device incompatible: "+str(Device)+", please delete device and retry")
+                        Domoticz.Error("Domoticz device incompatible: "+str(Device)+", please delete device and retry")
                     else:
                         if domo_dev.DeviceID == device["deviceURL"]:
                             logging.debug("get_devices: do not create new device: "+device["label"])
