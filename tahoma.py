@@ -172,13 +172,14 @@ class Tahoma:
             found = False
 
             for device in self.filtered_devices:
+                logging.debug("check if need to create device: "+device["label"])
                 for domo_dev in Devices:
                     if type(domo_dev) is str:
                         logging.error("Domoticz device incompatible: "+str(Device)+", please delete device and retry")
                         Domoticz.Error("Domoticz device incompatible: "+str(Device)+", please delete device and retry")
                     else:
                         if domo_dev.DeviceID == device["deviceURL"]:
-                            logging.debug("get_devices: do not create new device: "+device["label"])
+                            logging.debug("get_devices: do not create new device: "+device["label"]+", device already exists")
                             found = True
                             break
                         if (not found):
