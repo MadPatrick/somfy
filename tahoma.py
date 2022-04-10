@@ -177,37 +177,38 @@ class Tahoma:
                     if type(domo_dev) is str:
                         logging.error("Domoticz device incompatible: "+str(Device)+", please delete device and retry")
                         Domoticz.Error("Domoticz device incompatible: "+str(Device)+", please delete device and retry")
+                        break
                     else:
                         if domo_dev.DeviceID == device["deviceURL"]:
                             logging.debug("get_devices: do not create new device: "+device["label"]+", device already exists")
                             found = True
                             break
-                        if (found==False):
-                            #DeviceID not found, create new one
-                            swtype = None
+                if (found==False):
+                    #DeviceID not found, create new one
+                    swtype = None
 
-                            logging.debug("get_devices: Must create new device: "+device["label"])
+                    logging.debug("get_devices: Must create new device: "+device["label"])
 
-                            if (device["deviceURL"].startswith("io://")):
-                                if (device["uiClass"] == "Awning"):
-                                    swtype = 13
-                                else:
-                                    swtype = 16
-                            elif (device["deviceURL"].startswith("rts://")):
-                                swtype = 6
-
-                            # extended framework: create first device then unit? or create device+unit in one go?
-                            Domoticz.Device(DeviceID=device["deviceURL"]).Create()
-                            if (device["uiClass"] == "VenetianBlind"):
-                                #create unit for up/down and open/close
-                                Domoticz.Unit(Name=device["label"] + " up/down", Unit=1, Type=244, Subtype=73, Switchtype=swtype, DeviceID=device["deviceURL"]).Create()
-                                Domoticz.Unit(Name=device["label"] + " open/close", Unit=2, Type=244, Subtype=73, Switchtype=swtype, DeviceID=device["deviceURL"]).Create()
-                            else:
-                                Domoticz.Unit(Name=device["label"], Unit=1, Type=244, Subtype=73, Switchtype=swtype, DeviceID=device["deviceURL"]).Create()
-                             
-                            logging.info("New device created: "+device["label"])
+                    if (device["deviceURL"].startswith("io://")):
+                        if (device["uiClass"] == "Awning"):
+                            swtype = 13
                         else:
-                            found = False
+                            swtype = 16
+                    elif (device["deviceURL"].startswith("rts://")):
+                        swtype = 6
+
+                    # extended framework: create first device then unit? or create device+unit in one go?
+                    Domoticz.Device(DeviceID=device["deviceURL"]).Create()
+                    if (device["uiClass"] == "VenetianBlind"):
+                        #create unit for up/down and open/close
+                        Domoticz.Unit(Name=device["label"] + " up/down", Unit=1, Type=244, Subtype=73, Switchtype=swtype, DeviceID=device["deviceURL"]).Create()
+                        Domoticz.Unit(Name=device["label"] + " open/close", Unit=2, Type=244, Subtype=73, Switchtype=swtype, DeviceID=device["deviceURL"]).Create()
+                    else:
+                        Domoticz.Unit(Name=device["label"], Unit=1, Type=244, Subtype=73, Switchtype=swtype, DeviceID=device["deviceURL"]).Create()
+                     
+                    logging.info("New device created: "+device["label"])
+                else:
+                    found = False
         self.startup = False
         self.get_events()
 
