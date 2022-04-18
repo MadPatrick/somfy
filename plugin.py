@@ -4,7 +4,7 @@
 # FirstFree function courtesy of @moroen https://github.com/moroen/IKEA-Tradfri-plugin
 # All credits for the plugin are for Nonolk, who is the origin plugin creator
 """
-<plugin key="tahomaIO" name="Somfy Tahoma or Connexoon plugin" author="MadPatrick" version="3.0.1" externallink="https://github.com/MadPatrick/somfy">
+<plugin key="tahomaIO" name="Somfy Tahoma or Connexoon plugin" author="MadPatrick" version="3.0.2" externallink="https://github.com/MadPatrick/somfy">
     <description>
 	<br/><h2>Somfy Tahoma/Connexoon plugin</h2><br/>
         <ul style="list-style-type:square">
@@ -107,8 +107,8 @@ class BasePlugin:
         if self.tahoma.logged_in:
             self.tahoma.register_listener()
 
-        if self.tahoma.logged_in:
-            self.tahoma.get_devices(Devices, firstFree())
+        if self.tahoma.logged_in and firstFree() < 249:
+            self.tahoma.get_devices(Devices)
             
         
     def onStop(self):

@@ -123,7 +123,7 @@ class Tahoma:
         logging.info("Checking setup status at startup")
         #self.get_devices()
 
-    def get_devices(self, Devices, firstFree):
+    def get_devices(self, Devices):
         logging.debug("start get devices")
         Headers = { 'Host': self.srvaddr,"Connection": "keep-alive","Accept-Encoding": "gzip, deflate", "Accept": "*/*", "Content-Type": "application/x-www-form-urlencoded", "Cookie": self.cookie}
         url = self.base_url + '/enduser-mobile-web/enduserAPI/setup/devices'
@@ -198,7 +198,7 @@ class Tahoma:
                         swtype = 6
 
                     # extended framework: create first device then unit? or create device+unit in one go?
-                    Domoticz.Device(DeviceID=device["deviceURL"]).Create()
+                    Domoticz.Device(DeviceID=device["deviceURL"])
                     if (device["uiClass"] == "VenetianBlind"):
                         #create unit for up/down and open/close
                         Domoticz.Unit(Name=device["label"] + " up/down", Unit=1, Type=244, Subtype=73, Switchtype=swtype, DeviceID=device["deviceURL"]).Create()
@@ -210,6 +210,7 @@ class Tahoma:
                 else:
                     found = False
         self.startup = False
+        logging.debug("finished get devices")
         self.get_events()
 
     def get_events(self):
@@ -255,3 +256,4 @@ class Tahoma:
             time.sleep(i ** 3)
         else:
             raise exceptions.TooManyRetries
+        logging.debug("finished get events")
