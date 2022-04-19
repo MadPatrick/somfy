@@ -11,6 +11,8 @@ logging.basicConfig(format='%(asctime)s - %(levelname)-8s - %(filename)-18s - %(
 menuoptions = ['0 exit',"1 log in", "2 register", "3 get devices", "4 get events", "5 send command", "6 check log in"]
 mymenu = consolemenu.SelectionMenu(menuoptions)
 
+device_list = list()
+
 tahoma = tahoma.Tahoma()
 if tahoma.cookie is None:
     tahoma.cookie = 'JSESSIONID=F290EEAEC03B4838EBDA4B0CD0034BAB; Path=/enduser-mobile-web; Secure; HttpOnly; SameSite=None'
@@ -31,7 +33,7 @@ if True:
             tahoma.register_listener()
             if tahoma.listenerId is None:
                 tahoma.listenerId = 'b4e62511-ac10-3e01-60e0-9b9f656aea77'
-        if x == 3: print(tahoma.get_devices())
+        if x == 3: print(tahoma.get_devices(device_list))
         if x == 4: print(tahoma.get_events())
         if x == 5: 
             data = '{"actions": [{"commands": [{"name": "open"}], "deviceURL": "io://1237-2024-7920/10464619"}], "label": "Domoticz - Somfy - Kamer_Klein - open"}'
