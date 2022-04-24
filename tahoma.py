@@ -203,7 +203,7 @@ class Tahoma:
 
                     # extended framework: create first device then unit? or create device+unit in one go?
                     Domoticz.Device(DeviceID=device["deviceURL"])
-                    if (device["uiClass"] == "VenetianBlind"):
+                    if (device["uiClass"] == "VenetianBlind" or device["uiClass"] == "ExteriorVenetianBlind"):
                         #create unit for up/down and open/close
                         Domoticz.Unit(Name=device["label"] + " up/down", Unit=1, Type=244, Subtype=73, Switchtype=swtype, DeviceID=device["deviceURL"]).Create()
                         Domoticz.Unit(Name=device["label"] + " open/close", Unit=2, Type=244, Subtype=73, Switchtype=swtype, DeviceID=device["deviceURL"]).Create()
