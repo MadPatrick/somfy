@@ -4,7 +4,7 @@
 # FirstFree function courtesy of @moroen https://github.com/moroen/IKEA-Tradfri-plugin
 # All credits for the plugin are for Nonolk, who is the origin plugin creator
 """
-<plugin key="tahomaIO" name="Somfy Tahoma or Connexoon plugin" author="MadPatrick" version="3.0.4" externallink="https://github.com/MadPatrick/somfy">
+<plugin key="tahomaIO" name="Somfy Tahoma or Connexoon plugin" author="MadPatrick" version="3.0.5" externallink="https://github.com/MadPatrick/somfy">
     <description>
 	<br/><h2>Somfy Tahoma/Connexoon plugin</h2><br/>
         <ul style="list-style-type:square">
@@ -158,7 +158,7 @@ class BasePlugin:
             # unit 2 used for orientation in venetian blinds
             if ("Set Level" in str(Command)):
                 commands["name"] = "setOrientation"
-                tmp = 100 - int(Level)
+                tmp = max(100 - int(Level), 1) #orientation does not accept 0
                 params.append(tmp)
                 commands["parameters"] = params
             else:
@@ -305,25 +305,25 @@ class BasePlugin:
                     status_l = False
 
                     if ((state["name"] == "core:ClosureState") or (state["name"] == "core:DeploymentState")):
-                      level = int(state["value"])
-                      level = 100 - level
-                      status_l = True
+                        level = int(state["value"])
+                        level = 100 - level
+                        status_l = True
                       
                     if status_l:
-                      if (Devices[dev].Unit[1].sValue):
-                        int_level = int(Devices[dev].Unit[1].sValue)
-                      else:
-                        int_level = 0
-                      if (level != int_level):
+                        if (Devices[dev].Units[1].sValue):
+                            int_level = int(Devices[dev].Unit[1].sValue)
+                        else:
+                            int_level = 0
+                        if (level != int_level):
 
-                        Domoticz.Status("Updating device:"+Devices[dev].Unit[1].Name)
-                        logging.info("Updating device:"+Devices[dev].Unit[1].Name)
-                        if (level == 0):
-                          Devices[dev].Unit[1].Update(0,"0")
-                        if (level == 100):
-                          Devices[dev].Unit[1].Update(1,"100")
-                        if (level != 0 and level != 100):
-                          Devices[dev].Unit[1].Update(2,str(level))
+                            Domoticz.Status("Updating device:"+Devices[dev].Units[1].Name)
+                            logging.info("Updating device:"+Devices[dev].Units[1].Name)
+                            if (level == 0):
+                                Devices[dev].Units[1].Update(0,"0")
+                            if (level == 100):
+                                Devices[dev].Units[1].Update(1,"100")
+                            if (level != 0 and level != 100):
+                                Devices[dev].Units[1].Update(2,str(level))
         return
 
     def update_devices_status_legacy(self, Updated_devices):

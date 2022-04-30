@@ -178,11 +178,6 @@ class Tahoma:
                     found = True
                     #break
                 for domo_dev in Devices:
-                    # if type(domo_dev) is str:
-                        # logging.error("Domoticz device incompatible: "+str(domo_dev)+", please delete device and retry")
-                        # Domoticz.Error("Domoticz device incompatible: "+str(domo_dev)+", please delete device and retry")
-                        # break
-                    # else:
                     if domo_dev == device["deviceURL"]:
                         logging.debug("get_devices: 2 do not create new device: "+device["label"]+", device already exists")
                         found = True
@@ -206,7 +201,7 @@ class Tahoma:
                     if (device["uiClass"] == "VenetianBlind" or device["uiClass"] == "ExteriorVenetianBlind"):
                         #create unit for up/down and open/close
                         Domoticz.Unit(Name=device["label"] + " up/down", Unit=1, Type=244, Subtype=73, Switchtype=swtype, DeviceID=device["deviceURL"]).Create()
-                        Domoticz.Unit(Name=device["label"] + " open/close", Unit=2, Type=244, Subtype=73, Switchtype=swtype, DeviceID=device["deviceURL"]).Create()
+                        Domoticz.Unit(Name=device["label"] + " orientation", Unit=2, Type=244, Subtype=73, Switchtype=swtype, DeviceID=device["deviceURL"]).Create()
                     else:
                         Domoticz.Unit(Name=device["label"], Unit=1, Type=244, Subtype=73, Switchtype=swtype, DeviceID=device["deviceURL"]).Create()
                      
