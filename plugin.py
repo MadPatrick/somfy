@@ -4,11 +4,11 @@
 # FirstFree function courtesy of @moroen https://github.com/moroen/IKEA-Tradfri-plugin
 # All credits for the plugin are for Nonolk, who is the origin plugin creator
 """
-<plugin key="tahomaIO" name="Somfy Tahoma or Connexoon plugin" author="MadPatrick" version="3.0.5" externallink="https://github.com/MadPatrick/somfy">
+<plugin key="tahomaIO" name="Somfy Tahoma or Connexoon plugin" author="MadPatrick" version="3.0.6" externallink="https://github.com/MadPatrick/somfy">
     <description>
 	<br/><h2>Somfy Tahoma/Connexoon plugin</h2><br/>
         <ul style="list-style-type:square">
-	    <li>version: 2.0.9</li>
+            <li>version: 3.0.6</li>
             <li>This plugin require internet connection at all time.</li>
             <li>It controls the Somfy for IO Blinds or Screens</li>
             <li>Please provide your email and password used to connect Tahoma/Connexoon</li>
@@ -63,20 +63,6 @@ class BasePlugin:
     logger = None
     log_filename = "somfy.log"
     
-    # def __init__(self):
-        # self.heartbeat = False
-        # self.devices = None
-        # self.heartbeat_delay = 1
-        # self.con_delay = 0
-        # self.wait_delay = 30
-        # self.json_data = None
-        # self.command = False
-        # self.refresh = True
-        # self.actions_serialized = []
-        # self.logger = None
-        # self.log_filename = "somfy.log"
-        # return
-
     def onStart(self):
         if os.path.exists(Parameters["Mode5"]):
             log_dir = Parameters["Mode5"] 
@@ -370,6 +356,14 @@ class BasePlugin:
                         Devices[dev].Update(2,str(level))
         return
 
+    def onDeviceAdded(self, DeviceID, Unit):
+        logging.debug("onDeviceAdded called for DeviceID {0} and Unit {1}".format(DeviceID, Unit))
+
+    def onDeviceModified(self, DeviceID, Unit):
+        logging.debug("onDeviceModified called for DeviceID {0} and Unit {1}".format(DeviceID, Unit))
+
+    def onDeviceRemoved(self, DeviceID, Unit):
+        logging.debug("onDeviceRemoved called for DeviceID {0} and Unit {1}".format(DeviceID, Unit))
 
 global _plugin
 _plugin = BasePlugin()
@@ -381,6 +375,18 @@ def onStart():
 def onStop():
     global _plugin
     _plugin.onStop()
+
+def onDeviceAdded(DeviceID, Unit):
+    global _plugin
+    _plugin.onDeviceAdded(DeviceID, Unit)
+
+def onDeviceModified(DeviceID, Unit):
+    global _plugin
+    _plugin.onDeviceModified(DeviceID, Unit)
+
+def onDeviceRemoved(DeviceID, Unit):
+    global _plugin
+    _plugin.onDeviceRemoved(DeviceID, Unit)
 
 def onConnect(Connection, Status, Description):
     global _plugin
