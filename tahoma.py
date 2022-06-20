@@ -165,21 +165,20 @@ class Tahoma:
 
         logging.debug("get_devices: devices found, domoticz: "+str(len(Devices))+" API: "+str(len(self.filtered_devices))+", self.startup: "+str(self.startup))
 
-        #if ((len(Devices) < len(self.filtered_devices)) and len(Devices) != 0 and self.startup):
         if ((len(Devices) <= len(self.filtered_devices)) or self.startup):
-            #Domoticz devices already present but less than from API
+            #Domoticz devices already present but less than from API or starting up
             logging.debug("New device(s) detected")
 
             for device in self.filtered_devices:
                 found = False
                 logging.debug("check if need to create device: "+device["label"])
                 if device["label"] in Devices:
-                    logging.debug("get_devices: 1 do not create new device: "+device["label"]+", device already exists")
+                    logging.debug("get_devices: step 1, do not create new device: "+device["label"]+", device already exists")
                     found = True
                     #break
                 for domo_dev in Devices:
                     if domo_dev == device["deviceURL"]:
-                        logging.debug("get_devices: 2 do not create new device: "+device["label"]+", device already exists")
+                        logging.debug("get_devices: step 2, do not create new device: "+device["label"]+", device already exists")
                         found = True
                         break
                 if (found==False):
@@ -197,12 +196,13 @@ class Tahoma:
                         swtype = 6
 
                     # extended framework: create first device then unit? or create device+unit in one go?
-                    Domoticz.Device(DeviceID=device["deviceURL"])
+                    Domoticz.Device(DeviceID=device["deviceURL"]) #use deviceURL as identifier for Domoticz.Device instance
                     if (device["uiClass"] == "VenetianBlind" or device["uiClass"] == "ExteriorVenetianBlind"):
-                        #create unit for up/down and open/close
+                        #create unit for up/down and open/close for venetian blinds
                         Domoticz.Unit(Name=device["label"] + " up/down", Unit=1, Type=244, Subtype=73, Switchtype=swtype, DeviceID=device["deviceURL"]).Create()
                         Domoticz.Unit(Name=device["label"] + " orientation", Unit=2, Type=244, Subtype=73, Switchtype=swtype, DeviceID=device["deviceURL"]).Create()
                     else:
+                        #create a single unit for all oter device types
                         Domoticz.Unit(Name=device["label"], Unit=1, Type=244, Subtype=73, Switchtype=swtype, DeviceID=device["deviceURL"]).Create()
                      
                     logging.info("New device created: "+device["label"])
@@ -218,10 +218,10 @@ class Tahoma:
         url = self.base_url + '/enduser-mobile-web/enduserAPI/events/'+self.listenerId+'/fetch'
 
         for i in range(1,4):
+            #do several retries on reaching events end point before going to time out error
             try:
                 response = requests.post(url, headers=Headers, timeout=self.timeout)
                 logging.debug("get events response: status '" + str(response.status_code) + "' response body: '"+str(response.json())+"'")
-                #logging.debug("get events: self.__logged_in = '"+str(self.__logged_in)+"' and self.heartbeat = '"+str(self.heartbeat)+"' and self.startup = '"+str(self.startup))
                 if response.status_code != 200:
                     logging.error("error during get events, status: " + str(response.status_code) + ", " + str(response.text))
                     self.__logged_in = False
@@ -249,9 +249,10 @@ class Tahoma:
                 # elif (response.status_code == 200 and (not self.heartbeat)):
                   # return
                 else:
-                  logging.info("Return status"+str(response.status_code))
+                  logging.info("Return status " + str(response.status_code))
             except requests.exceptions.RequestException as exp:
                 logging.error("get_events RequestException: " + str(exp))
+            #wait increasing time before next try
             time.sleep(i ** 3)
         else:
             raise exceptions.TooManyRetries

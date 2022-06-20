@@ -4,7 +4,7 @@
 # FirstFree function courtesy of @moroen https://github.com/moroen/IKEA-Tradfri-plugin
 # All credits for the plugin are for Nonolk, who is the origin plugin creator
 """
-<plugin key="tahomaIO" name="Somfy Tahoma or Connexoon plugin" author="MadPatrick" version="3.0.6" externallink="https://github.com/MadPatrick/somfy">
+<plugin key="tahomaIO" name="Somfy Tahoma or Connexoon plugin" author="MadPatrick" version="3.0.7" externallink="https://github.com/MadPatrick/somfy">
     <description>
 	<br/><h2>Somfy Tahoma/Connexoon plugin</h2><br/>
         <ul style="list-style-type:square">
@@ -268,55 +268,64 @@ class BasePlugin:
             logging.debug("Polling unit in " + str(self.runCounter) + " heartbeats.")
 
     def update_devices_status(self, Updated_devices):
-        logging.debug("updating device status self.tahoma.startup = "+str(self.tahoma.startup)+"on data: "+str(Updated_devices))
-        for device in Updated_devices:
-            if device["deviceURL"] not in Devices:
-                Domoticz.Error("device not found for URL: "+str(device["deviceURL"])+" called "+str(device["label"]))
-                return
-            if (device["deviceURL"].startswith("io://")):
-                dev = device["deviceURL"]
+        logging.debug("updating device status self.tahoma.startup = "+str(self.tahoma.startup)+" on num datasets: "+str(len(Updated_devices)))
+        logging.debug("updating device status on data: "+str(Updated_devices))
+        for dataset in Updated_devices:
+            logging.debug("checking dataset for URL: "+str(dataset["deviceURL"]))
+            if dataset["deviceURL"] not in Devices:
+                #Domoticz.Error("device not found for URL: "+str(dataset["deviceURL"])+" called "+str(dataset["label"]))
+                Domoticz.Error("device not found for URL: "+str(dataset["deviceURL"]))
+                break #no deviceURL found that matches to domoticz Devices, skip to next dataset
+                #return
+            if (dataset["deviceURL"].startswith("io://")):
+                dev = dataset["deviceURL"]
                 level = 0
-                status_l = False
+                status_num = 0
                 status = None
 
                 if (self.tahoma.startup):
-                    states = device["states"]
+                    states = dataset["states"]
                 else:
-                    states = device["deviceStates"]
-                    if (device["name"] != "DeviceStateChangedEvent"):
-                        logging.debug("update_devices_status: device['name'] != DeviceStateChangedEvent: "+str(device["name"])+": breaking out")
-                        break
+                    states = dataset["deviceStates"]
+                    if (dataset["name"] != "DeviceStateChangedEvent"):
+                        logging.debug("update_devices_status: dataset['name'] != DeviceStateChangedEvent: "+str(dataset["name"])+": breaking out")
+                        break #dataset does not contain correct event, skip to next dataset
 
                 for state in states:
-                    status_l = False
+                    status_num = 0
 
                     if ((state["name"] == "core:ClosureState") or (state["name"] == "core:DeploymentState")):
                         level = int(state["value"])
                         level = 100 - level
-                        status_l = True
+                        status_num = 1
                       
-                    if status_l:
-                        if (Devices[dev].Units[1].sValue):
-                            int_level = int(Devices[dev].Unit[1].sValue)
+                    if ((state["name"] == "core:SlateOrientationState")):
+                        level = int(state["value"])
+                        level = 100 - level
+                        status_num = 2
+                      
+                    if status_num > 0:
+                        if (Devices[dev].Units[status_num].sValue):
+                            int_level = int(Devices[dev].Unit[status_num].sValue)
                         else:
                             int_level = 0
                         if (level != int_level):
-
-                            Domoticz.Status("Updating device:"+Devices[dev].Units[1].Name)
-                            logging.info("Updating device:"+Devices[dev].Units[1].Name)
+                            Domoticz.Status("Updating device:"+Devices[dev].Units[status_num].Name)
+                            logging.info("Updating device:"+Devices[dev].Units[status_num].Name)
                             if (level == 0):
-                                Devices[dev].Units[1].nValue = 0
-                                Devices[dev].Units[1].sValue = "0"
-                                Devices[dev].Units[1].Update()
+                                Devices[dev].Units[status_num].nValue = 0
+                                Devices[dev].Units[status_num].sValue = "0"
+                                Devices[dev].Units[status_num].Update()
                             if (level == 100):
-                                Devices[dev].Units[1].nValue = 1
-                                Devices[dev].Units[1].sValue = "100"
-                                Devices[dev].Units[1].Update()
+                                Devices[dev].Units[status_num].nValue = 1
+                                Devices[dev].Units[status_num].sValue = "100"
+                                Devices[dev].Units[status_num].Update()
                             if (level != 0 and level != 100):
-                                Devices[dev].Units[1].nValue = 2
-                                Devices[dev].Units[1].sValue = str(level)
-                                Devices[dev].Units[1].Update()
+                                Devices[dev].Units[status_num].nValue = 2
+                                Devices[dev].Units[status_num].sValue = str(level)
+                                Devices[dev].Units[status_num].Update()
                                 #Devices[dev].Units[1].Update(2,str(level))
+
         return
 
     def onDeviceAdded(self, DeviceID, Unit):
