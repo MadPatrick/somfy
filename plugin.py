@@ -305,55 +305,18 @@ class BasePlugin:
                             Domoticz.Status("Updating device:"+Devices[dev].Units[1].Name)
                             logging.info("Updating device:"+Devices[dev].Units[1].Name)
                             if (level == 0):
-                                Devices[dev].Units[1].Update(0,"0")
+                                Devices[dev].Units[1].nValue = 0
+                                Devices[dev].Units[1].sValue = "0"
+                                Devices[dev].Units[1].Update()
                             if (level == 100):
-                                Devices[dev].Units[1].Update(1,"100")
+                                Devices[dev].Units[1].nValue = 1
+                                Devices[dev].Units[1].sValue = "100"
+                                Devices[dev].Units[1].Update()
                             if (level != 0 and level != 100):
-                                Devices[dev].Units[1].Update(2,str(level))
-        return
-
-    def update_devices_status_legacy(self, Updated_devices):
-        logging.debug("updating device status self.tahoma.startup = "+str(self.tahoma.startup)+"on data: "+str(Updated_devices))
-        for dev in Devices:
-           logging.debug("update_devices_status: checking Domoticz device: "+Devices[dev].Name)
-           for device in Updated_devices:
-
-             if (Devices[dev].DeviceID == device["deviceURL"]) and (device["deviceURL"].startswith("io://")):
-               level = 0
-               status_l = False
-               status = None
-
-               if (self.tahoma.startup):
-                   states = device["states"]
-               else:
-                   states = device["deviceStates"]
-                   if (device["name"] != "DeviceStateChangedEvent"):
-                       logging.debug("update_devices_status: device['name'] != DeviceStateChangedEvent: "+str(device["name"])+": breaking out")
-                       break
-
-               for state in states:
-                  status_l = False
-
-                  if ((state["name"] == "core:ClosureState") or (state["name"] == "core:DeploymentState")):
-                    level = int(state["value"])
-                    level = 100 - level
-                    status_l = True
-                    
-                  if status_l:
-                    if (Devices[dev].sValue):
-                      int_level = int(Devices[dev].sValue)
-                    else:
-                      int_level = 0
-                    if (level != int_level):
-
-                      Domoticz.Status("Updating device:"+Devices[dev].Name)
-                      logging.info("Updating device:"+Devices[dev].Name)
-                      if (level == 0):
-                        Devices[dev].Update(0,"0")
-                      if (level == 100):
-                        Devices[dev].Update(1,"100")
-                      if (level != 0 and level != 100):
-                        Devices[dev].Update(2,str(level))
+                                Devices[dev].Units[1].nValue = 2
+                                Devices[dev].Units[1].sValue = str(level)
+                                Devices[dev].Units[1].Update()
+                                #Devices[dev].Units[1].Update(2,str(level))
         return
 
     def onDeviceAdded(self, DeviceID, Unit):
