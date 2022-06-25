@@ -306,7 +306,7 @@ class BasePlugin:
                       
                     if status_num > 0:
                         if (Devices[dev].Units[status_num].sValue):
-                            int_level = int(Devices[dev].Unit[status_num].sValue)
+                            int_level = int(Devices[dev].Units[status_num].sValue)
                         else:
                             int_level = 0
                         if (level != int_level):
