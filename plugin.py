@@ -4,11 +4,11 @@
 # FirstFree function courtesy of @moroen https://github.com/moroen/IKEA-Tradfri-plugin
 # All credits for the plugin are for Nonolk, who is the origin plugin creator
 """
-<plugin key="tahomaIO" name="Somfy Tahoma or Connexoon plugin" author="MadPatrick" version="2.0.9" externallink="https://github.com/MadPatrick/somfy">
+<plugin key="tahomaIO" name="Somfy Tahoma or Connexoon plugin" author="MadPatrick" version="3.0.7" externallink="https://github.com/MadPatrick/somfy">
     <description>
 	<br/><h2>Somfy Tahoma/Connexoon plugin</h2><br/>
         <ul style="list-style-type:square">
-	    <li>version: 2.0.9</li>
+            <li>version: 3.0.6</li>
             <li>This plugin require internet connection at all time.</li>
             <li>It controls the Somfy for IO Blinds or Screens</li>
             <li>Please provide your email and password used to connect Tahoma/Connexoon</li>
@@ -40,7 +40,7 @@
 </plugin>
 """
 
-import Domoticz
+import DomoticzEx as Domoticz
 import json
 import sys
 import logging
@@ -51,20 +51,18 @@ import os
 
 class BasePlugin:
     enabled = False
-    def __init__(self):
-        self.heartbeat = False
-        self.devices = None
-        self.heartbeat_delay = 1
-        self.con_delay = 0
-        self.wait_delay = 30
-        self.json_data = None
-        self.command = False
-        self.refresh = True
-        self.actions_serialized = []
-        self.logger = None
-        self.log_filename = "somfy.log"
-        return
-
+    heartbeat = False
+    devices = None
+    heartbeat_delay = 1
+    con_delay = 0
+    wait_delay = 30
+    json_data = None
+    command = False
+    refresh = True
+    actions_serialized = []
+    logger = None
+    log_filename = "somfy.log"
+    
     def onStart(self):
         if os.path.exists(Parameters["Mode5"]):
             log_dir = Parameters["Mode5"] 
@@ -95,8 +93,8 @@ class BasePlugin:
         if self.tahoma.logged_in:
             self.tahoma.register_listener()
 
-        if self.tahoma.logged_in:
-            self.tahoma.get_devices(Devices, firstFree())
+        if self.tahoma.logged_in and firstFree() < 249:
+            self.tahoma.get_devices(Devices)
             
         
     def onStop(self):
@@ -124,7 +122,68 @@ class BasePlugin:
         Domoticz.Error("onMessage called but not implemented")
         Domoticz.Debug("onMessage data: "+str(Data))
 
-    def onCommand(self, Unit, Command, Level, Hue):
+    def onCommand(self, DeviceId, Unit, Command, Level, Hue):
+        logging.debug("onCommand: DeviceId: '"+str(DeviceId)+"' Unit: '"+str(Unit)+"', Command: '"+str(Command)+"', Level: '"+str(Level)+"', Hue: '"+str(Hue)+"'")
+        commands_serialized = []
+        action = {}
+        commands = {}
+        params = []
+        
+        if Unit == 1:
+            # unit 1 used for up/down movement
+            if (str(Command) == "Off"):
+                commands["name"] = "close"
+            elif (str(Command) == "On"):
+                commands["name"] = "open"
+            elif ("Set Level" in str(Command)):
+                commands["name"] = "setClosure"
+                tmp = 100 - int(Level)
+                params.append(tmp)
+                commands["parameters"] = params
+        elif Unit == 2:
+            # unit 2 used for orientation in venetian blinds
+            if ("Set Level" in str(Command)):
+                commands["name"] = "setOrientation"
+                tmp = max(100 - int(Level), 1) #orientation does not accept 0
+                params.append(tmp)
+                commands["parameters"] = params
+            else:
+                logging.error("command "+str(Command)+" not supported")
+                return
+        else:
+            logging.error("unit not supported")
+            return
+
+        commands_serialized.append(commands)
+        action["deviceURL"] = DeviceId
+        action["commands"] = commands_serialized
+        self.actions_serialized.append(action)
+        logging.debug("preparing command: # commands: "+str(len(commands)))
+        logging.debug("preparing command: # actions_serialized: "+str(len(self.actions_serialized)))
+        data = {"label": "Domoticz - "+Devices[DeviceId].Units[Unit].Name+" - "+commands["name"], "actions": self.actions_serialized}
+        self.json_data = json.dumps(data, indent=None, sort_keys=True)
+        logging.debug("preparing command: json data: "+str(self.json_data))
+
+        if (not self.tahoma.logged_in):
+            logging.info("Not logged in, must connect")
+            self.command = True
+            self.tahoma.tahoma_login(str(Parameters["Username"]), str(Parameters["Password"]))
+            if self.tahoma.logged_in:
+                self.tahoma.register_listener()
+
+        event_list = []
+        try:
+            event_list = self.tahoma.tahoma_command(self.json_data)
+        except (exceptions.TooManyRetries, exceptions.FailureWithErrorCode, exceptions.FailureWithoutErrorCode) as exp:
+            Domoticz.Error("Failed to send command: " + str(exp))
+            logging.error("Failed to send command: " + str(exp))
+            return
+        if event_list is not None and len(event_list) > 0:
+            self.update_devices_status(event_list)
+        self.heartbeat = False
+        self.actions_serialized = []
+
+    def onCommand_legacy(self, Unit, Command, Level, Hue):
         logging.debug("onCommand: Unit: '"+str(Unit)+"', Command: '"+str(Command)+"', Level: '"+str(Level)+"', Hue: '"+str(Hue)+"'")
         commands_serialized = []
         action = {}
@@ -209,49 +268,77 @@ class BasePlugin:
             logging.debug("Polling unit in " + str(self.runCounter) + " heartbeats.")
 
     def update_devices_status(self, Updated_devices):
-        logging.debug("updating device status self.tahoma.startup = "+str(self.tahoma.startup)+"on data: "+str(Updated_devices))
-        for dev in Devices:
-           logging.debug("update_devices_status: checking Domoticz device: "+Devices[dev].Name)
-           for device in Updated_devices:
+        logging.debug("updating device status self.tahoma.startup = "+str(self.tahoma.startup)+" on num datasets: "+str(len(Updated_devices)))
+        logging.debug("updating device status on data: "+str(Updated_devices))
+        for dataset in Updated_devices:
+            logging.debug("checking dataset for URL: "+str(dataset["deviceURL"]))
+            if dataset["deviceURL"] not in Devices:
+                #Domoticz.Error("device not found for URL: "+str(dataset["deviceURL"])+" called "+str(dataset["label"]))
+                Domoticz.Error("device not found for URL: "+str(dataset["deviceURL"]))
+                break #no deviceURL found that matches to domoticz Devices, skip to next dataset
+                #return
+            if (dataset["deviceURL"].startswith("io://")):
+                dev = dataset["deviceURL"]
+                level = 0
+                status_num = 0
+                status = None
 
-             if (Devices[dev].DeviceID == device["deviceURL"]) and (device["deviceURL"].startswith("io://")):
-               level = 0
-               status_l = False
-               status = None
+                if (self.tahoma.startup):
+                    states = dataset["states"]
+                else:
+                    states = dataset["deviceStates"]
+                    if (dataset["name"] != "DeviceStateChangedEvent"):
+                        logging.debug("update_devices_status: dataset['name'] != DeviceStateChangedEvent: "+str(dataset["name"])+": breaking out")
+                        break #dataset does not contain correct event, skip to next dataset
 
-               if (self.tahoma.startup):
-                   states = device["states"]
-               else:
-                   states = device["deviceStates"]
-                   if (device["name"] != "DeviceStateChangedEvent"):
-                       logging.debug("update_devices_status: device['name'] != DeviceStateChangedEvent: "+str(device["name"])+": breaking out")
-                       break
+                for state in states:
+                    status_num = 0
 
-               for state in states:
-                  status_l = False
+                    if ((state["name"] == "core:ClosureState") or (state["name"] == "core:DeploymentState")):
+                        level = int(state["value"])
+                        level = 100 - level
+                        status_num = 1
+                      
+                    if ((state["name"] == "core:SlateOrientationState")):
+                        level = int(state["value"])
+                        level = 100 - level
+                        status_num = 2
+                      
+                    if status_num > 0:
+                        if (Devices[dev].Units[status_num].sValue):
+                            int_level = int(Devices[dev].Units[status_num].sValue)
+                        else:
+                            int_level = 0
+                        if (level != int_level):
+                            Domoticz.Status("Updating device:"+Devices[dev].Units[status_num].Name)
+                            logging.info("Updating device:"+Devices[dev].Units[status_num].Name)
+                            if (level == 0):
+                                Devices[dev].Units[status_num].nValue = 0
+                                Devices[dev].Units[status_num].sValue = "0"
+                                Devices[dev].Units[Unit].LastLevel = 0
+                                Devices[dev].Units[status_num].Update()
+                            if (level == 100):
+                                Devices[dev].Units[status_num].nValue = 1
+                                Devices[dev].Units[status_num].sValue = "100"
+                                Devices[dev].Units[Unit].LastLevel = 100
+                                Devices[dev].Units[status_num].Update()
+                            if (level != 0 and level != 100):
+                                Devices[dev].Units[status_num].nValue = 2
+                                Devices[dev].Units[status_num].sValue = str(level)
+                                Devices[dev].Units[Unit].LastLevel = int(level)
+                                Devices[dev].Units[status_num].Update()
+                                #Devices[dev].Units[1].Update(2,str(level))
 
-                  if ((state["name"] == "core:ClosureState") or (state["name"] == "core:DeploymentState")):
-                    level = int(state["value"])
-                    level = 100 - level
-                    status_l = True
-                    
-                  if status_l:
-                    if (Devices[dev].sValue):
-                      int_level = int(Devices[dev].sValue)
-                    else:
-                      int_level = 0
-                    if (level != int_level):
-
-                      Domoticz.Status("Updating device:"+Devices[dev].Name)
-                      logging.info("Updating device:"+Devices[dev].Name)
-                      if (level == 0):
-                        Devices[dev].Update(0,"0")
-                      if (level == 100):
-                        Devices[dev].Update(1,"100")
-                      if (level != 0 and level != 100):
-                        Devices[dev].Update(2,str(level))
         return
 
+    def onDeviceAdded(self, DeviceID, Unit):
+        logging.debug("onDeviceAdded called for DeviceID {0} and Unit {1}".format(DeviceID, Unit))
+
+    def onDeviceModified(self, DeviceID, Unit):
+        logging.debug("onDeviceModified called for DeviceID {0} and Unit {1}".format(DeviceID, Unit))
+
+    def onDeviceRemoved(self, DeviceID, Unit):
+        logging.debug("onDeviceRemoved called for DeviceID {0} and Unit {1}".format(DeviceID, Unit))
 
 global _plugin
 _plugin = BasePlugin()
@@ -264,6 +351,18 @@ def onStop():
     global _plugin
     _plugin.onStop()
 
+def onDeviceAdded(DeviceID, Unit):
+    global _plugin
+    _plugin.onDeviceAdded(DeviceID, Unit)
+
+def onDeviceModified(DeviceID, Unit):
+    global _plugin
+    _plugin.onDeviceModified(DeviceID, Unit)
+
+def onDeviceRemoved(DeviceID, Unit):
+    global _plugin
+    _plugin.onDeviceRemoved(DeviceID, Unit)
+
 def onConnect(Connection, Status, Description):
     global _plugin
     _plugin.onConnect(Connection, Status, Description)
@@ -272,9 +371,9 @@ def onMessage(Connection, Data):
     global _plugin
     _plugin.onMessage(Connection, Data)
 
-def onCommand(Unit, Command, Level, Hue):
+def onCommand(DeviceId, Unit, Command, Level, Color):
     global _plugin
-    _plugin.onCommand(Unit, Command, Level, Hue)
+    _plugin.onCommand(DeviceId, Unit, Command, Level, Color)
 
 def onDisconnect(Connection):
     global _plugin
