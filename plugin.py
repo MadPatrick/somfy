@@ -315,14 +315,17 @@ class BasePlugin:
                             if (level == 0):
                                 Devices[dev].Units[status_num].nValue = 0
                                 Devices[dev].Units[status_num].sValue = "0"
+                                Devices[dev].Units[Unit].LastLevel = 0
                                 Devices[dev].Units[status_num].Update()
                             if (level == 100):
                                 Devices[dev].Units[status_num].nValue = 1
                                 Devices[dev].Units[status_num].sValue = "100"
+                                Devices[dev].Units[Unit].LastLevel = 100
                                 Devices[dev].Units[status_num].Update()
                             if (level != 0 and level != 100):
                                 Devices[dev].Units[status_num].nValue = 2
                                 Devices[dev].Units[status_num].sValue = str(level)
+                                Devices[dev].Units[Unit].LastLevel = int(level)
                                 Devices[dev].Units[status_num].Update()
                                 #Devices[dev].Units[1].Update(2,str(level))
 
