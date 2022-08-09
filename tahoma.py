@@ -4,6 +4,7 @@ import exceptions
 import urllib.parse
 import datetime
 import Domoticz
+import time
 
 class Tahoma:
     def __init__(self):
@@ -33,7 +34,7 @@ class Tahoma:
             return True
         else:
             return False
-    
+
     def tahoma_login(self, username, password):
 
         url = self.base_url + '/enduser-mobile-web/enduserAPI/login'
@@ -41,7 +42,7 @@ class Tahoma:
         data = "userId="+urllib.parse.quote(username)+"&userPassword="+urllib.parse.quote(password)+""
         response = requests.post(url, data=data, headers=headers, timeout=self.timeout)
 
-        Status = response.status_code 
+        Status = response.status_code
         Data = response.json()
         logging.debug("Login respone: status_code: '"+str(Status)+"' reponse body: '"+str(Data)+"'")
 
