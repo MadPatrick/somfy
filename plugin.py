@@ -4,11 +4,11 @@
 # FirstFree function courtesy of @moroen https://github.com/moroen/IKEA-Tradfri-plugin
 # All credits for the plugin are for Nonolk, who is the origin plugin creator
 """
-<plugin key="tahomaIO" name="Somfy Tahoma or Connexoon plugin" author="MadPatrick" version="2.1.0" externallink="https://github.com/MadPatrick/somfy">
+<plugin key="tahomaIO" name="Somfy Tahoma or Connexoon plugin" author="MadPatrick" version="2.1.1" externallink="https://github.com/MadPatrick/somfy">
     <description>
 	<br/><h2>Somfy Tahoma/Connexoon plugin</h2><br/>
         <ul style="list-style-type:square">
-	    <li>version: 2.1.0</li>
+	    <li>version: 2.1.1</li>
             <li>This plugin require internet connection at all time.</li>
             <li>It controls the Somfy for IO Blinds or Screens</li>
             <li>Please provide your email and password used to connect Tahoma/Connexoon</li>
@@ -131,13 +131,20 @@ class BasePlugin:
         commands = {}
         params = []
 
+#        if (str(Command) == "Off"):
+#            commands["name"] = "close"
+#        elif (str(Command) == "On"):
+#            commands["name"] = "open"
         if (str(Command) == "Off"):
-            commands["name"] = "close"
-        elif (str(Command) == "On"):
             commands["name"] = "open"
+        elif (str(Command) == "On"):
+            commands["name"] = "close"
+        elif (str(Command) == "Stop"):
+            commands["name"] = "stop"
         elif ("Set Level" in str(Command)):
             commands["name"] = "setClosure"
-            tmp = 100 - int(Level)
+#            tmp = 100 - int(Level)
+            tmp = int(Level)
             params.append(tmp)
             commands["parameters"] = params
 
@@ -232,7 +239,7 @@ class BasePlugin:
 
                   if ((state["name"] == "core:ClosureState") or (state["name"] == "core:DeploymentState")):
                     level = int(state["value"])
-                    level = 100 - level
+#                    level = 100 - level
                     status_l = True
                     
                   if status_l:
