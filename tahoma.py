@@ -155,9 +155,9 @@ class Tahoma:
                 swtype = None
 
                 if (device["deviceURL"].startswith("io://")):
-                    if (device["uiClass"] == "Awning"):
-                        swtype = 13
-                    else:
+#                    if (device["uiClass"] == "Awning"):
+#                        swtype = 13
+#                    else:
                         swtype = 16
                 elif (device["deviceURL"].startswith("rts://")):
                     swtype = 6
@@ -188,9 +188,9 @@ class Tahoma:
                  logging.debug("get_devices: Must create device: "+device["label"])
 
                  if (device["deviceURL"].startswith("io://")):
-                    if (device["uiClass"] == "Awning"):
-                     swtype = 13
-                    else:
+#                    if (device["uiClass"] == "Awning"):
+#                     swtype = 13
+#                    else:
                      swtype = 16
                  elif (device["deviceURL"].startswith("rts://")):
                     swtype = 6
