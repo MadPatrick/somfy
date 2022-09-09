@@ -32,6 +32,10 @@ sudo apt-get update
 sudo apt-get install python3 libpython3-dev libpython3.7-dev
 sudo apt-get install python3-requests
 ```
+To be able to run the local tes tool, also install:
+```
+pip3 install console-menu
+```
 
 ### plugin
 Then go in your Domoticz directory using a command line and open the plugins directory.

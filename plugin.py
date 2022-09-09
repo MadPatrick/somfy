@@ -4,7 +4,7 @@
 # FirstFree function courtesy of @moroen https://github.com/moroen/IKEA-Tradfri-plugin
 # All credits for the plugin are for Nonolk, who is the origin plugin creator
 """
-<plugin key="tahomaIO" name="Somfy Tahoma or Connexoon plugin" author="MadPatrick" version="3.0.7" externallink="https://github.com/MadPatrick/somfy">
+<plugin key="tahomaIO" name="Somfy Tahoma or Connexoon plugin" author="MadPatrick" version="3.0.8" externallink="https://github.com/MadPatrick/somfy">
     <description>
 	<br/><h2>Somfy Tahoma/Connexoon plugin</h2><br/>
         <ul style="list-style-type:square">
@@ -50,18 +50,20 @@ import tahoma
 import os
 
 class BasePlugin:
-    enabled = False
-    heartbeat = False
-    devices = None
-    heartbeat_delay = 1
-    con_delay = 0
-    wait_delay = 30
-    json_data = None
-    command = False
-    refresh = True
-    actions_serialized = []
-    logger = None
-    log_filename = "somfy.log"
+    def __init__(self):
+        self.enabled = False
+        self.heartbeat = False
+        self.devices = None
+        self.heartbeat_delay = 1
+        self.con_delay = 0
+        self.wait_delay = 30
+        self.json_data = None
+        self.command = False
+        self.refresh = True
+        self.actions_serialized = []
+        self.logger = None
+        self.log_filename = "somfy.log"
+        self.version = ""
     
     def onStart(self):
         if os.path.exists(Parameters["Mode5"]):
@@ -81,6 +83,12 @@ class BasePlugin:
         Domoticz.Debug("os.path.exists(Parameters['Mode5']) = {}".format(os.path.exists(Parameters["Mode5"])))
         logging.info("starting plugin version "+Parameters["Version"])
         self.runCounter = int(Parameters['Mode2'])
+        
+        #check upgrading of version needs actions
+        self.version = Parameters["Version"]
+        self.enabled = self.checkVersion(self.version)
+        if not self.enabled:
+            return
         
         logging.debug("starting to log in")
         self.tahoma = tahoma.Tahoma()
@@ -135,6 +143,8 @@ class BasePlugin:
                 commands["name"] = "close"
             elif (str(Command) == "On"):
                 commands["name"] = "open"
+            elif (str(Command) == "Stop"):
+                commands["name"] = "my"
             elif ("Set Level" in str(Command)):
                 commands["name"] = "setClosure"
                 tmp = 100 - int(Level)
@@ -233,7 +243,7 @@ class BasePlugin:
 
     def onHeartbeat(self):
         self.runCounter = self.runCounter - 1
-        if self.runCounter <= 0:
+        if self.runCounter <= 0 and self.enabled:
             logging.debug("Poll unit")
             self.runCounter = int(Parameters['Mode2'])            
 
@@ -264,7 +274,7 @@ class BasePlugin:
                         self.tahoma.register_listener()
                 self.heartbeat = True
                 self.con_delay = 0
-        else:
+        elif self.enabled:
             logging.debug("Polling unit in " + str(self.runCounter) + " heartbeats.")
 
     def update_devices_status(self, Updated_devices):
@@ -340,6 +350,53 @@ class BasePlugin:
     def onDeviceRemoved(self, DeviceID, Unit):
         logging.debug("onDeviceRemoved called for DeviceID {0} and Unit {1}".format(DeviceID, Unit))
 
+    def checkVersion(self, version):
+        """checks actual version against stored version as 'Ma.Mi.Pa' and checks if updates needed"""
+        #read version from stored configuration
+        ConfVersion = getConfigItem("plugin version", "0.0.0")
+        Domoticz.Log("Starting version: " + version )
+        logging.info("Starting version: " + version )
+        MaCurrent,MiCurrent,PaCurrent = version.split('.')
+        MaConf,MiConf,PaConf = ConfVersion.split('.')
+        logging.debug("checking versions: current '{0}', config '{1}'".format(version, ConfVersion))
+        can_continue = True
+        if int(MaConf) < int(MaCurrent):
+            Domoticz.Log("Major version upgrade: {0} -> {1}".format(MaConf,MaCurrent))
+            logging.info("Major version upgrade: {0} -> {1}".format(MaConf,MaCurrent))
+            #add code to perform MAJOR upgrades
+            if int(MaConf) < 3:
+                can_continue = self.updateToEx()
+        elif int(MiConf) < int(MiCurrent):
+            Domoticz.Debug("Minor version upgrade: {0} -> {1}".format(MiConf,MiCurrent))
+            logging.debug("Minor version upgrade: {0} -> {1}".format(MiConf,MiCurrent))
+            #add code to perform MINOR upgrades
+        elif int(PaConf) < int(PaCurrent):
+            Domoticz.Debug("Patch version upgrade: {0} -> {1}".format(PaConf,PaCurrent))
+            logging.debug("Patch version upgrade: {0} -> {1}".format(PaConf,PaCurrent))
+            #add code to perform PATCH upgrades, if any
+        if ConfVersion != version and can_continue:
+            #store new version info
+            self._setVersion(MaCurrent,MiCurrent,PaCurrent)
+        return can_continue
+
+    def updateToEx(self):
+        """routine to check if we can update to the Domoticz extended plugin framework"""
+        if len(Devices)>0:
+            Domoticz.Error("Devices are present. Please remove them before upgrading to this version!")
+            Domoticz.Error("Plugin will now exit")
+            return False
+        else:
+            return True
+
+    def _setVersion(self, major, minor, patch):
+        #set configs
+        logging.debug("Setting version to {0}.{1}.{2}".format(major, minor, patch))
+        setConfigItem(Key="MajorVersion", Value=major)
+        setConfigItem(Key="MinorVersion", Value=minor)
+        setConfigItem(Key="patchVersion", Value=patch)
+        setConfigItem(Key="plugin version", Value="{0}.{1}.{2}".format(major, minor, patch))
+
+        
 global _plugin
 _plugin = BasePlugin()
 
@@ -418,4 +475,35 @@ def firstFree():
         if num not in Devices:
             return num
     return
+
+# Configuration Helpers
+def getConfigItem(Key=None, Default={}):
+   Value = Default
+   try:
+       Config = Domoticz.Configuration()
+       if (Key != None):
+           Value = Config[Key] # only return requested key if there was one
+       else:
+           Value = Config      # return the whole configuration if no key
+   except KeyError:
+       Value = Default
+   except Exception as inst:
+       Domoticz.Error("Domoticz.Configuration read failed: '"+str(inst)+"'")
+   return Value
+   
+def setConfigItem(Key=None, Value=None):
+    Config = {}
+    if type(Value) not in (str, int, float, bool, bytes, bytearray, list, dict):
+        Domoticz.Error("A value is specified of a not allowed type: '" + str(type(Value)) + "'")
+        return Config
+    try:
+       Config = Domoticz.Configuration()
+       if (Key != None):
+           Config[Key] = Value
+       else:
+           Config = Value  # set whole configuration if no key specified
+       Config = Domoticz.Configuration(Config)
+    except Exception as inst:
+       Domoticz.Error("Domoticz.Configuration operation failed: '"+str(inst)+"'")
+    return Config
 

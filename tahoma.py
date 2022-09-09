@@ -3,6 +3,8 @@ import logging
 import exceptions
 import urllib.parse
 import datetime
+import time
+
 try:
 	import DomoticzEx as Domoticz
 except ImportError:
