@@ -144,7 +144,8 @@ class Tahoma:
         self.filtered_devices = list()
         for device in self.devices:
             logging.debug("get_devices: Device name: "+device["label"]+" Device class: "+device["uiClass"])
-            if (((device["uiClass"] == "RollerShutter") or (device["uiClass"] == "ExteriorScreen") or (device["uiClass"] == "Screen") or (device["uiClass"] == "Awning") or (device["uiClass"] == "Pergola") or (device["uiClass"] == "GarageDoor") or (device["uiClass"] == "Window") or (device["uiClass"] == "VenetianBlind") or (device["uiClass"] == "ExteriorVenetianBlind")) and ((device["deviceURL"].startswith("io://")) or (device["deviceURL"].startswith("rts://")))):
+            #if (((device["uiClass"] == "RollerShutter") or (device["uiClass"] == "ExteriorScreen") or (device["uiClass"] == "Screen") or (device["uiClass"] == "Awning") or (device["uiClass"] == "Pergola") or (device["uiClass"] == "GarageDoor") or (device["uiClass"] == "Window") or (device["uiClass"] == "VenetianBlind") or (device["uiClass"] == "ExteriorVenetianBlind")) and ((device["deviceURL"].startswith("io://")) or (device["deviceURL"].startswith("rts://")))):
+            if (((device["uiClass"] == "RollerShutter") or (device["uiClass"] == "LightSensor") or (device["uiClass"] == "ExteriorScreen") or (device["uiClass"] == "Screen") or (device["uiClass"] == "Awning") or (device["uiClass"] == "Pergola") or (device["uiClass"] == "GarageDoor") or (device["uiClass"] == "Window") or (device["uiClass"] == "VenetianBlind") or (device["uiClass"] == "ExteriorVenetianBlind")) and ((device["deviceURL"].startswith("io://")) or (device["deviceURL"].startswith("rts://")))):
                 self.filtered_devices.append(device)
 
         logging.debug("get_devices: devices found: "+str(len(Devices))+" self.startup: "+str(self.startup))
@@ -155,14 +156,19 @@ class Tahoma:
                 swtype = None
 
                 if (device["deviceURL"].startswith("io://")):
-#                    if (device["uiClass"] == "Awning"):
-#                        swtype = 13
-#                    else:
-                        swtype = 16
+                    if (device["uiClass"] == "RollerShutter"):
+                        swtype = 21
+                        devicetype = 244
+                        subtype2 = 73
+                    if (device["uiClass"] == "LightSensor"):
+                        swtype = 12
+                        devicetype = 246
+                        subtype2 = 1
                 elif (device["deviceURL"].startswith("rts://")):
                     swtype = 6
 
-                Domoticz.Device(Name=device["label"], Unit=count, Type=244, Subtype=73, Switchtype=swtype, DeviceID=device["deviceURL"]).Create()
+                #Domoticz.Device(Name=device["label"], Unit=count, Type=244, Subtype=73, Switchtype=swtype, DeviceID=device["deviceURL"]).Create()
+                Domoticz.Device(Name=device["label"], Unit=count, Type=devicetype, Subtype=subtype2, Switchtype=swtype, DeviceID=device["deviceURL"]).Create()
 
                 if not (count in Devices):
                     logging.error("Device creation not allowed, please allow device creation")
@@ -188,14 +194,19 @@ class Tahoma:
                  logging.debug("get_devices: Must create device: "+device["label"])
 
                  if (device["deviceURL"].startswith("io://")):
-#                    if (device["uiClass"] == "Awning"):
-#                     swtype = 13
-#                    else:
-                     swtype = 16
+                     if (device["uiClass"] == "RollerShutter"):
+                         swtype = 21
+                         devicetype = 244
+                         subtype2 = 73
+                     if (device["uiClass"] == "LightSensor"):
+                         swtype = 12
+                         devicetype = 246
+                         subtype2 = 1
                  elif (device["deviceURL"].startswith("rts://")):
                     swtype = 6
 
-                 Domoticz.Device(Name=device["label"], Unit=idx, Type=244, Subtype=73, Switchtype=swtype, DeviceID=device["deviceURL"]).Create()
+                 #Domoticz.Device(Name=device["label"], Unit=idx, Type=244, Subtype=73, Switchtype=swtype, DeviceID=device["deviceURL"]).Create()
+                 Domoticz.Device(Name=device["label"], Unit=idx, Type=devicetype, Subtype=subtype2, Switchtype=swtype, DeviceID=device["deviceURL"]).Create()
 
                  if not (idx in Devices):
                      logging.error("Device creation not allowed, please allow device creation")
