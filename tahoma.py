@@ -192,7 +192,7 @@ class Tahoma:
 
                     if (device["deviceURL"].startswith("io://")):
                         deviceType = 244
-                        swtype = 21
+                        swtype = 13
                         subtype2 = 73
                         if (device["uiClass"] == "Awning"):
                             swtype = 13
