@@ -140,14 +140,17 @@ class BasePlugin:
         if Unit == 1:
             # unit 1 used for up/down movement
             if (str(Command) == "Off"):
-                commands["name"] = "close"
-            elif (str(Command) == "On"):
                 commands["name"] = "open"
+            elif (str(Command) == "On"):
+                commands["name"] = "close"
             elif (str(Command) == "Stop"):
-                commands["name"] = "my"
+                commands["name"] = "stop"
+            # elif (str(Command) == "Stop"):
+                # commands["name"] = "my"
             elif ("Set Level" in str(Command)):
                 commands["name"] = "setClosure"
-                tmp = 100 - int(Level)
+                #tmp = 100 - int(Level)
+                tmp = int(Level)
                 params.append(tmp)
                 commands["parameters"] = params
         elif Unit == 2:
@@ -201,12 +204,17 @@ class BasePlugin:
         params = []
 
         if (str(Command) == "Off"):
-            commands["name"] = "close"
-        elif (str(Command) == "On"):
             commands["name"] = "open"
+        elif (str(Command) == "On"):
+            commands["name"] = "close"
+        elif (str(Command) == "Stop"):
+            commands["name"] = "stop"
+        # elif (str(Command) == "Stop"):
+            # commands["name"] = "my"
         elif ("Set Level" in str(Command)):
             commands["name"] = "setClosure"
-            tmp = 100 - int(Level)
+            #tmp = 100 - int(Level)
+            tmp = int(Level)
             params.append(tmp)
             commands["parameters"] = params
 
@@ -303,16 +311,21 @@ class BasePlugin:
 
                 for state in states:
                     status_num = 0
+                    lumstatus_l = False
 
                     if ((state["name"] == "core:ClosureState") or (state["name"] == "core:DeploymentState")):
                         level = int(state["value"])
-                        level = 100 - level
+                        #level = 100 - level
                         status_num = 1
                       
                     if ((state["name"] == "core:SlateOrientationState")):
                         level = int(state["value"])
                         level = 100 - level
                         status_num = 2
+
+                    if (state["name"] == "core:LuminanceState"):
+                        lumlevel = state["value"]
+                        lumstatus_l = True
                       
                     if status_num > 0:
                         if (Devices[dev].Units[status_num].sValue):
@@ -338,6 +351,18 @@ class BasePlugin:
                                 Devices[dev].Units[Unit].LastLevel = int(level)
                                 Devices[dev].Units[status_num].Update()
                                 #Devices[dev].Units[1].Update(2,str(level))
+                    if lumstatus_l: #assuming for now that the luminance sensor is always a single unit in a device
+                        if (Devices[dev].Units[1].sValue):
+                            int_lumlevel = Devices[dev].Units[1].sValue
+                        else:
+                            int_lumlevel = 0
+                        if (lumlevel != int_lumlevel):
+                            Domoticz.Status("Updating device: "+Devices[dev].Units[1].Name)
+                            logging.info("Updating device: "+Devices[dev].Units[1].Name)
+                            if (lumlevel != 0 and lumlevel != 120000):
+                                Devices[dev].Units[1].nValue(3)
+                                Devices[dev].Units[1].sValue(str(lumlevel))
+                                Devices[dev].Units[1].Update()
 
         return
 

@@ -151,6 +151,7 @@ class Tahoma:
         for device in self.devices:
             logging.debug("get_devices: Device name: "+device["label"]+" Device class: "+device["uiClass"])
             if (((device["uiClass"] == "RollerShutter") 
+                or (device["uiClass"] == "LightSensor") 
                 or (device["uiClass"] == "ExteriorScreen") 
                 or (device["uiClass"] == "Screen") 
                 or (device["uiClass"] == "Awning") 
@@ -190,8 +191,19 @@ class Tahoma:
                     logging.debug("get_devices: Must create new device: "+device["label"])
 
                     if (device["deviceURL"].startswith("io://")):
+                        deviceType = 244
+                        swtype = 21
+                        subtype2 = 73
                         if (device["uiClass"] == "Awning"):
                             swtype = 13
+                        elif (device["uiClass"] == "RollerShutter"):
+                            swtype = 21
+                            deviceType = 244
+                            subtype2 = 73                    
+                        elif (device["uiClass"] == "LightSensor"):
+                            swtype = 12
+                            deviceType = 246
+                            subtype2 = 1
                         else:
                             swtype = 16
                     elif (device["deviceURL"].startswith("rts://")):
@@ -201,11 +213,11 @@ class Tahoma:
                     Domoticz.Device(DeviceID=device["deviceURL"]) #use deviceURL as identifier for Domoticz.Device instance
                     if (device["uiClass"] == "VenetianBlind" or device["uiClass"] == "ExteriorVenetianBlind"):
                         #create unit for up/down and open/close for venetian blinds
-                        Domoticz.Unit(Name=device["label"] + " up/down", Unit=1, Type=244, Subtype=73, Switchtype=swtype, DeviceID=device["deviceURL"]).Create()
+                        Domoticz.Unit(Name=device["label"] + " up/down", Unit=1, Type=deviceType, Subtype=subtype2, Switchtype=swtype, DeviceID=device["deviceURL"]).Create()
                         Domoticz.Unit(Name=device["label"] + " orientation", Unit=2, Type=244, Subtype=73, Switchtype=swtype, DeviceID=device["deviceURL"]).Create()
                     else:
-                        #create a single unit for all oter device types
-                        Domoticz.Unit(Name=device["label"], Unit=1, Type=244, Subtype=73, Switchtype=swtype, DeviceID=device["deviceURL"]).Create()
+                        #create a single unit for all other device types
+                        Domoticz.Unit(Name=device["label"], Unit=1, Type=deviceType, Subtype=subtype2, Switchtype=swtype, DeviceID=device["deviceURL"]).Create()
                      
                     logging.info("New device created: "+device["label"])
                 else:
