@@ -1,14 +1,15 @@
+
 # Tahoma/Connexoon IO blind plugin
 #
 # Author: Nonolk, 2019-2020
 # FirstFree function courtesy of @moroen https://github.com/moroen/IKEA-Tradfri-plugin
 # All credits for the plugin are for Nonolk, who is the origin plugin creator
 """
-<plugin key="tahomaIO" name="Somfy Tahoma or Connexoon plugin" author="MadPatrick" version="2.1.1" externallink="https://github.com/MadPatrick/somfy">
+<plugin key="tahomaIO" name="Somfy Tahoma or Connexoon plugin" author="MadPatrick" version="2.2.0" externallink="https://github.com/MadPatrick/somfy">
     <description>
 	<br/><h2>Somfy Tahoma/Connexoon plugin</h2><br/>
         <ul style="list-style-type:square">
-	    <li>version: 2.1.1</li>
+	    <li>version: 2.2.0</li>
             <li>This plugin require internet connection at all time.</li>
             <li>It controls the Somfy for IO Blinds or Screens</li>
             <li>Please provide your email and password used to connect Tahoma/Connexoon</li>
@@ -131,10 +132,6 @@ class BasePlugin:
         commands = {}
         params = []
 
-#        if (str(Command) == "Off"):
-#            commands["name"] = "close"
-#        elif (str(Command) == "On"):
-#            commands["name"] = "open"
         if (str(Command) == "Off"):
             commands["name"] = "open"
         elif (str(Command) == "On"):
@@ -143,7 +140,6 @@ class BasePlugin:
             commands["name"] = "stop"
         elif ("Set Level" in str(Command)):
             commands["name"] = "setClosure"
-#            tmp = 100 - int(Level)
             tmp = int(Level)
             params.append(tmp)
             commands["parameters"] = params
@@ -224,6 +220,7 @@ class BasePlugin:
              if (Devices[dev].DeviceID == device["deviceURL"]) and (device["deviceURL"].startswith("io://")):
                level = 0
                status_l = False
+               lumstatus_l = False
                status = None
 
                if (self.tahoma.startup):
@@ -236,12 +233,16 @@ class BasePlugin:
 
                for state in states:
                   status_l = False
+                  lumstatus_l = False
 
                   if ((state["name"] == "core:ClosureState") or (state["name"] == "core:DeploymentState")):
                     level = int(state["value"])
-#                    level = 100 - level
+                    #level = 100 - level
                     status_l = True
-                    
+                  elif (state["name"] == "core:LuminanceState"):
+                    lumlevel = state["value"]
+                    lumstatus_l = True
+
                   if status_l:
                     if (Devices[dev].sValue):
                       int_level = int(Devices[dev].sValue)
@@ -249,14 +250,26 @@ class BasePlugin:
                       int_level = 0
                     if (level != int_level):
 
-                      Domoticz.Status("Updating device:"+Devices[dev].Name)
-                      logging.info("Updating device:"+Devices[dev].Name)
+                      Domoticz.Status("Updating device: "+Devices[dev].Name)
+                      logging.info("Updating device: "+Devices[dev].Name)
                       if (level == 0):
-                        Devices[dev].Update(0,"0")
+                          Devices[dev].Update(0,"0")
                       if (level == 100):
-                        Devices[dev].Update(1,"100")
+                          Devices[dev].Update(1,"100")
                       if (level != 0 and level != 100):
-                        Devices[dev].Update(2,str(level))
+                          Devices[dev].Update(2,str(level))
+
+                  if lumstatus_l:
+                    if (Devices[dev].sValue):
+                      int_lumlevel = Devices[dev].sValue
+                    else:
+                      int_lumlevel = 0
+                    if (lumlevel != int_lumlevel):
+
+                       Domoticz.Status("Updating device: "+Devices[dev].Name)
+                       logging.info("Updating device: "+Devices[dev].Name)
+                       if (lumlevel != 0 and lumlevel != 120000):
+                           Devices[dev].Update(3,str(lumlevel))
         return
 
 
@@ -326,4 +339,5 @@ def firstFree():
         if num not in Devices:
             return num
     return
+
 
