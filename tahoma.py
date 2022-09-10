@@ -204,8 +204,6 @@ class Tahoma:
                             swtype = 12
                             deviceType = 246
                             subtype2 = 1
-                        else:
-                            swtype = 16
                     elif (device["deviceURL"].startswith("rts://")):
                         swtype = 6
 
