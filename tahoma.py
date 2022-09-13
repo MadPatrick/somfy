@@ -192,8 +192,8 @@ class Tahoma:
                  swtype = None
 
                  logging.debug("get_devices: Must create device: "+device["label"])
-
-                   if (device["deviceURL"].startswith("io://")):
+                
+                if (device["deviceURL"].startswith("io://")):
                             swtype = 13
                             deviceType = 244
                             subtype2 = 73
