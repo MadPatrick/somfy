@@ -193,23 +193,17 @@ class Tahoma:
 
                  logging.debug("get_devices: Must create device: "+device["label"])
                 
-                   if (device["deviceURL"].startswith("io://")):
-                        if (device["uiClass"] == "Awning"):
-                            swtype = 13
-                        elif (device["uiClass"] == "RollerShutter"):
-                            swtype = 21
-                            deviceType = 244
-                            subtype2 = 73                    
-                        elif (device["uiClass"] == "LightSensor"):
-                            swtype = 12
-                            deviceType = 246
-                            subtype2 = 1
-                        elif (device["uiClass"] == "ExteriorScreen"):
-                            swtype = 13
-                        else:
-                            swtype = 16
-                    elif (device["deviceURL"].startswith("rts://")):
-                        swtype = 6
+                 if (device["deviceURL"].startswith("io://")):
+                     if (device["uiClass"] == "RollerShutter"):
+                         swtype = 21
+                         devicetype = 244
+                         subtype2 = 73
+                     if (device["uiClass"] == "LightSensor"):
+                         swtype = 12
+                         devicetype = 246
+                         subtype2 = 1
+                 elif (device["deviceURL"].startswith("rts://")):
+                    swtype = 6
 
                  #Domoticz.Device(Name=device["label"], Unit=idx, Type=244, Subtype=73, Switchtype=swtype, DeviceID=device["deviceURL"]).Create()
                  Domoticz.Device(Name=device["label"], Unit=idx, Type=devicetype, Subtype=subtype2, Switchtype=swtype, DeviceID=device["deviceURL"]).Create()
