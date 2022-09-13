@@ -194,9 +194,9 @@ class Tahoma:
                  logging.debug("get_devices: Must create device: "+device["label"])
 
                    if (device["deviceURL"].startswith("io://")):
-                        deviceType = 244
-                        swtype = 13
-                        subtype2 = 73
+                            swtype = 13
+                            deviceType = 244
+                            subtype2 = 73
                         if (device["uiClass"] == "Awning"):
                             swtype = 13
                         elif (device["uiClass"] == "RollerShutter"):
