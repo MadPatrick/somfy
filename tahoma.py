@@ -194,25 +194,25 @@ class Tahoma:
                  logging.debug("get_devices: Must create device: "+device["label"])
                 
                 if (device["deviceURL"].startswith("io://")):
-                            swtype = 13
-                            deviceType = 244
-                            subtype2 = 73
-                        if (device["uiClass"] == "Awning"):
-                            swtype = 13
-                        elif (device["uiClass"] == "RollerShutter"):
-                            swtype = 21
-                            deviceType = 244
-                            subtype2 = 73                    
-                        elif (device["uiClass"] == "LightSensor"):
-                            swtype = 12
-                            deviceType = 246
-                            subtype2 = 1
-                        elif (device["uiClass"] == "ExteriorScreen"):
-                            swtype = 13
-                        else:
-                            swtype = 16
-                    elif (device["deviceURL"].startswith("rts://")):
-                        swtype = 6
+                 swtype = 13
+                 deviceType = 244
+                 subtype2 = 73
+                 if (device["uiClass"] == "Awning"):
+                 swtype = 13
+                 elif (device["uiClass"] == "RollerShutter"):
+                 swtype = 21
+                 deviceType = 244
+                 subtype2 = 73                    
+                 elif (device["uiClass"] == "LightSensor"):
+                 swtype = 12
+                 deviceType = 246
+                 subtype2 = 1
+                 elif (device["uiClass"] == "ExteriorScreen"):
+                 swtype = 13
+                 else:
+                 swtype = 16
+                 elif (device["deviceURL"].startswith("rts://")):
+                 swtype = 6
 
 
                  #Domoticz.Device(Name=device["label"], Unit=idx, Type=244, Subtype=73, Switchtype=swtype, DeviceID=device["deviceURL"]).Create()
