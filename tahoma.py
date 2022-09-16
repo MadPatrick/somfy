@@ -233,7 +233,8 @@ class Tahoma:
             #do several retries on reaching events end point before going to time out error
             try:
                 response = requests.post(url, headers=Headers, timeout=self.timeout)
-                logging.debug("get events response: status '" + str(response.status_code) + "' response body: '"+str(response.json())+"'")
+                logging.debug("get events response: status '" + str(response.status_code) + "' response body: '"+str(response)+"'")
+                #logging.debug("get events response: status '" + str(response.status_code) + "' response body: '"+str(response.json())+"'")
                 if response.status_code != 200:
                     logging.error("error during get events, status: " + str(response.status_code) + ", " + str(response.text))
                     self.__logged_in = False
