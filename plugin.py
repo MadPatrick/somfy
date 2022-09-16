@@ -338,17 +338,17 @@ class BasePlugin:
                             if (level == 0):
                                 Devices[dev].Units[status_num].nValue = 0
                                 Devices[dev].Units[status_num].sValue = "0"
-                                Devices[dev].Units[Unit].LastLevel = 0
+                                Devices[dev].Units[status_num].LastLevel = 0
                                 Devices[dev].Units[status_num].Update()
                             if (level == 100):
                                 Devices[dev].Units[status_num].nValue = 1
                                 Devices[dev].Units[status_num].sValue = "100"
-                                Devices[dev].Units[Unit].LastLevel = 100
+                                Devices[dev].Units[status_num].LastLevel = 100
                                 Devices[dev].Units[status_num].Update()
                             if (level != 0 and level != 100):
                                 Devices[dev].Units[status_num].nValue = 2
                                 Devices[dev].Units[status_num].sValue = str(level)
-                                Devices[dev].Units[Unit].LastLevel = int(level)
+                                Devices[dev].Units[status_num].LastLevel = int(level)
                                 Devices[dev].Units[status_num].Update()
                                 #Devices[dev].Units[1].Update(2,str(level))
                     if lumstatus_l: #assuming for now that the luminance sensor is always a single unit in a device
@@ -360,8 +360,8 @@ class BasePlugin:
                             Domoticz.Status("Updating device: "+Devices[dev].Units[1].Name)
                             logging.info("Updating device: "+Devices[dev].Units[1].Name)
                             if (lumlevel != 0 and lumlevel != 120000):
-                                Devices[dev].Units[1].nValue(3)
-                                Devices[dev].Units[1].sValue(str(lumlevel))
+                                Devices[dev].Units[1].nValue = 3
+                                Devices[dev].Units[1].sValue = str(lumlevel)
                                 Devices[dev].Units[1].Update()
 
         return
