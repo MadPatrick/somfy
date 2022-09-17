@@ -1,14 +1,18 @@
 # Somfy plugin for Domoticz
 Original script was written by Nonolk : https://github.com/nonolk/domoticz_tahoma_blind.git
 
-Special thanks to JanJaap who did the rewritting of the plugin
+Special thanks to Jan-Jaap who did the rewritting of the plugin
 
 Domoticz plugin writen in Python to first support Somfy IO roller shutters using Tahoma/Connexoon. 
 Basic support of RTS (Open/Close) is also included without return state (limitation due to RTS), it means for RTS the state of the device won't be updated if the device state is modified outside of domoticz.
 
 To use this plugin you need to install the last stable release of Domoticz https://www.domoticz.com and to install the required python library.
 
-The plugin currently support the following device types: roller Shutters, screens (interior/exterior), awning, pergolas, garage door, windows and blinds(postions only, no slats control).
+The plugin currently support the following device types: roller shutters, screens (interior/exterior), awning, pergolas, garage door, windows, luminance sensor and blinds(postions and slats control).
+
+## Important note
+When upgrading to version 3.x, it is required to first remove all devices attached to the Somfy hardware. This has to do with the upgrade to the Domoticz Extended Framework, which enabled the slats/orientation control for the blinds.
+ The plugin will not upgrade when there are still devices attached to the Somfy hardware.
 
 ## Somfy login
 
@@ -32,7 +36,7 @@ sudo apt-get update
 sudo apt-get install python3 libpython3-dev libpython3.7-dev
 sudo apt-get install python3-requests
 ```
-To be able to run the local tes tool, also install:
+To be able to run the local test tool, also install:
 ```
 pip3 install console-menu
 ```
