@@ -22,12 +22,19 @@ https://www.tahomalink.com/enduser-mobile-web/steer-html5-client/tahoma/
 
 ## Installation
 ### Prerequisites
-Python version 3.4 or higher required & Domoticz version 4.10717 or greater. 
+Python version 3.7 or higher required & Domoticz version 2022.1 (due to extended plugin framework) or greater. 
+
+First, Follow the Domoticz guide on [Using Python Plugins](https://www.domoticz.com/wiki/Using_Python_plugins).
+
 To install:
 ```
 sudo apt-get update
 sudo apt-get install python3 libpython3-dev libpython3.7-dev
 sudo apt-get install python3-requests
+```
+To be able to run the local tes tool, also install:
+```
+pip3 install console-menu
 ```
 
 ### plugin
@@ -36,15 +43,15 @@ Then go in your Domoticz directory using a command line and open the plugins dir
 cd domoticz/plugins
 git clone https://github.com/MadPatrick/somfy
 ```
+Restart Domoticz with 
+```
+sudo systemctl restart domoticz.
+```
+
 to update:
 ```
 cd domoticz/plugins/somfy
 git pull
-```
-
-Restart Domoticz with 
-```
-sudo systemctl restart domoticz.
 ```
 
 In the web UI, navigate to the Hardware page. In the hardware dropdown list there will be an entry called "Somfy Tahoma or Connexoon plugin".

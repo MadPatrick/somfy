@@ -3,8 +3,12 @@ import logging
 import exceptions
 import urllib.parse
 import datetime
-import Domoticz
 import time
+
+try:
+	import DomoticzEx as Domoticz
+except ImportError:
+	import fakeDomoticz as Domoticz
 
 class Tahoma:
     def __init__(self):
@@ -121,7 +125,7 @@ class Tahoma:
         logging.info("Checking setup status at startup")
         #self.get_devices()
 
-    def get_devices(self, Devices, firstFree):
+    def get_devices(self, Devices):
         logging.debug("start get devices")
         Headers = { 'Host': self.srvaddr,"Connection": "keep-alive","Accept-Encoding": "gzip, deflate", "Accept": "*/*", "Content-Type": "application/x-www-form-urlencoded", "Cookie": self.cookie}
         url = self.base_url + '/enduser-mobile-web/enduserAPI/setup/devices'
@@ -130,12 +134,14 @@ class Tahoma:
         logging.debug("get device response: status '" + str(response.status_code) + "' response body: '"+str(response.json())+"'")
         if response.status_code != 200:
             logging.error("get_devices: error during get devices, status: " + str(response.status_code))
+            Domoticz.Error("get_devices: error during get devices, status: " + str(response.status_code))
             return
 
         Data = response.json()
 
         if (not "uiClass" in response.text):
             logging.error("get_devices: missing uiClass in response")
+            Domoticz.Error("get_devices: missing uiClass in response")
             logging.debug(str(Data))
             return
 
@@ -144,78 +150,78 @@ class Tahoma:
         self.filtered_devices = list()
         for device in self.devices:
             logging.debug("get_devices: Device name: "+device["label"]+" Device class: "+device["uiClass"])
-            #if (((device["uiClass"] == "RollerShutter") or (device["uiClass"] == "ExteriorScreen") or (device["uiClass"] == "Screen") or (device["uiClass"] == "Awning") or (device["uiClass"] == "Pergola") or (device["uiClass"] == "GarageDoor") or (device["uiClass"] == "Window") or (device["uiClass"] == "VenetianBlind") or (device["uiClass"] == "ExteriorVenetianBlind")) and ((device["deviceURL"].startswith("io://")) or (device["deviceURL"].startswith("rts://")))):
-            if (((device["uiClass"] == "RollerShutter") or (device["uiClass"] == "LightSensor") or (device["uiClass"] == "ExteriorScreen") or (device["uiClass"] == "Screen") or (device["uiClass"] == "Awning") or (device["uiClass"] == "Pergola") or (device["uiClass"] == "GarageDoor") or (device["uiClass"] == "Window") or (device["uiClass"] == "VenetianBlind") or (device["uiClass"] == "ExteriorVenetianBlind")) and ((device["deviceURL"].startswith("io://")) or (device["deviceURL"].startswith("rts://")))):
+            if (((device["uiClass"] == "RollerShutter") 
+                or (device["uiClass"] == "LightSensor") 
+                or (device["uiClass"] == "ExteriorScreen") 
+                or (device["uiClass"] == "Screen") 
+                or (device["uiClass"] == "Awning") 
+                or (device["uiClass"] == "Pergola") 
+                or (device["uiClass"] == "GarageDoor") 
+                or (device["uiClass"] == "Window") 
+                or (device["uiClass"] == "VenetianBlind") 
+                or (device["uiClass"] == "ExteriorVenetianBlind")) 
+                and ((device["deviceURL"].startswith("io://")) or (device["deviceURL"].startswith("rts://")))):
                 self.filtered_devices.append(device)
+                logging.info("supported device found: "+ str(device))
+            else:
+                logging.debug("unsupported device found: "+ str(device))
 
-        logging.debug("get_devices: devices found: "+str(len(Devices))+" self.startup: "+str(self.startup))
-        if (len(Devices) == 0 and self.startup):
-            count = 1
-            for device in self.filtered_devices:
-                logging.info("get_devices: Creating device: "+device["label"])
-                swtype = None
+        logging.debug("get_devices: devices found, domoticz: "+str(len(Devices))+" API: "+str(len(self.filtered_devices))+", self.startup: "+str(self.startup))
 
-                if (device["deviceURL"].startswith("io://")):
-                    if (device["uiClass"] == "RollerShutter"):
-                        swtype = 21
-                        devicetype = 244
-                        subtype2 = 73
-                    if (device["uiClass"] == "LightSensor"):
-                        swtype = 12
-                        devicetype = 246
-                        subtype2 = 1
-                elif (device["deviceURL"].startswith("rts://")):
-                    swtype = 6
-
-                #Domoticz.Device(Name=device["label"], Unit=count, Type=244, Subtype=73, Switchtype=swtype, DeviceID=device["deviceURL"]).Create()
-                Domoticz.Device(Name=device["label"], Unit=count, Type=devicetype, Subtype=subtype2, Switchtype=swtype, DeviceID=device["deviceURL"]).Create()
-
-                if not (count in Devices):
-                    logging.error("Device creation not allowed, please allow device creation")
-                    Domoticz.Error("Device creation not allowed, please allow device creation")
-                else:
-                    logging.info("Device created: "+device["label"])
-                    count += 1
-
-        if ((len(Devices) < len(self.filtered_devices)) and len(Devices) != 0 and self.startup):
-            logging.info("New device(s) detected")
-            found = False
+        if ((len(Devices) <= len(self.filtered_devices)) or self.startup):
+            #Domoticz devices already present but less than from API or starting up
+            logging.debug("New device(s) detected")
 
             for device in self.filtered_devices:
-                for dev in Devices:
-                  UnitID = Devices[dev].Unit
-                  if Devices[dev].DeviceID == device["deviceURL"]:
+                found = False
+                logging.debug("check if need to create device: "+device["label"])
+                if device["label"] in Devices:
+                    logging.debug("get_devices: step 1, do not create new device: "+device["label"]+", device already exists")
                     found = True
-                    break
-                if (not found):
-                 idx = firstFree
-                 swtype = None
+                    #break
+                for domo_dev in Devices:
+                    if domo_dev == device["deviceURL"]:
+                        logging.debug("get_devices: step 2, do not create new device: "+device["label"]+", device already exists")
+                        found = True
+                        break
+                if (found==False):
+                    #DeviceID not found, create new one
+                    swtype = None
 
-                 logging.debug("get_devices: Must create device: "+device["label"])
+                    logging.debug("get_devices: Must create new device: "+device["label"])
 
-                 if (device["deviceURL"].startswith("io://")):
-                     if (device["uiClass"] == "RollerShutter"):
-                         swtype = 21
-                         devicetype = 244
-                         subtype2 = 73
-                     if (device["uiClass"] == "LightSensor"):
-                         swtype = 12
-                         devicetype = 246
-                         subtype2 = 1
-                 elif (device["deviceURL"].startswith("rts://")):
-                    swtype = 6
+                    if (device["deviceURL"].startswith("io://")):
+                        deviceType = 244
+                        swtype = 13
+                        subtype2 = 73
+                        if (device["uiClass"] == "Awning"):
+                            swtype = 13
+                        elif (device["uiClass"] == "RollerShutter"):
+                            swtype = 21
+                            deviceType = 244
+                            subtype2 = 73                    
+                        elif (device["uiClass"] == "LightSensor"):
+                            swtype = 12
+                            deviceType = 246
+                            subtype2 = 1
+                    elif (device["deviceURL"].startswith("rts://")):
+                        swtype = 6
 
-                 #Domoticz.Device(Name=device["label"], Unit=idx, Type=244, Subtype=73, Switchtype=swtype, DeviceID=device["deviceURL"]).Create()
-                 Domoticz.Device(Name=device["label"], Unit=idx, Type=devicetype, Subtype=subtype2, Switchtype=swtype, DeviceID=device["deviceURL"]).Create()
-
-                 if not (idx in Devices):
-                     logging.error("Device creation not allowed, please allow device creation")
-                     Domoticz.Error("Device creation not allowed, please allow device creation")
-                 else:
-                     logging.info("New device created: "+device["label"])
+                    # extended framework: create first device then unit? or create device+unit in one go?
+                    Domoticz.Device(DeviceID=device["deviceURL"]) #use deviceURL as identifier for Domoticz.Device instance
+                    if (device["uiClass"] == "VenetianBlind" or device["uiClass"] == "ExteriorVenetianBlind"):
+                        #create unit for up/down and open/close for venetian blinds
+                        Domoticz.Unit(Name=device["label"] + " up/down", Unit=1, Type=deviceType, Subtype=subtype2, Switchtype=swtype, DeviceID=device["deviceURL"]).Create()
+                        Domoticz.Unit(Name=device["label"] + " orientation", Unit=2, Type=244, Subtype=73, Switchtype=swtype, DeviceID=device["deviceURL"]).Create()
+                    else:
+                        #create a single unit for all other device types
+                        Domoticz.Unit(Name=device["label"], Unit=1, Type=deviceType, Subtype=subtype2, Switchtype=swtype, DeviceID=device["deviceURL"]).Create()
+                     
+                    logging.info("New device created: "+device["label"])
                 else:
-                  found = False
+                    found = False
         self.startup = False
+        logging.debug("finished get devices")
         self.get_events()
 
     def get_events(self):
@@ -224,10 +230,11 @@ class Tahoma:
         url = self.base_url + '/enduser-mobile-web/enduserAPI/events/'+self.listenerId+'/fetch'
 
         for i in range(1,4):
+            #do several retries on reaching events end point before going to time out error
             try:
                 response = requests.post(url, headers=Headers, timeout=self.timeout)
-                logging.debug("get events response: status '" + str(response.status_code) + "' response body: '"+str(response.json())+"'")
-                #logging.debug("get events: self.__logged_in = '"+str(self.__logged_in)+"' and self.heartbeat = '"+str(self.heartbeat)+"' and self.startup = '"+str(self.startup))
+                logging.debug("get events response: status '" + str(response.status_code) + "' response body: '"+str(response)+"'")
+                #logging.debug("get events response: status '" + str(response.status_code) + "' response body: '"+str(response.json())+"'")
                 if response.status_code != 200:
                     logging.error("error during get events, status: " + str(response.status_code) + ", " + str(response.text))
                     self.__logged_in = False
@@ -255,9 +262,11 @@ class Tahoma:
                 # elif (response.status_code == 200 and (not self.heartbeat)):
                   # return
                 else:
-                  logging.info("Return status"+str(response.status_code))
+                  logging.info("Return status " + str(response.status_code))
             except requests.exceptions.RequestException as exp:
                 logging.error("get_events RequestException: " + str(exp))
+            #wait increasing time before next try
             time.sleep(i ** 3)
         else:
             raise exceptions.TooManyRetries
+        logging.debug("finished get events")
