@@ -1,3 +1,4 @@
+
 # Tahoma/Connexoon IO blind plugin
 #
 # Author: Nonolk, 2019-2020
@@ -8,7 +9,7 @@
     <description>
 	<br/><h2>Somfy Tahoma/Connexoon plugin</h2><br/>
         <ul style="list-style-type:square">
-            <li>version: 3.0.8</li>
+            <li>version: 3.0.9</li>
             <li>This plugin require internet connection at all time.</li>
             <li>It controls the Somfy for IO Blinds or Screens</li>
             <li>Please provide your email and password used to connect Tahoma/Connexoon</li>
@@ -286,6 +287,7 @@ class BasePlugin:
             logging.debug("Polling unit in " + str(self.runCounter) + " heartbeats.")
 
     def update_devices_status(self, Updated_devices):
+
         logging.debug("updating device status self.tahoma.startup = "+str(self.tahoma.startup)+" on num datasets: "+str(len(Updated_devices)))
         logging.debug("updating device status on data: "+str(Updated_devices))
         for dataset in Updated_devices:
@@ -500,6 +502,7 @@ def firstFree():
         if num not in Devices:
             return num
     return
+
 
 # Configuration Helpers
 def getConfigItem(Key=None, Default={}):
