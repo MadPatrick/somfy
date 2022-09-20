@@ -94,6 +94,7 @@ class Tahoma:
             response = requests.post(url, headers=Headers, data=json_data, timeout=timeout)
         except requests.exceptions.RequestException as exp:
             logging.error("Send command returns RequestException: " + str(exp))
+            return ""
 
         logging.debug("command response: status '" + str(response.status_code) + "' response body: '"+str(response.json())+"'")
         if response.status_code != 200:
