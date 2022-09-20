@@ -11,9 +11,11 @@ except ImportError:
 	import fakeDomoticz as Domoticz
 
 class Tahoma:
+    """class to interface with tahoma web API"""
     def __init__(self):
         self.srvaddr = "tahomalink.com"
         self.base_url = "https://tahomalink.com:443"
+        self.login_url = "/enduser-mobile-web/enduserAPI/login"
         self.cookie = None
         self.listenerId = None
         self.__logged_in = False
@@ -41,7 +43,8 @@ class Tahoma:
 
     def tahoma_login(self, username, password):
 
-        url = self.base_url + '/enduser-mobile-web/enduserAPI/login'
+        #url = self.base_url + '/enduser-mobile-web/enduserAPI/login'
+        url = self.base_url + self.login_url 
         headers = { 'Host': self.srvaddr,"Connection": "keep-alive","Accept-Encoding": "gzip, deflate", "Accept": "*/*", "Content-Type": "application/x-www-form-urlencoded"}
         data = "userId="+urllib.parse.quote(username)+"&userPassword="+urllib.parse.quote(password)+""
         response = requests.post(url, data=data, headers=headers, timeout=self.timeout)

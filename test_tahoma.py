@@ -2,20 +2,23 @@ import time
 import logging
 import json
 import consolemenu
-import tahoma
+#import tahoma
+import tahoma_local as tahoma
 import exceptions
+from params import *
 
 logging.basicConfig(format='%(asctime)s - %(levelname)-8s - %(filename)-18s - %(message)s', filename='somfy_test.log',
                     level=logging.DEBUG)
+logging.info("=== starting test run ===")
 
-menuoptions = ['0 exit',"1 log in", "2 register", "3 get devices", "4 get events", "5 send command", "6 check log in"]
+menuoptions = ['0 exit',"1 log in", "2 register", "3 check log in", "4 generate toke", "5 activate token", "6 get tokes", "7 get devices", "8 get events", "9 send command"]
 mymenu = consolemenu.SelectionMenu(menuoptions)
 
 device_list = list()
 
 tahoma = tahoma.Tahoma()
 if tahoma.cookie is None:
-    tahoma.cookie = 'JSESSIONID=F290EEAEC03B4838EBDA4B0CD0034BAB; Path=/enduser-mobile-web; Secure; HttpOnly; SameSite=None'
+    tahoma.cookie = dict(JSESSIONID='F290EEAEC03B4838EBDA4B0CD0034BAB')
 
 if True:
     while True:
@@ -23,22 +26,27 @@ if True:
             print(i) 
         x = int(input("Please Select:"))
         print(x)
-        if x == 0: exit()
+        if x == 0: 
+            logging.info("== end test run ===")
+            exit()
         if x == 1: 
             try:
-                tahoma.tahoma_login('sinterklaas@gmail.com', "blabla")
+                tahoma.tahoma_login(p_email, p_password)
             except exceptions.LoginFailure as exp:
                 print("Failed to login: " + str(exp))
+            if tahoma.cookie is None:
+                tahoma.cookie = dict(JSESSIONID='F290EEAEC03B4838EBDA4B0CD0034BAB')
         if x == 2: 
             tahoma.register_listener()
             if tahoma.listenerId is None:
                 tahoma.listenerId = 'b4e62511-ac10-3e01-60e0-9b9f656aea77'
-        if x == 3: print(tahoma.get_devices(device_list))
-        if x == 4: print(tahoma.get_events())
-        if x == 5: 
+        if x == 3: print(str(tahoma.logged_in))
+        if x == 4: print(str(tahoma.generate_token(p_pin)))
+        if x == 7: print(tahoma.get_devices(device_list))
+        if x == 8: print(tahoma.get_events())
+        if x == 9: 
             data = '{"actions": [{"commands": [{"name": "open"}], "deviceURL": "io://1237-2024-7920/10464619"}], "label": "Domoticz - Somfy - Kamer_Klein - open"}'
             print(tahoma.tahoma_command(json.dumps(data)))
-        if x == 6: print(str(tahoma.logged_in))
         input("Press Enter to continue...")
         # except (ValueError) as err:
             # print("error in menu keuze")

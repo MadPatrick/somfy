@@ -30,7 +30,7 @@ class FailureWithoutErrorCode(TahomaException):
         super().__init__(self.message)
 
 class LoginFailure(TahomaException):
-    """Too many retries to call API"""
+    """failed to login to API"""
     def __init__(self, login_message = "Failed to login"):
         self.message = login_message
         super().__init__(self.message)
