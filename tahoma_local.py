@@ -97,12 +97,12 @@ class Tahoma:
         response = requests.post(self.base_url + url_act, headers=headers_act, json=data_act, cookies=self.cookie)
 
         if response.status_code == 200:
-            self.token = response.json()['token']
-            logging.debug("succeeded to generate token: " + str(self.token))
+            #self.token = response.json()['token']
+            logging.debug("succeeded to activate token: " + str(self.token))
         elif ((response.status_code == 401) or (response.status_code == 400)):
             self.__logged_in = False
             self.cookie = None
-            logging.error("failed to generate token")
+            logging.error("failed to activate token")
             raise exceptions.LoginFailure("failed to generate token")
         return response.json()
 
