@@ -13,7 +13,6 @@ except ImportError:
 
 class TahomaWebApi:
     def __init__(self):
-        self.srvaddr = "tahomalink.com"
         self.base_url = "https://ha101-1.overkiz.com"
         self.headers_url = {"Content-Type": "application/x-www-form-urlencoded"}
         self.headers_json = {"Content-Type": "application/json"}
@@ -21,7 +20,6 @@ class TahomaWebApi:
         self.timeout = 10
         self.__expiry_date = datetime.datetime.now()
         self.logged_in_expiry_days = 6
-        self.pin = {"0000-0000-0000"}
         self.cookie = None
         self.token = None
         self.__logged_in = False
@@ -132,6 +130,22 @@ class TahomaWebApi:
         return response.json()
 
 class SomfyBox:
-    def __init__(self):
-        pass
-        
+    def __init__(self, pin, port):
+        self.base_url = "https://gateway-" + str(pin) + ".local:" + str(port) + "/enduser-mobile-web/1/enduserAPI"
+        self.headers_json = {"Content-Type": "application/json", "Authorization": "Bearer "}
+
+    def set_token(self, token):
+        self.headers_json["Authorization"] = "Bearer " + str(token)
+
+    def get_version(self):
+        response = requests.get(self.base_url + "/apiVersion", headers=self.headers_json)
+        if response.status_code == 200:
+            logging.debug("succeeded to get API version: " + str(response.json()))
+        elif ((response.status_code == 401) or (response.status_code == 400)):
+            self.__logged_in = False
+            self.cookie = None
+            logging.error("failed to get API version")
+            raise exceptions.LoginFailure("failed to get API version")
+        return response.json()
+
+
