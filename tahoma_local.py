@@ -81,6 +81,7 @@ class Tahoma:
         response = requests.get(self.base_url + url_gen, headers=headers_gen, cookies=self.cookie)
         
         if response.status_code == 200:
+            self.token = response.json()['token']
             logging.debug("succeeded to activate token: " + str(self.token))
         elif ((response.status_code == 401) or (response.status_code == 400)):
             self.__logged_in = False
