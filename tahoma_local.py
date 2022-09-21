@@ -11,7 +11,7 @@ try:
 except ImportError:
 	import fakeDomoticz as Domoticz
 
-class Tahoma:
+class TahomaWebApi:
     def __init__(self):
         self.srvaddr = "tahomalink.com"
         self.base_url = "https://ha101-1.overkiz.com"
@@ -91,7 +91,7 @@ class Tahoma:
 
     def activate_token(self, pin):
         url_act = "/enduser-mobile-web/enduserAPI/config/"+pin+"/local/tokens"
-        data_act = {"label": "Toto token", "token": self.token, "scope": "devmode"}
+        data_act = {"label": "Domoticz token", "token": self.token, "scope": "devmode"}
         response = requests.post(self.base_url + url_act, headers=self.headers_json, json=data_act, cookies=self.cookie)
 
         if response.status_code == 200:
@@ -130,3 +130,8 @@ class Tahoma:
             logging.error("failed to delete token")
             raise exceptions.LoginFailure("failed to delete tokens")
         return response.json()
+
+class SomfyBox:
+    def __init__(self):
+        pass
+        

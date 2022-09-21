@@ -3,7 +3,7 @@ import logging
 import json
 import consolemenu
 #import tahoma
-import tahoma_local as tahoma
+from tahoma_local import TahomaWebApi as tahoma
 import exceptions
 from params import *
 
@@ -16,7 +16,7 @@ mymenu = consolemenu.SelectionMenu(menuoptions)
 
 device_list = list()
 
-tahoma = tahoma.Tahoma()
+tahoma = tahoma()
 if tahoma.cookie is None:
     tahoma.cookie = dict(JSESSIONID='F290EEAEC03B4838EBDA4B0CD0034BAB')
 
@@ -47,14 +47,14 @@ if True:
             response = tahoma.generate_token(p_pin)
             print(json.dumps(response, sort_keys = True, indent=4))
         if x == 5:
-            repsonse = tahoma.activate_token(p_pin)
+            response = tahoma.activate_token(p_pin)
             print(json.dumps(response, sort_keys = True, indent=4))
         if x == 6:
-            repsonse = tahoma.get_tokens(p_pin)
+            response = tahoma.get_tokens(p_pin)
             print(json.dumps(response, sort_keys = True, indent=4))
         if x == 7:
             uuid = input("Please enter uuid to delete:")
-            repsonse = tahoma.delete_tokens(p_pin, uuid)
+            response = tahoma.delete_tokens(p_pin, uuid)
             print(json.dumps(response, sort_keys = True, indent=4))
         if x == 10: print(tahoma.get_devices(device_list))
         if x == 11: print(tahoma.get_events())
