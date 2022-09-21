@@ -29,13 +29,15 @@ if True:
         if x == 0: 
             logging.info("== end test run ===")
             exit()
-        if x == 1: 
+        if x == 1:
+            status = False
             try:
-                tahoma.tahoma_login(p_email, p_password)
+                status = tahoma.tahoma_login(p_email, p_password)
             except exceptions.LoginFailure as exp:
                 print("Failed to login: " + str(exp))
             if tahoma.cookie is None:
                 tahoma.cookie = dict(JSESSIONID='F290EEAEC03B4838EBDA4B0CD0034BAB')
+            print("login status: "+str(status))
         if x == 2: 
             tahoma.register_listener()
             if tahoma.listenerId is None:
