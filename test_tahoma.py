@@ -11,7 +11,7 @@ logging.basicConfig(format='%(asctime)s - %(levelname)-8s - %(filename)-18s - %(
                     level=logging.DEBUG)
 logging.info("=== starting test run ===")
 
-menuoptions = ['0 exit',"1 log in", "2 register", "3 check log in", "4 generate toke", "5 activate token", "6 get tokes", "7 get devices", "8 get events", "9 send command"]
+menuoptions = ['0 exit',"1 log in", "2 register", "3 check log in", "4 generate toke", "5 activate token", "6 get tokens", "7 get devices", "8 get events", "9 send command"]
 mymenu = consolemenu.SelectionMenu(menuoptions)
 
 device_list = list()
@@ -41,7 +41,15 @@ if True:
             if tahoma.listenerId is None:
                 tahoma.listenerId = 'b4e62511-ac10-3e01-60e0-9b9f656aea77'
         if x == 3: print(str(tahoma.logged_in))
-        if x == 4: print(str(tahoma.generate_token(p_pin)))
+        if x == 4: 
+            response = tahoma.generate_token(p_pin)
+            print(json.dumps(response, sort_keys = True, indent=4))
+        if x == 5:
+            repsonse = tahoma.activate_token(p_pin)
+            print(json.dumps(response, sort_keys = True, indent=4))
+        if x == 6:
+            repsonse = tahoma.get_tokens(p_pin)
+            print(json.dumps(response, sort_keys = True, indent=4))
         if x == 7: print(tahoma.get_devices(device_list))
         if x == 8: print(tahoma.get_events())
         if x == 9: 

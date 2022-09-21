@@ -87,21 +87,39 @@ class Tahoma:
             self.cookie = None
             logging.error("failed to generate token")
             raise exceptions.LoginFailure("failed to generate token")
+        return response.json()
 
     def activate_token(self, pin):
         url_act = "/enduser-mobile-web/enduserAPI/config/"+pin+"/local/tokens"
         headers_act = {"Content-Type": "application/json"}
         data_act = {"label": "Toto token", "token": self.token, "scope": "devmode"}
-        respone = requests.post(self.base_url + url_act, headers=headers_act, json=data_act)
+        response = requests.post(self.base_url + url_act, headers=headers_act, json=data_act, cookies=self.cookie)
 
         if response.status_code == 200:
             self.token = response.json()['token']
             logging.debug("succeeded to generate token: " + str(self.token))
-        elif ((Status == 401) or (Status == 400)):
+        elif ((response.status_code == 401) or (response.status_code == 400)):
             self.__logged_in = False
             self.cookie = None
             logging.error("failed to generate token")
             raise exceptions.LoginFailure("failed to generate token")
+        return response.json()
+
+    def get_tokens(self, pin):
+        url_act = "/enduser-mobile-web/enduserAPI/config/"+pin+"/local/tokens/devmode"
+        headers_act = {"Content-Type": "application/json"}
+
+        response = requests.post(self.base_url + url_act, headers=headers_act, cookies=self.cookie)
+
+        if response.status_code == 200:
+            self.token = response.json()['token']
+            logging.debug("succeeded to generate token: " + str(self.token))
+        elif ((response.status_code == 401) or (response.status_code == 400)):
+            self.__logged_in = False
+            self.cookie = None
+            logging.error("failed to generate token")
+            raise exceptions.LoginFailure("failed to generate token")
+        return response.json()
 
     def the_rest():
         ## Generate a token
