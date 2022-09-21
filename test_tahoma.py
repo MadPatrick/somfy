@@ -11,7 +11,7 @@ logging.basicConfig(format='%(asctime)s - %(levelname)-8s - %(filename)-18s - %(
                     level=logging.DEBUG)
 logging.info("=== starting test run ===")
 
-menuoptions = ['0 exit',"1 log in", "2 register", "3 check log in", "4 generate toke", "5 activate token", "6 get tokens", "7 get devices", "8 get events", "9 send command"]
+menuoptions = ['0 exit',"1 log in", "2 register", "3 check log in", "4 generate toke", "5 activate token", "6 get tokens", "7 delete token", "10 get devices", "11 get events", "12 send command"]
 mymenu = consolemenu.SelectionMenu(menuoptions)
 
 device_list = list()
@@ -52,9 +52,13 @@ if True:
         if x == 6:
             repsonse = tahoma.get_tokens(p_pin)
             print(json.dumps(response, sort_keys = True, indent=4))
-        if x == 7: print(tahoma.get_devices(device_list))
-        if x == 8: print(tahoma.get_events())
-        if x == 9: 
+        if x == 7:
+            uuid = input("Please enter uuid to delete:")
+            repsonse = tahoma.delete_tokens(p_pin, uuid)
+            print(json.dumps(response, sort_keys = True, indent=4))
+        if x == 10: print(tahoma.get_devices(device_list))
+        if x == 11: print(tahoma.get_events())
+        if x == 12: 
             data = '{"actions": [{"commands": [{"name": "open"}], "deviceURL": "io://1237-2024-7920/10464619"}], "label": "Domoticz - Somfy - Kamer_Klein - open"}'
             print(tahoma.tahoma_command(json.dumps(data)))
         input("Press Enter to continue...")

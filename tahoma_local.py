@@ -118,18 +118,15 @@ class Tahoma:
             raise exceptions.LoginFailure("failed to get tokens")
         return response.json()
 
-    def the_rest():
-        ## Generate a token
+    def delete_tokens(self, pin, uuid):
+        url_del = "/enduser-mobile-web/enduserAPI/config/"+pin+"/local/tokens/"+str(uuid)
+        response = requests.delete(self.base_url + url_del, headers=self.headers_json, cookies=self.cookie)
 
-        r_gen.status_code
-
-        r_gen.text
-        '{"token":"XXXXXXXXXXXXXXXX"}'
-
-        ## Activate your token
-        url_act = "https://ha101-1.overkiz.com/enduser-mobile-web/enduserAPI/config/MY_PIN/local/tokens"
-        headers_act = {"Content-Type": "application/json"}
-        data_act = {"label": "My token", "token": r_gen.json()['token'], "scope": "devmode"}
-        r_act = s.post(url_act, headers=headers_act, json=data_act)
-
-        r_act.status_code
+        if response.status_code == 200:
+            logging.debug("succeeded to delete token: " + str(response.json()))
+        elif ((response.status_code == 401) or (response.status_code == 400)):
+            self.__logged_in = False
+            self.cookie = None
+            logging.error("failed to delete token")
+            raise exceptions.LoginFailure("failed to delete tokens")
+        return response.json()
