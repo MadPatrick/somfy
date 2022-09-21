@@ -15,7 +15,8 @@ class Tahoma:
     def __init__(self):
         self.srvaddr = "tahomalink.com"
         self.base_url = "https://ha101-1.overkiz.com"
-        self.headers = {"Content-Type": "application/x-www-form-urlencoded"}
+        self.headers_url = {"Content-Type": "application/x-www-form-urlencoded"}
+        self.headers_json = {"Content-Type": "application/json"}
         self.login_url = "/enduser-mobile-web/enduserAPI/login"
         self.timeout = 10
         self.__expiry_date = datetime.datetime.now()
@@ -35,7 +36,7 @@ class Tahoma:
 
     def tahoma_login(self, username, password):
         data = {"userId": username, "userPassword": password}
-        response = requests.post(self.base_url + self.login_url, headers=self.headers, data=data, timeout=self.timeout)
+        response = requests.post(self.base_url + self.login_url, headers=self.headers_url, data=data, timeout=self.timeout)
         Data = response.json()
         logging.debug("Login respone: status_code: '"+str(response.status_code)+"' reponse body: '"+str(Data)+"'")
 
@@ -74,11 +75,9 @@ class Tahoma:
 
     def generate_token(self, pin):
         url_gen = "/enduser-mobile-web/enduserAPI/config/"+pin+"/local/tokens/generate"
-        headers_gen = {"Content-Type": "application/json"}
         logging.debug("generate token: url_gen = '" + url_gen + "'")
-        logging.debug("generate token: headers_gen = '" + str(headers_gen) + "'")
         logging.debug("generate token: cookie = '" + str(self.cookie) + "'")
-        response = requests.get(self.base_url + url_gen, headers=headers_gen, cookies=self.cookie)
+        response = requests.get(self.base_url + url_gen, headers=self.headers_json, cookies=self.cookie)
         
         if response.status_code == 200:
             self.token = response.json()['token']
@@ -92,9 +91,8 @@ class Tahoma:
 
     def activate_token(self, pin):
         url_act = "/enduser-mobile-web/enduserAPI/config/"+pin+"/local/tokens"
-        headers_act = {"Content-Type": "application/json"}
         data_act = {"label": "Toto token", "token": self.token, "scope": "devmode"}
-        response = requests.post(self.base_url + url_act, headers=headers_act, json=data_act, cookies=self.cookie)
+        response = requests.post(self.base_url + url_act, headers=self.headers_json, json=data_act, cookies=self.cookie)
 
         if response.status_code == 200:
             #self.token = response.json()['token']
@@ -103,23 +101,21 @@ class Tahoma:
             self.__logged_in = False
             self.cookie = None
             logging.error("failed to activate token")
-            raise exceptions.LoginFailure("failed to generate token")
+            raise exceptions.LoginFailure("failed to activate token")
         return response.json()
 
     def get_tokens(self, pin):
         url_act = "/enduser-mobile-web/enduserAPI/config/"+pin+"/local/tokens/devmode"
-        headers_act = {"Content-Type": "application/json"}
-
-        response = requests.post(self.base_url + url_act, headers=headers_act, cookies=self.cookie)
+        response = requests.get(self.base_url + url_act, headers=self.headers_json, cookies=self.cookie)
 
         if response.status_code == 200:
-            self.token = response.json()['token']
-            logging.debug("succeeded to generate token: " + str(self.token))
+            #self.token = response.json()['token']
+            logging.debug("succeeded to get tokens: " + str(response.json()))
         elif ((response.status_code == 401) or (response.status_code == 400)):
             self.__logged_in = False
             self.cookie = None
-            logging.error("failed to generate token")
-            raise exceptions.LoginFailure("failed to generate token")
+            logging.error("failed to get tokens")
+            raise exceptions.LoginFailure("failed to get tokens")
         return response.json()
 
     def the_rest():
