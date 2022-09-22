@@ -11,6 +11,9 @@ try:
 except ImportError:
 	import fakeDomoticz as Domoticz
 
+import requests.packages.urllib3
+requests.packages.urllib3.disable_warnings()
+
 class TahomaWebApi:
     def __init__(self):
         self.base_url = "https://ha101-1.overkiz.com"
@@ -131,7 +134,7 @@ class TahomaWebApi:
 
 class SomfyBox:
     def __init__(self, pin, port):
-        self.base_url = "https://gateway-" + str(pin) + ".local:" + str(port) + "/enduser-mobile-web/1/enduserAPI"
+        self.base_url = "https://" + str(pin) + ".local:" + str(port) + "/enduser-mobile-web/1/enduserAPI"
         self.headers_json = {"Content-Type": "application/json", "Authorization": "Bearer "}
 
     def set_token(self, token):
