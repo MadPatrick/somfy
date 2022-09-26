@@ -145,7 +145,7 @@ class SomfyBox:
     def get_version(self):
         if self.token is None:
             raise exceptions.TahomaException("No token has been provided")
-        response = requests.get(self.base_url + "/apiVersion", headers=self.headers_json)
+        response = requests.get(self.base_url + "/apiVersion", headers=self.headers_json, verify=False)
         if response.status_code == 200:
             logging.debug("succeeded to get API version: " + str(response.json()))
         elif ((response.status_code == 401) or (response.status_code == 400)):
@@ -158,7 +158,7 @@ class SomfyBox:
     def get_gateways(self):
         if self.token is None:
             raise exceptions.TahomaException("No token has been provided")
-        response = requests.get(self.base_url + "/setup/gateways", headers=self.headers_json)
+        response = requests.get(self.base_url + "/setup/gateways", headers=self.headers_json, verify=False)
         logging.debug(response)
         if response.status_code == 200:
             logging.debug("succeeded to get local API gateways: " + str(response.json()))
@@ -172,7 +172,7 @@ class SomfyBox:
     def get_devices(self):
         if self.token is None:
             raise exceptions.TahomaException("No token has been provided")
-        response = requests.get(self.base_url + "/setup/devices", headers=self.headers_json)
+        response = requests.get(self.base_url + "/setup/devices", headers=self.headers_json, verify=False)
         logging.debug(response)
         if response.status_code == 200:
             logging.debug("succeeded to get local API devices: " + str(response.json()))
@@ -187,7 +187,7 @@ class SomfyBox:
         if self.token is None:
             raise exceptions.TahomaException("No token has been provided")
         if self.listenerId is not None:
-            response = requests.get(self.base_url + "/events/"+self.listenerId+"/fetch", headers=self.headers_json)
+            response = requests.get(self.base_url + "/events/"+self.listenerId+"/fetch", headers=self.headers_json, verify=False)
         else:
             logging.error("cannot fetch events if no listener registered")
             raise exceptions.TahomaException("cannot fetch events if no listener registered")
@@ -204,7 +204,7 @@ class SomfyBox:
     def register_listener(self):
         if self.token is None:
             raise exceptions.TahomaException("No token has been provided")
-        response = requests.post(self.base_url + "/events/register", headers=self.headers_json)
+        response = requests.post(self.base_url + "/events/register", headers=self.headers_json, verify=False)
         logging.debug(response)
         if response.status_code == 200:
             logging.debug("succeeded to get local listener ID: " + str(response.json()))
