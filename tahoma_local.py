@@ -137,11 +137,15 @@ class SomfyBox:
         self.base_url = "https://" + str(pin) + ".local:" + str(port) + "/enduser-mobile-web/1/enduserAPI"
         self.headers_json = {"Content-Type": "application/json", "Authorization": "Bearer "}
         self.listenerId = None
+        self.token = None
 
     def set_token(self, token):
+        self.token = token
         self.headers_json["Authorization"] = "Bearer " + str(token)
 
     def get_version(self):
+        if self.token is None:
+            raise exceptions.TahomaException("No token has been provided")
         response = requests.get(self.base_url + "/apiVersion", headers=self.headers_json)
         if response.status_code == 200:
             logging.debug("succeeded to get API version: " + str(response.json()))
@@ -149,10 +153,12 @@ class SomfyBox:
             self.__logged_in = False
             self.cookie = None
             logging.error("failed to get API version")
-            raise exceptions.LoginFailure("failed to get API version")
+            raise exceptions.TahomaException("failed to get API version")
         return response.json()
 
     def get_gateways(self):
+        if self.token is None:
+            raise exceptions.TahomaException("No token has been provided")
         response = requests.get(self.base_url + "/setup/gateways", headers=self.headers_json)
         logging.debug(response)
         if response.status_code == 200:
@@ -161,10 +167,12 @@ class SomfyBox:
             self.__logged_in = False
             self.cookie = None
             logging.error("failed to get local API gateways")
-            raise exceptions.LoginFailure("failed to get local API gateways")
+            raise exceptions.TahomaException("failed to get local API gateways")
         return response.json()
 
     def get_devices(self):
+        if self.token is None:
+            raise exceptions.TahomaException("No token has been provided")
         response = requests.get(self.base_url + "/setup/devices", headers=self.headers_json)
         logging.debug(response)
         if response.status_code == 200:
@@ -173,10 +181,12 @@ class SomfyBox:
             self.__logged_in = False
             self.cookie = None
             logging.error("failed to get local API devices")
-            raise exceptions.LoginFailure("failed to get local API devices")
+            raise exceptions.TahomaException("failed to get local API devices")
         return response.json()
 
     def get_events(self):
+        if self.token is None:
+            raise exceptions.TahomaException("No token has been provided")
         if self.listenerId is not None:
             response = requests.get(self.base_url + "/events/"+self.listenerId+"/fetch", headers=self.headers_json)
         else:
@@ -189,10 +199,12 @@ class SomfyBox:
             self.__logged_in = False
             self.cookie = None
             logging.error("failed to get local API events")
-            raise exceptions.LoginFailure("failed to get local API events")
+            raise exceptions.TahomaException("failed to get local API events")
         return response.json()
 
     def register_listener(self):
+        if self.token is None:
+            raise exceptions.TahomaException("No token has been provided")
         response = requests.post(self.base_url + "/events/register", headers=self.headers_json)
         logging.debug(response)
         if response.status_code == 200:
@@ -201,8 +213,8 @@ class SomfyBox:
         elif ((response.status_code == 401) or (response.status_code == 400)):
             self.__logged_in = False
             self.cookie = None
-            logging.error("failed to get local API events")
-            raise exceptions.LoginFailure("failed to get local API events")
+            logging.error("failed to get local listener ID")
+            raise exceptions.TahomaException("failed to get local listener ID")
         return response.json()
 
       
