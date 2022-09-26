@@ -14,7 +14,7 @@ logging.info("=== starting test run ===")
 
 menuoptions = ['0 exit',"1 log in", "2 register", "3 check log in", "4 generate toke", "5 activate token", "6 get tokens", "7 delete token", 
     "10 get devices", "11 get events", "12 send command",
-    "20 get local API version"]
+    "20 get local API version", "21 get local gateway", "22 get local devices"]
 mymenu = consolemenu.SelectionMenu(menuoptions)
 
 device_list = list()
@@ -68,6 +68,12 @@ if True:
             print(tahoma.tahoma_command(json.dumps(data)))
         if x == 20: #get version of local API
             response = theBox.get_version()
+            print(json.dumps(response, sort_keys = True, indent=4))
+        if x == 21: #get version of local API
+            response = theBox.get_gateways()
+            print(json.dumps(response, sort_keys = True, indent=4))
+        if x == 22: #get version of local API
+            response = theBox.get_devices()
             print(json.dumps(response, sort_keys = True, indent=4))
         input("Press Enter to continue...")
         # except (ValueError) as err:

@@ -151,4 +151,39 @@ class SomfyBox:
             raise exceptions.LoginFailure("failed to get API version")
         return response.json()
 
+    def get_gateways(self):
+        response = requests.get(self.base_url + "/setup/gateways", headers=self.headers_json)
+        print (response)
+        if response.status_code == 200:
+            logging.debug("succeeded to get local API gateways: " + str(response.json()))
+        elif ((response.status_code == 401) or (response.status_code == 400)):
+            self.__logged_in = False
+            self.cookie = None
+            logging.error("failed to get local API gateways")
+            raise exceptions.LoginFailure("failed to get local API gateways")
+        return response.json()
+
+    def get_devices(self):
+        response = requests.get(self.base_url + "/setup/devices", headers=self.headers_json)
+        print (response)
+        if response.status_code == 200:
+            logging.debug("succeeded to get local API devices: " + str(response.json()))
+        elif ((response.status_code == 401) or (response.status_code == 400)):
+            self.__logged_in = False
+            self.cookie = None
+            logging.error("failed to get local API devices")
+            raise exceptions.LoginFailure("failed to get local API devices")
+        return response.json()
+
+    def get_events(self):
+        response = requests.get(self.base_url + "/events/<uuid>fetch", headers=self.headers_json)
+        print (response)
+        if response.status_code == 200:
+            logging.debug("succeeded to get local API events: " + str(response.json()))
+        elif ((response.status_code == 401) or (response.status_code == 400)):
+            self.__logged_in = False
+            self.cookie = None
+            logging.error("failed to get local API events")
+            raise exceptions.LoginFailure("failed to get local API events")
+        return response.json()
 
