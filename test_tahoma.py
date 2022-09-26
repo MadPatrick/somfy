@@ -12,8 +12,8 @@ logging.basicConfig(format='%(asctime)s - %(levelname)-8s - %(filename)-18s - %(
                     level=logging.DEBUG)
 logging.info("=== starting test run ===")
 
-menuoptions = ['0 exit',"1 log in", "2 register", "3 check log in", "4 generate toke", "5 activate token", "6 get tokens", "7 delete token", 
-    "10 get devices", "11 get events", "12 send command",
+menuoptions = ['0 exit',"1 log in", "2 web register", "3 check log in", "4 generate toke", "5 activate token", "6 get tokens", "7 delete token", 
+    "10 web get devices", "11 web get events", "12 web send test command",
     "20 get local API version", "21 get local gateway", "22 get local devices", "23 register local listener", "24 get local events"]
 mymenu = consolemenu.SelectionMenu(menuoptions)
 
@@ -65,7 +65,7 @@ if True:
         if x == 10: print(tahoma.get_devices(device_list))
         if x == 11: print(tahoma.get_events())
         if x == 12: 
-            data = '{"actions": [{"commands": [{"name": "open"}], "deviceURL": "io://1237-2024-7920/10464619"}], "label": "Domoticz - Somfy - Kamer_Klein - open"}'
+            data = '{"actions": [{"commands": [{"name": "open"}], "deviceURL": "io://1234-5678-9012/10464619"}], "label": "Domoticz - Somfy - test - open"}'
             print(tahoma.tahoma_command(json.dumps(data)))
         if x == 20: #get version of local API
             response = theBox.get_version()
