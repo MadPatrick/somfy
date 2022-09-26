@@ -96,7 +96,6 @@ class TahomaWebApi:
         response = requests.post(self.base_url + url_act, headers=self.headers_json, json=data_act, cookies=self.cookie)
 
         if response.status_code == 200:
-            #self.token = response.json()['token']
             logging.debug("succeeded to activate token: " + str(self.token))
         elif ((response.status_code == 401) or (response.status_code == 400)):
             self.__logged_in = False
@@ -216,5 +215,3 @@ class SomfyBox:
             logging.error("failed to get local listener ID")
             raise exceptions.TahomaException("failed to get local listener ID")
         return response.json()
-
-      
