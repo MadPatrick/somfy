@@ -136,6 +136,7 @@ class SomfyBox:
     def __init__(self, pin, port):
         self.base_url = "https://" + str(pin) + ".local:" + str(port) + "/enduser-mobile-web/1/enduserAPI"
         self.headers_json = {"Content-Type": "application/json", "Authorization": "Bearer "}
+        self.listenerId = None
 
     def set_token(self, token):
         self.headers_json["Authorization"] = "Bearer " + str(token)
@@ -153,7 +154,7 @@ class SomfyBox:
 
     def get_gateways(self):
         response = requests.get(self.base_url + "/setup/gateways", headers=self.headers_json)
-        print (response)
+        logging.debug(response)
         if response.status_code == 200:
             logging.debug("succeeded to get local API gateways: " + str(response.json()))
         elif ((response.status_code == 401) or (response.status_code == 400)):
@@ -165,7 +166,7 @@ class SomfyBox:
 
     def get_devices(self):
         response = requests.get(self.base_url + "/setup/devices", headers=self.headers_json)
-        print (response)
+        logging.debug(response)
         if response.status_code == 200:
             logging.debug("succeeded to get local API devices: " + str(response.json()))
         elif ((response.status_code == 401) or (response.status_code == 400)):
@@ -176,8 +177,12 @@ class SomfyBox:
         return response.json()
 
     def get_events(self):
-        response = requests.get(self.base_url + "/events/<uuid>fetch", headers=self.headers_json)
-        print (response)
+        if self.listenerId is not None:
+            response = requests.get(self.base_url + "/events/"+self.listenerId+"/fetch", headers=self.headers_json)
+        else:
+            logging.error("cannot fetch events if no listener registered")
+            raise exceptions.TahomaException("cannot fetch events if no listener registered")
+        logging.debug(response)
         if response.status_code == 200:
             logging.debug("succeeded to get local API events: " + str(response.json()))
         elif ((response.status_code == 401) or (response.status_code == 400)):
@@ -187,3 +192,17 @@ class SomfyBox:
             raise exceptions.LoginFailure("failed to get local API events")
         return response.json()
 
+    def register_listener(self):
+        response = requests.post(self.base_url + "/events/register", headers=self.headers_json)
+        logging.debug(response)
+        if response.status_code == 200:
+            logging.debug("succeeded to get local listener ID: " + str(response.json()))
+            self.listenerId = response.json()['id']
+        elif ((response.status_code == 401) or (response.status_code == 400)):
+            self.__logged_in = False
+            self.cookie = None
+            logging.error("failed to get local API events")
+            raise exceptions.LoginFailure("failed to get local API events")
+        return response.json()
+
+      
