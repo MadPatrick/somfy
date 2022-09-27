@@ -90,9 +90,9 @@ class TahomaWebApi:
             raise exceptions.LoginFailure("failed to generate token")
         return response.json()
 
-    def activate_token(self, pin):
+    def activate_token(self, pin, token):
         url_act = "/enduser-mobile-web/enduserAPI/config/"+pin+"/local/tokens"
-        data_act = {"label": "Domoticz token", "token": self.token, "scope": "devmode"}
+        data_act = {"label": "Domoticz token", "token": token, "scope": "devmode"}
         response = requests.post(self.base_url + url_act, headers=self.headers_json, json=data_act, cookies=self.cookie)
 
         if response.status_code == 200:
@@ -136,10 +136,15 @@ class SomfyBox:
         self.base_url = "https://" + str(pin) + ".local:" + str(port) + "/enduser-mobile-web/1/enduserAPI"
         self.headers_json = {"Content-Type": "application/json", "Authorization": "Bearer "}
         self.listenerId = None
-        self.token = None
+        self._token = None
 
-    def set_token(self, token):
-        self.token = token
+    @property
+    def token(self):
+        return self._token
+
+    @token.setter
+    def token(self, token):
+        self._token = token
         self.headers_json["Authorization"] = "Bearer " + str(token)
 
     def get_version(self):

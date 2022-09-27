@@ -12,8 +12,8 @@ logging.basicConfig(format='%(asctime)s - %(levelname)-8s - %(filename)-18s - %(
                     level=logging.DEBUG)
 logging.info("=== starting test run ===")
 
-menuoptions = ['0 exit',"1 log in", "2 web register", "3 check log in", "4 generate toke", "5 activate token", "6 get tokens", "7 delete token", 
-    "10 web get devices", "11 web get events", "12 web send test command",
+menuoptions = ['0 exit',"1 log in", "3 check log in", "4 generate toke", "5 activate token", "6 get tokens", "7 delete token", 
+    "10 web register", "11 web get devices", "12 web get events", "13 web send test command",
     "20 get local API version", "21 get local gateway", "22 get local devices", "23 register local listener", "24 get local events"]
 mymenu = consolemenu.SelectionMenu(menuoptions)
 
@@ -21,12 +21,19 @@ device_list = list()
 
 tahoma = tahoma()
 theBox = SomfyBox(p_pin, p_port)
+print("=====")
+if p_token != '0':
+    theBox.token = p_token
+    print ("token loaded from params, no need to get from web")
+else:
+    print("No token loaded from param, first get it from web, steps <10")
 
 if tahoma.cookie is None:
     tahoma.cookie = dict(JSESSIONID='F290EEAEC03B4838EBDA4B0CD0034BAB')
 
 if True:
     while True:
+        print("=====")
         for i in menuoptions:
             print(i) 
         x = int(input("Please Select:"))
@@ -43,13 +50,10 @@ if True:
             if tahoma.cookie is None:
                 tahoma.cookie = dict(JSESSIONID='F290EEAEC03B4838EBDA4B0CD0034BAB')
             print("login status: "+str(status))
-        if x == 2: # registyer listener
-            tahoma.register_listener()
-            if tahoma.listenerId is None:
-                tahoma.listenerId = 'b4e62511-ac10-3e01-60e0-9b9f656aea77'
         if x == 3: print(str(tahoma.logged_in)) #check log in
         if x == 4: #generate token
             response = tahoma.generate_token(p_pin)
+            print("you can store the token in params.py for later use")
             print(json.dumps(response, sort_keys = True, indent=4))
         if x == 5: #activate token
             response = tahoma.activate_token(p_pin)
@@ -62,9 +66,13 @@ if True:
             uuid = input("Please enter uuid to delete:")
             response = tahoma.delete_tokens(p_pin, uuid)
             print(json.dumps(response, sort_keys = True, indent=4))
-        if x == 10: print(tahoma.get_devices(device_list))
-        if x == 11: print(tahoma.get_events())
-        if x == 12: 
+        if x == 10: # register listener
+            tahoma.register_listener()
+            if tahoma.listenerId is None:
+                tahoma.listenerId = 'b4e62511-ac10-3e01-60e0-9b9f656aea77'
+        if x == 11: print(tahoma.get_devices(device_list))
+        if x == 12: print(tahoma.get_events())
+        if x == 13: 
             data = '{"actions": [{"commands": [{"name": "open"}], "deviceURL": "io://1234-5678-9012/10464619"}], "label": "Domoticz - Somfy - test - open"}'
             print(tahoma.tahoma_command(json.dumps(data)))
         if x == 20: #get version of local API
