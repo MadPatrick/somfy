@@ -56,7 +56,7 @@ if True:
             print("you can store the token in params.py for later use")
             print(json.dumps(response, sort_keys = True, indent=4))
         if x == 5: #activate token
-            response = tahoma.activate_token(p_pin)
+            response = tahoma.activate_token(p_pin, tahoma.token)
             theBox.token(tahoma.token)
             print(json.dumps(response, sort_keys = True, indent=4))
         if x == 6: #get list of tokens
