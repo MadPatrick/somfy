@@ -187,7 +187,7 @@ class SomfyBox:
         if self.token is None:
             raise exceptions.TahomaException("No token has been provided")
         if self.listenerId is not None:
-            response = requests.get(self.base_url + "/events/"+self.listenerId+"/fetch", headers=self.headers_json, verify=False)
+            response = requests.post(self.base_url + "/events/"+self.listenerId+"/fetch", headers=self.headers_json, verify=False)
         else:
             logging.error("cannot fetch events if no listener registered")
             raise exceptions.TahomaException("cannot fetch events if no listener registered")
