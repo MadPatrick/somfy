@@ -57,7 +57,7 @@ if True:
             print(json.dumps(response, sort_keys = True, indent=4))
         if x == 5: #activate token
             response = tahoma.activate_token(p_pin)
-            theBox.set_token(tahoma.token)
+            theBox.token(tahoma.token)
             print(json.dumps(response, sort_keys = True, indent=4))
         if x == 6: #get list of tokens
             response = tahoma.get_tokens(p_pin)
