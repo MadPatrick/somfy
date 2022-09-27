@@ -148,7 +148,7 @@ class SomfyBox:
         self.headers_json["Authorization"] = "Bearer " + str(token)
 
     def get_version(self):
-        if self.token is None:
+        if self._token is None:
             raise exceptions.TahomaException("No token has been provided")
         response = requests.get(self.base_url + "/apiVersion", headers=self.headers_json, verify=False)
         if response.status_code == 200:
@@ -160,7 +160,7 @@ class SomfyBox:
 
     #setup endpoints
     def get_gateways(self):
-        if self.token is None:
+        if self._token is None:
             raise exceptions.TahomaException("No token has been provided")
         response = requests.get(self.base_url + "/setup/gateways", headers=self.headers_json, verify=False)
         logging.debug(response)
@@ -172,7 +172,7 @@ class SomfyBox:
         return response.json()
 
     def get_devices(self):
-        if self.token is None:
+        if self._token is None:
             raise exceptions.TahomaException("No token has been provided")
         response = requests.get(self.base_url + "/setup/devices", headers=self.headers_json, verify=False)
         logging.debug(response)
@@ -184,7 +184,7 @@ class SomfyBox:
         return response.json()
 
     def get_device_state(self, device):
-        if self.token is None:
+        if self._token is None:
             raise exceptions.TahomaException("No token has been provided")
         response = requests.get(self.base_url + "/setup/devices/" + device + "/states", headers=self.headers_json, verify=False)
         logging.debug(response)
@@ -197,7 +197,7 @@ class SomfyBox:
         
     #events endpoints
     def get_events(self):
-        if self.token is None:
+        if self._token is None:
             raise exceptions.TahomaException("No token has been provided")
         if self.listenerId is not None:
             response = requests.post(self.base_url + "/events/"+self.listenerId+"/fetch", headers=self.headers_json, verify=False)
@@ -213,7 +213,7 @@ class SomfyBox:
         return response.json()
 
     def register_listener(self):
-        if self.token is None:
+        if self._token is None:
             raise exceptions.TahomaException("No token has been provided")
         response = requests.post(self.base_url + "/events/register", headers=self.headers_json, verify=False)
         logging.debug(response)
