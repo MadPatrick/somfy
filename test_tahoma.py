@@ -14,7 +14,7 @@ logging.info("=== starting test run ===")
 
 menuoptions = ['0 exit',"1 log in", "3 check log in", "4 generate toke", "5 activate token", "6 get tokens", "7 delete token", 
     "10 web register", "11 web get devices", "12 web get events", "13 web send test command",
-    "20 get local API version", "21 get local gateway", "22 get local devices", "23 register local listener", "24 get local events", "25 get local device state"]
+    "20 get local API version", "21 get local gateway", "22 get local devices", "23 register local listener", "24 get local events", "25 get local device state", "26 send local command"]
 mymenu = consolemenu.SelectionMenu(menuoptions)
 
 device_list = list()
@@ -93,6 +93,12 @@ if True:
         if x == 25: #get version of local API
             device = str(input("enter deviceurl to get state: "))
             response = theBox.get_device_state(device)
+            print(json.dumps(response, sort_keys = True, indent=4))
+        if x == 26: #send a command to the local API
+            device = str(input("enter deviceURL to command: "))
+            command = str(input("enter command <open|close>: "))
+            commando = {"label":"test command","action":[{"deviceURL":device,"commands":[{"name":command}]}]}
+            response = theBox.send_command(commando)
             print(json.dumps(response, sort_keys = True, indent=4))
         input("Press Enter to continue...")
         # except (ValueError) as err:

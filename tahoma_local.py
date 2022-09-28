@@ -226,3 +226,18 @@ class SomfyBox:
             logging.error("failed to get local listener ID")
             raise exceptions.TahomaException("failed to get local listener ID, response: " + str(response.status_code))
         return response.json()
+
+    #execution endpoints
+    def send_command(self, command):
+        if self._token is None:
+            raise exceptions.TahomaException("No token has been provided")
+        logging.debug(json.dumps(command))
+        response = requests.post(self.base_url + "/exec/apply", headers=self.headers_json, json=command, verify=False)
+        logging.debug(response)
+        if response.status_code == 200:
+            logging.debug("succeeded to post command: " + str(response.json()))
+            self.execId = response.json()['execId']
+        elif ((response.status_code == 401) or (response.status_code == 400)):
+            logging.error("failed to post command")
+            raise exceptions.TahomaException("failed to post command, response: " + str(response.status_code))
+        return response.json()
