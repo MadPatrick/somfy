@@ -155,7 +155,7 @@ class SomfyBox:
             logging.debug("succeeded to get API version: " + str(response.json()))
         elif ((response.status_code == 401) or (response.status_code == 400)):
             logging.error("failed to get API version")
-            raise exceptions.TahomaException("failed to get API version")
+            raise exceptions.TahomaException("failed to get API version, response: " + str(response.status_code))
         return response.json()
 
     #setup endpoints
@@ -168,7 +168,7 @@ class SomfyBox:
             logging.debug("succeeded to get local API gateways: " + str(response.json()))
         elif ((response.status_code == 401) or (response.status_code == 400)):
             logging.error("failed to get local API gateways")
-            raise exceptions.TahomaException("failed to get local API gateways")
+            raise exceptions.TahomaException("failed to get local API gateways, response: " + str(response.status_code))
         return response.json()
 
     def get_devices(self):
@@ -180,21 +180,21 @@ class SomfyBox:
             logging.debug("succeeded to get local API devices: " + str(response.json()))
         elif ((response.status_code == 401) or (response.status_code == 400)):
             logging.error("failed to get local API devices")
-            raise exceptions.TahomaException("failed to get local API devices")
+            raise exceptions.TahomaException("failed to get local API device, response: " + str(response.status_code))
         return response.json()
 
     def get_device_state(self, device):
         if self._token is None:
             raise exceptions.TahomaException("No token has been provided")
-        if not device.startswith("io://"):
-            raise exceptions.TahomaException("Invalid url, needs to start with io://")
-        response = requests.get(self.base_url + "/setup/devices/" + device + "/states", headers=self.headers_json, verify=False)
+        # if not device.startswith("io://"):
+            # raise exceptions.TahomaException("Invalid url, needs to start with io://")
+        response = requests.get(self.base_url + "/setup/devices/:" + device + "/states", headers=self.headers_json, verify=False)
         logging.debug(response)
         if response.status_code == 200:
             logging.debug("succeeded to get local API device states: " + str(response.json()))
         elif ((response.status_code == 401) or (response.status_code == 400)):
             logging.error("failed to get local API device states")
-            raise exceptions.TahomaException("failed to get local API device states")
+            raise exceptions.TahomaException("failed to get local API device state, response: " + str(response.status_code))
         return response.json()
         
     #events endpoints
@@ -211,7 +211,7 @@ class SomfyBox:
             logging.debug("succeeded to get local API events: " + str(response.json()))
         elif ((response.status_code == 401) or (response.status_code == 400)):
             logging.error("failed to get local API events")
-            raise exceptions.TahomaException("failed to get local API events")
+            raise exceptions.TahomaException("failed to get local API events, response: " + str(response.status_code))
         return response.json()
 
     def register_listener(self):
@@ -224,5 +224,5 @@ class SomfyBox:
             self.listenerId = response.json()['id']
         elif ((response.status_code == 401) or (response.status_code == 400)):
             logging.error("failed to get local listener ID")
-            raise exceptions.TahomaException("failed to get local listener ID")
+            raise exceptions.TahomaException("failed to get local listener ID, response: " + str(response.status_code))
         return response.json()
