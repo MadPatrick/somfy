@@ -134,7 +134,7 @@ class TahomaWebApi:
 class SomfyBox:
     def __init__(self, pin, port):
         self.base_url = "https://" + str(pin) + ".local:" + str(port) + "/enduser-mobile-web/1/enduserAPI"
-        self.headers_json = {"Content-Type": "application/json", "Authorization": "Bearer "}
+        self.headers_json = {"Content-Type": "application/json", "Authorization": "Bearer ", "Accept": "application/json"}
         self.listenerId = None
         self._token = None
 
@@ -232,7 +232,8 @@ class SomfyBox:
         # if self._token is None:
             # raise exceptions.TahomaException("No token has been provided")
         logging.debug(json.dumps(command))
-        response = requests.post(self.base_url + "/exec/apply", headers=self.headers_json, json=command, verify=False)
+        #response = requests.post(self.base_url + "/exec/apply", headers=self.headers_json, json=command, verify=False)
+        response = requests.post(self.base_url + "/exec/apply", headers=self.headers_json, data=json.dumps(command), verify=False)
         logging.debug(response)
         if response.status_code == 200:
             logging.debug("succeeded to post command: " + str(response.json()))

@@ -38,6 +38,7 @@ if True:
             print(i) 
         x = int(input("Please Select:"))
         print(x)
+        logging.info("selected menu option: "+str(x))
         if x == 0: 
             logging.info("== end test run ===")
             exit()
