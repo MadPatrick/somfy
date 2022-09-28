@@ -36,6 +36,11 @@ sudo apt-get update
 sudo apt-get install python3 libpython3-dev libpython3.7-dev
 sudo apt-get install python3-requests
 ```
+
+Add your Somfy box Pin number to the local network in etc/hosts
+```
+192.168.1.1 1234-1234-1234
+```
 To be able to run the local test tool, also install:
 ```
 pip3 install console-menu
