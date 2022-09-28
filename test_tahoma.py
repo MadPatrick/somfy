@@ -97,7 +97,7 @@ if True:
         if x == 26: #send a command to the local API
             device = str(input("enter deviceURL to command: "))
             command = str(input("enter command <open|close>: "))
-            commando = {"label":"test command","action":[{"deviceURL":device,"commands":[{"name":command}]}]}
+            commando = {"actions":[{"commands":[{"name":command}], "deviceURL":device}], "label":"test command"}
             response = theBox.send_command(commando)
             print(json.dumps(response, sort_keys = True, indent=4))
         input("Press Enter to continue...")

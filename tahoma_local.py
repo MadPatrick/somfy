@@ -229,8 +229,8 @@ class SomfyBox:
 
     #execution endpoints
     def send_command(self, command):
-        if self._token is None:
-            raise exceptions.TahomaException("No token has been provided")
+        # if self._token is None:
+            # raise exceptions.TahomaException("No token has been provided")
         logging.debug(json.dumps(command))
         response = requests.post(self.base_url + "/exec/apply", headers=self.headers_json, json=command, verify=False)
         logging.debug(response)
