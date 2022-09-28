@@ -188,7 +188,8 @@ class SomfyBox:
             # raise exceptions.TahomaException("No token has been provided")
         # if not device.startswith("io://"):
             # raise exceptions.TahomaException("Invalid url, needs to start with io://")
-        url = self.base_url + "/setup/devices/" + urllib.parse.quote(device) + "/states"
+        #url = self.base_url + "/setup/devices/" + urllib.parse.quote(device) + "/states"
+        url = self.base_url + "/setup/devices/" + urllib.parse.quote(device)
         logging.debug("url for device state: " + str(url))
         response = requests.get(url, headers=self.headers_json, verify=False)
         logging.debug(response)
