@@ -39,7 +39,7 @@ sudo apt-get install python3-requests
 
 Add your Somfy box Pin number to the IP in your local network in etc/hosts
 ```
-192.168.1.1 1234-1234-1234
+192.168.1.1 1234-1234-1234.local
 ```
 To be able to run the local test tool, also install:
 ```
