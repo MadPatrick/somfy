@@ -186,6 +186,8 @@ class SomfyBox:
     def get_device_state(self, device):
         if self._token is None:
             raise exceptions.TahomaException("No token has been provided")
+        if not device.startswith("io://"):
+            raise exceptions.TahomaException("Invalid url, needs to start with io://")
         response = requests.get(self.base_url + "/setup/devices/" + device + "/states", headers=self.headers_json, verify=False)
         logging.debug(response)
         if response.status_code == 200:
