@@ -91,7 +91,7 @@ if True:
         if x == 24: #get version of local API
             response = theBox.get_events()
             print(json.dumps(response, sort_keys = True, indent=4))
-        if x == 25: #get version of local API
+        if x == 25: #get device state on local API
             device = str(input("enter deviceurl to get state: "))
             response = theBox.get_device_state(device)
             print(json.dumps(response, sort_keys = True, indent=4))
