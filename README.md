@@ -37,7 +37,9 @@ sudo apt-get install python3 libpython3-dev libpython3.7-dev
 sudo apt-get install python3-requests
 ```
 
-Add your Somfy box Pin number to the IP in your local network in etc/hosts
+Your Somfy box needs the traceable in your network.
+Therefor you need to link your Somfy Box PIN to the Somfy Box IP address.
+Add your Somfy Box PIN number to the IP in your local network in etc/hosts
 ```
 192.168.1.1 1234-1234-1234.local
 ```
