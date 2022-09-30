@@ -29,11 +29,23 @@
                 <option label="15m" value="90"/>
             </options>
         </param>
-        <param field="Mode5" label="Log file location" width="300px">
+        <param field = "Mode3" label = "Gateway pin" width="200px">
+            <description>The pin of your gateway (eg. 1234-5678-9012)</description>
+        </param>
+        <param field = "Mode4" label="API selection" width="75px">
+            <description>Choose how to interact with the Somfy/Tahoma/Connexoon box:
+            <br/>Web API: via Somfy web server (surrent implementation, default)
+            <br/>Local API: connect directly to the box (under development, not for Connexoon)</description>
+            <options>
+                <option label="Web" value="Web" default="true"/>
+                <option label="Local" value="Local" />
+            </options>
+        </param>
+        <param field = "Mode5" label="Log file location" width="300px">
             <description>Enter a location for the logfile (omit final /), or leave empty to create logfile in the domoticz directory.
             <br/>Default directory: '/home/user/domoticz' for raspberry pi</description>
         </param>
-        <param field="Mode6" label="Debug" width="75px">
+        <param field = "Mode6" label="Debug" width="75px">
             <options>
                 <option label="True" value="Debug"/>
                 <option label="False" value="Normal"  default="true" />
