@@ -37,17 +37,6 @@ sudo apt-get install python3 libpython3-dev libpython3.7-dev
 sudo apt-get install python3-requests
 ```
 
-Your Somfy box needs the traceable in your network.
-Therefor you need to link your Somfy Box PIN to the Somfy Box IP address.
-Add your Somfy Box PIN number to the IP in your local network in etc/hosts or in your DNS Server
-```
-192.168.1.1 1234-1234-1234.local
-```
-To be able to run the local test tool, also install:
-```
-pip3 install console-menu
-```
-
 ### plugin
 Then go in your Domoticz directory using a command line and open the plugins directory.
 ```
