@@ -6,13 +6,14 @@ Special thanks to Jan-Jaap who did the rewritting of the plugin
 Domoticz plugin writen in Python to first support Somfy IO roller shutters using Tahoma/Connexoon. 
 Basic support of RTS (Open/Close) is also included without return state (limitation due to RTS), it means for RTS the state of the device won't be updated if the device state is modified outside of domoticz.
 
-To use this plugin you need to install the last stable release of Domoticz https://www.domoticz.com and to install the required python library.
-
 The plugin currently support the following device types: roller shutters, screens (interior/exterior), awning, pergolas, garage door, windows, luminance sensor and blinds(postions and slats control).
 
 ## Important note
+### Version 3.x
 When upgrading to version 3.x, it is required to first remove all devices attached to the Somfy hardware. This has to do with the upgrade to the Domoticz Extended Framework, which enabled the slats/orientation control for the blinds.
  The plugin will not upgrade when there are still devices attached to the Somfy hardware.
+### version 4.x
+As of version 4.x the plugin ssupports local access to the Somfy box (Connexoon not supported). This is currently still in beta version. Addtional installation steps mentioned below.
 
 ## Somfy login
 
@@ -36,7 +37,7 @@ sudo apt-get update
 sudo apt-get install python3 libpython3-dev libpython3.7-dev
 sudo apt-get install python3-requests
 ```
-
+### local API access
 Your Somfy box needs the traceable in your network.
 Therefor you need to link your Somfy Box PIN to the Somfy Box IP address.
 Add your Somfy Box PIN number to the IP in your local network in etc/hosts or in your DNS Server
@@ -65,4 +66,4 @@ cd domoticz/plugins/somfy
 git pull
 ```
 
-In the web UI, navigate to the Hardware page. In the hardware dropdown list there will be an entry called "Somfy Tahoma or Connexoon plugin".
+In the Domoticz UI, navigate to the Hardware page. In the hardware dropdown list there will be an entry called "Somfy Tahoma or Connexoon plugin".
