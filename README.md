@@ -38,7 +38,15 @@ sudo apt-get install python3 libpython3-dev libpython3.7-dev
 sudo apt-get install python3-requests
 ```
 ### local API access
-First, you need to enable developer mode on your box. Follow isntructions as provided by [Somfy](https://github.com/Somfy-Developer/Somfy-TaHoma-Developer-Mode)
+First, you need to enable developer mode on your box.
+
+First connect to the Somfy website (https://www.somfy.nl/inloggen) and navigate to the **My Account menu.**
+
+Find the different available options for your TaHoma box and activate **Developer Mode**.
+
+Follow instructions as provided by [Somfy](https://github.com/Somfy-Developer/Somfy-TaHoma-Developer-Mode)
+
+Activating this mode will enable a local API on your TaHoma box. Be aware that Somfy will not be able to provide support for usage of this API.
 
 Your Somfy box needs the traceable in your network.
 Therefor you need to link your Somfy Box PIN to the Somfy Box IP address.
