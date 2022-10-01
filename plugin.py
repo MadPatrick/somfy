@@ -119,7 +119,6 @@ class BasePlugin:
         if self.tahoma.logged_in and firstFree() < 249:
             self.tahoma.get_devices(Devices)
             
-        
     def onStop(self):
         logging.info("stopping plugin")
         self.heartbeat = False
@@ -201,57 +200,8 @@ class BasePlugin:
 
         event_list = []
         try:
-            event_list = self.tahoma.tahoma_command(self.json_data)
-        except (exceptions.TooManyRetries, exceptions.FailureWithErrorCode, exceptions.FailureWithoutErrorCode) as exp:
-            Domoticz.Error("Failed to send command: " + str(exp))
-            logging.error("Failed to send command: " + str(exp))
-            return
-        if event_list is not None and len(event_list) > 0:
-            self.update_devices_status(event_list)
-        self.heartbeat = False
-        self.actions_serialized = []
-
-    def onCommand_legacy(self, Unit, Command, Level, Hue):
-        logging.debug("onCommand: Unit: '"+str(Unit)+"', Command: '"+str(Command)+"', Level: '"+str(Level)+"', Hue: '"+str(Hue)+"'")
-        commands_serialized = []
-        action = {}
-        commands = {}
-        params = []
-
-        if (str(Command) == "Off"):
-            commands["name"] = "open"
-        elif (str(Command) == "On"):
-            commands["name"] = "close"
-        elif (str(Command) == "Stop"):
-            commands["name"] = "stop"
-        # elif (str(Command) == "Stop"):
-            # commands["name"] = "my"
-        elif ("Set Level" in str(Command)):
-            commands["name"] = "setClosure"
-            #tmp = 100 - int(Level)
-            tmp = int(Level)
-            params.append(tmp)
-            commands["parameters"] = params
-
-        commands_serialized.append(commands)
-        action["deviceURL"] = Devices[Unit].DeviceID
-        action["commands"] = commands_serialized
-        self.actions_serialized.append(action)
-        logging.debug("preparing command: # commands: "+str(len(commands)))
-        logging.debug("preparing command: # actions_serialized: "+str(len(self.actions_serialized)))
-        data = {"label": "Domoticz - "+Devices[Unit].Name+" - "+commands["name"], "actions": self.actions_serialized}
-        self.json_data = json.dumps(data, indent=None, sort_keys=True)
-
-        if (not self.tahoma.logged_in):
-            logging.info("Not logged in, must connect")
-            self.command = True
-            self.tahoma.tahoma_login(str(Parameters["Username"]), str(Parameters["Password"]))
-            if self.tahoma.logged_in:
-                self.tahoma.register_listener()
-
-        event_list = []
-        try:
-            event_list = self.tahoma.tahoma_command(self.json_data)
+            self.tahoma.send_command(self.json_data)
+            event_list = self.tahoma.get_events()
         except (exceptions.TooManyRetries, exceptions.FailureWithErrorCode, exceptions.FailureWithoutErrorCode) as exp:
             Domoticz.Error("Failed to send command: " + str(exp))
             logging.error("Failed to send command: " + str(exp))

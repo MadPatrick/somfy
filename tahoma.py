@@ -32,6 +32,7 @@ class Tahoma:
         self.timeout = 10
         self.__expiry_date = datetime.datetime.now()
         self.logged_in_expiry_days = 6
+        self.execId = None
 
     @property
     def logged_in(self):
@@ -85,49 +86,6 @@ class Tahoma:
                 self.tahoma_login(username, password)
                 return
         return self.__logged_in
-
-    def tahoma_command(self, json_data):
-        timeout = 4
-        logging.debug("start command")
-        Headers = { 'Host': self.srvaddr, "Connection": "keep-alive","Accept-Encoding": "gzip, deflate", "Accept": "*/*", "Content-Type": "application/json", "Cookie": self.cookie}
-        url = self.base_url + '/enduser-mobile-web/enduserAPI/exec/apply'
-        logging.debug("onCommand: headers: '"+str(Headers)+"', data '"+str(json_data)+"'")
-        logging.info("Sending command to tahoma api")
-        try:
-            response = requests.post(url, headers=Headers, data=json_data, timeout=timeout)
-        except requests.exceptions.RequestException as exp:
-            logging.error("Send command returns RequestException: " + str(exp))
-            return ""
-
-        logging.debug("command response: status '" + str(response.status_code) + "' response body: '"+str(response.json())+"'")
-        if response.status_code != 200:
-            logging.error("error during command, status: " + str(response.status_code) + ", possible cause:" + str(response.json()))
-            self.__logged_in = False
-            return ""
-        self.executionId = response.json()['execId']
-        event_list = self.get_events()
-        return event_list
-
-    def register_listener(self):
-        logging.debug("start register")
-        Headers = { 'Host': self.srvaddr,"Connection": "keep-alive","Accept-Encoding": "gzip, deflate", "Accept": "*/*", "Content-Type": "application/json", "Cookie": self.cookie}
-        url = self.base_url + '/enduser-mobile-web/enduserAPI/events/register'
-        response = requests.post(url, headers=Headers, timeout=self.timeout)
-        logging.debug("register response: status '" + str(response.status_code) + "' response body: '"+str(response.json())+"'")
-        if response.status_code != 200:
-            logging.error("error during register, status: " + str(response.status_code))
-            return
-        Data = response.json()
-        if "id" in Data:
-            strData = Data["id"]
-        else:
-            logging.error("Data expected in response but  not found")
-            return
-        self.listenerId = Data['id']
-        logging.info("Tahoma listener registred")
-        self.refresh = False
-        logging.info("Checking setup status at startup")
-        #self.get_devices()
 
     def get_devices(self, Devices):
         logging.debug("start get devices")
@@ -274,3 +232,66 @@ class Tahoma:
         else:
             raise exceptions.TooManyRetries
         logging.debug("finished get events")
+
+    def register_listener(self):
+        logging.debug("start register")
+        Headers = { 'Host': self.srvaddr,"Connection": "keep-alive","Accept-Encoding": "gzip, deflate", "Accept": "*/*", "Content-Type": "application/json", "Cookie": self.cookie}
+        response = requests.post(self.base_url + '/enduser-mobile-web/enduserAPI/events/register', headers=Headers, timeout=self.timeout)
+        logging.debug("register response: status '" + str(response.status_code) + "' response body: '"+str(response)+"'")
+        if response.status_code != 200:
+            self.handle_response(response, "register listener")
+        Data = response.json()
+        if "id" in Data:
+            strData = Data["id"]
+        else:
+            logging.error("Data expected in response but  not found")
+            return
+        self.listenerId = Data['id']
+        logging.info("Tahoma listener registred")
+        self.refresh = False
+        logging.info("Checking setup status at startup")
+        #self.get_devices()
+
+    def send_command(self, json_data):
+        timeout = 4
+        logging.debug("start command")
+        Headers = { 'Host': self.srvaddr, "Connection": "keep-alive","Accept-Encoding": "gzip, deflate", "Accept": "*/*", "Content-Type": "application/json", "Cookie": self.cookie}
+        logging.info("Sending command to tahoma api")
+        logging.debug("onCommand: headers: '"+str(Headers)+"', data '"+str(json_data)+"'")
+        try:
+            response = requests.post(self.base_url + '/enduser-mobile-web/enduserAPI/exec/apply', headers=Headers, data=json_data, timeout=timeout)
+        except requests.exceptions.RequestException as exp:
+            logging.error("Send command returns RequestException: " + str(exp))
+            return ""
+
+        logging.debug("command response: status '" + str(response.status_code) + "' response body: '"+str(response.json())+"'")
+        if response.status_code == 200:
+            logging.debug("succeeded to post command: " + str(response.json()))
+            self.execId = response.json()['execId']
+        else:
+            self.__logged_in = False
+            self.handle_response(response, "send command")
+        #event_list = self.get_events()
+        return response.json()
+
+    def handle_response(self, response, action):
+        """handle faulty responses"""
+        if response.status_code >= 300 and response.status_code < 400:
+            logging.error("status code " + str(response.status_code) + " this is likely a bug")
+            raise exceptions.TahomaException("failed request during "+ action + ": " + str(response.status_code))
+        elif response.status_code == 400:
+            logging.error("status code " + str(response.status_code) + " this is a bug, bad request made, url or body needs to be checked")
+            raise exceptions.TahomaException("failed request during "+ action + ", check url or body: " + str(response.status_code))
+        elif response.status_code == 401:
+            logging.error("status code " + str(response.status_code) + " authorisation failed, check credentials")
+            raise exceptions.TahomaException("failed request during "+ action + ", check credentials: " + str(response.status_code))
+        elif response.status_code == 404:
+            logging.error("status code " + str(response.status_code) + " server not found")
+            raise exceptions.TahomaException("failed request during "+ action + ", server not found: " + str(response.status_code))
+        elif response.status_code >= 500:
+            logging.error("status code " + str(response.status_code) + " a server sided problem")
+            raise exceptions.TahomaException("failed request during "+ action + ": " + str(response.status_code))
+        else:
+            logging.error("status code " + str(response.status_code))
+            raise exceptions.TahomaException("failed request during "+ action + ": " + str(response.status_code))        
+        return

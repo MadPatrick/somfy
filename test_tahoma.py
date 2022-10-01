@@ -20,6 +20,7 @@ mymenu = consolemenu.SelectionMenu(menuoptions)
 device_list = list()
 
 tahoma = tahoma()
+#tahoma = tahoma.Tahoma()
 theBox = SomfyBox(p_pin, p_port)
 print("=====")
 if p_token != '0':

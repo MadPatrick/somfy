@@ -39,7 +39,7 @@ class TahomaWebApi:
         data = {"userId": username, "userPassword": password}
         response = requests.post(self.base_url + self.login_url, headers=self.headers_url, data=data, timeout=self.timeout)
         Data = response.json()
-        logging.debug("Login respone: status_code: '"+str(response.status_code)+"' reponse body: '"+str(Data)+"'")
+        logging.debug("Login respone: status_code: '"+str(response.status_code)+"' reponse body: '"+str(response.json())+"'")
 
         if (response.status_code == 200 and not self.__logged_in):
             self.__logged_in = True
@@ -79,6 +79,7 @@ class TahomaWebApi:
         logging.debug("generate token: url_gen = '" + url_gen + "'")
         logging.debug("generate token: cookie = '" + str(self.cookie) + "'")
         response = requests.get(self.base_url + url_gen, headers=self.headers_json, cookies=self.cookie)
+        logging.debug("generate token: response = '" + str(response) + "'")
         
         if response.status_code == 200:
             self.token = response.json()['token']
@@ -153,9 +154,8 @@ class SomfyBox:
         response = requests.get(self.base_url + "/apiVersion", headers=self.headers_json, verify=False)
         if response.status_code == 200:
             logging.debug("succeeded to get API version: " + str(response.json()))
-        elif ((response.status_code == 401) or (response.status_code == 400)):
-            logging.error("failed to get API version")
-            raise exceptions.TahomaException("failed to get API version, response: " + str(response.status_code))
+        else:
+            self.handle_response(response, "get API version")
         return response.json()
 
     #setup endpoints
@@ -166,9 +166,8 @@ class SomfyBox:
         logging.debug(response)
         if response.status_code == 200:
             logging.debug("succeeded to get local API gateways: " + str(response.json()))
-        elif ((response.status_code == 401) or (response.status_code == 400)):
-            logging.error("failed to get local API gateways")
-            raise exceptions.TahomaException("failed to get local API gateways, response: " + str(response.status_code))
+        else:
+            self.handle_response(response, "get gateways")
         return response.json()
 
     def get_devices(self):
@@ -178,25 +177,23 @@ class SomfyBox:
         logging.debug(response)
         if response.status_code == 200:
             logging.debug("succeeded to get local API devices: " + str(response.json()))
-        elif ((response.status_code == 401) or (response.status_code == 400)):
-            logging.error("failed to get local API devices")
-            raise exceptions.TahomaException("failed to get local API device, response: " + str(response.status_code))
+        else:
+            self.handle_response(response, "get devices")
         return response.json()
 
     def get_device_state(self, device):
-        # if self._token is None:
-            # raise exceptions.TahomaException("No token has been provided")
-        # if not device.startswith("io://"):
-            # raise exceptions.TahomaException("Invalid url, needs to start with io://")
+        if self._token is None:
+            raise exceptions.TahomaException("No token has been provided")
+        if not device.startswith("io://"):
+            raise exceptions.TahomaException("Invalid url, needs to start with io://")
         url = self.base_url + "/setup/devices/" + urllib.parse.quote(device, safe="") + "/states"
         logging.debug("url for device state: " + str(url))
         response = requests.get(url, headers=self.headers_json, verify=False)
         logging.debug(response)
         if response.status_code == 200:
             logging.debug("succeeded to get local API device states: " + str(response.json()))
-        elif ((response.status_code == 401) or (response.status_code == 400)):
-            logging.error("failed to get local API device states")
-            raise exceptions.TahomaException("failed to get local API device state, response: " + str(response.status_code))
+        else:
+            self.handle_response(response, "get device state")
         return response.json()
         
     #events endpoints
@@ -211,36 +208,60 @@ class SomfyBox:
         logging.debug(response)
         if response.status_code == 200:
             logging.debug("succeeded to get local API events: " + str(response.json()))
-        elif ((response.status_code == 401) or (response.status_code == 400)):
-            logging.error("failed to get local API events")
-            raise exceptions.TahomaException("failed to get local API events, response: " + str(response.status_code))
+        else:
+            self.handle_response(response, "get events")
         return response.json()
 
     def register_listener(self):
+        logging.debug("start register")
         if self._token is None:
             raise exceptions.TahomaException("No token has been provided")
         response = requests.post(self.base_url + "/events/register", headers=self.headers_json, verify=False)
-        logging.debug(response)
+        logging.debug("register response: status '" + str(response.status_code) + "' response body: '"+str(response)+"'")
         if response.status_code == 200:
             logging.debug("succeeded to get local listener ID: " + str(response.json()))
             self.listenerId = response.json()['id']
-        elif ((response.status_code == 401) or (response.status_code == 400)):
-            logging.error("failed to get local listener ID")
-            raise exceptions.TahomaException("failed to get local listener ID, response: " + str(response.status_code))
+        else:
+            self.handle_response(response, "get local listener ID")
         return response.json()
 
     #execution endpoints
-    def send_command(self, command):
-        # if self._token is None:
-            # raise exceptions.TahomaException("No token has been provided")
-        logging.debug(json.dumps(command))
-        #response = requests.post(self.base_url + "/exec/apply", headers=self.headers_json, json=command, verify=False)
-        response = requests.post(self.base_url + "/exec/apply", headers=self.headers_json, data=json.dumps(command), verify=False)
-        logging.debug(response)
+    def send_command(self, json_data):
+        if self._token is None:
+            raise exceptions.TahomaException("No token has been provided")
+        logging.info("Sending command to tahoma api")
+        logging.debug("onCommand: data '"+str(json_data)+"'")
+        try:
+            response = requests.post(self.base_url + "/exec/apply", headers=self.headers_json, data=json.dumps(json_data), verify=False)
+        except requests.exceptions.RequestException as exp:
+            logging.error("Send command returns RequestException: " + str(exp))
+            return ""
+        logging.debug("command response: status '" + str(response.status_code) + "' response body: '"+str(response.json())+"'")
         if response.status_code == 200:
             logging.debug("succeeded to post command: " + str(response.json()))
             self.execId = response.json()['execId']
-        elif ((response.status_code == 401) or (response.status_code == 400)):
-            logging.error("failed to post command")
-            raise exceptions.TahomaException("failed to post command, response: " + str(response.status_code))
+        else:
+            self.handle_response(response, "send command")
         return response.json()
+
+    def handle_response(self, response, action):
+        """handle faulty responses"""
+        if response.status_code >= 300 and response.status_code < 400:
+            logging.error("status code " + str(response.status_code) + " this is likely a bug")
+            raise exceptions.TahomaException("failed request during "+ action + ": " + str(response.status_code))
+        elif response.status_code == 400:
+            logging.error("status code " + str(response.status_code) + " this is a bug, bad request made, url or body needs to be checked")
+            raise exceptions.TahomaException("failed request during "+ action + ", check url or body: " + str(response.status_code))
+        elif response.status_code == 401:
+            logging.error("status code " + str(response.status_code) + " authorisation failed, check credentials")
+            raise exceptions.TahomaException("failed request during "+ action + ", check credentials: " + str(response.status_code))
+        elif response.status_code == 404:
+            logging.error("status code " + str(response.status_code) + " server not found")
+            raise exceptions.TahomaException("failed request during "+ action + ", server not found: " + str(response.status_code))
+        elif response.status_code >= 500:
+            logging.error("status code " + str(response.status_code) + " a server sided problem")
+            raise exceptions.TahomaException("failed request during "+ action + ": " + str(response.status_code))
+        else:
+            logging.error("status code " + str(response.status_code))
+            raise exceptions.TahomaException("failed request during "+ action + ": " + str(response.status_code))        
+        return
