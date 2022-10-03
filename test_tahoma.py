@@ -2,8 +2,8 @@ import time
 import logging
 import json
 import consolemenu
-#import tahoma
-from tahoma_local import TahomaWebApi as tahoma
+import tahoma
+#from tahoma_local import TahomaWebApi as tahoma
 from tahoma_local import SomfyBox
 import exceptions
 from params import *
@@ -19,7 +19,7 @@ mymenu = consolemenu.SelectionMenu(menuoptions)
 
 device_list = list()
 
-tahoma = tahoma()
+#tahoma = tahoma()
 #tahoma = tahoma.Tahoma()
 theBox = SomfyBox(p_pin, p_port)
 print("=====")
@@ -29,8 +29,8 @@ if p_token != '0':
 else:
     print("No token loaded from param, first get it from web, steps <10")
 
-if tahoma.cookie is None:
-    tahoma.cookie = dict(JSESSIONID='F290EEAEC03B4838EBDA4B0CD0034BAB')
+if theBox.cookie is None:
+    theBox.cookie = dict(JSESSIONID='F290EEAEC03B4838EBDA4B0CD0034BAB')
 
 if True:
     while True:
@@ -46,32 +46,32 @@ if True:
         if x == 1: #log in
             status = False
             try:
-                status = tahoma.tahoma_login(p_email, p_password)
+                status = theBox.tahoma_login(p_email, p_password)
             except exceptions.LoginFailure as exp:
                 print("Failed to login: " + str(exp))
-            if tahoma.cookie is None:
-                tahoma.cookie = dict(JSESSIONID='F290EEAEC03B4838EBDA4B0CD0034BAB')
+            if theBox.cookie is None:
+                theBox.cookie = dict(JSESSIONID='F290EEAEC03B4838EBDA4B0CD0034BAB')
             print("login status: "+str(status))
-        if x == 3: print(str(tahoma.logged_in)) #check log in
+        if x == 3: print(str(theBox.logged_in)) #check log in
         if x == 4: #generate token
-            response = tahoma.generate_token(p_pin)
+            response = theBox.generate_token(p_pin)
             print("you can store the token in params.py for later use")
             print(json.dumps(response, sort_keys = True, indent=4))
         if x == 5: #activate token
-            response = tahoma.activate_token(p_pin, tahoma.token)
+            response = theBox.activate_token(p_pin, theBox.token)
             theBox.token = tahoma.token
             print(json.dumps(response, sort_keys = True, indent=4))
         if x == 6: #get list of tokens
-            response = tahoma.get_tokens(p_pin)
+            response = theBox.get_tokens(p_pin)
             print(json.dumps(response, sort_keys = True, indent=4))
         if x == 7:#delete token
             uuid = input("Please enter uuid to delete:")
-            response = tahoma.delete_tokens(p_pin, uuid)
+            response = theBox.delete_tokens(p_pin, uuid)
             print(json.dumps(response, sort_keys = True, indent=4))
         if x == 10: # register listener
-            tahoma.register_listener()
-            if tahoma.listenerId is None:
-                tahoma.listenerId = 'b4e62511-ac10-3e01-60e0-9b9f656aea77'
+            theBox.register_listener()
+            if theBox.listenerId is None:
+                theBox.listenerId = 'b4e62511-ac10-3e01-60e0-9b9f656aea77'
         if x == 11: print(tahoma.get_devices(device_list))
         if x == 12: print(tahoma.get_events())
         if x == 13: 

@@ -5,11 +5,11 @@
 # FirstFree function courtesy of @moroen https://github.com/moroen/IKEA-Tradfri-plugin
 # All credits for the plugin are for Nonolk, who is the origin plugin creator
 """
-<plugin key="tahomaIO" name="Somfy Tahoma or Connexoon plugin" author="MadPatrick" version="4.0.1" externallink="https://github.com/MadPatrick/somfy">
+<plugin key="tahomaIO" name="Somfy Tahoma or Connexoon plugin" author="MadPatrick" version="4.0.2" externallink="https://github.com/MadPatrick/somfy">
     <description>
 	<br/><h2>Somfy Tahoma/Connexoon plugin</h2><br/>
         <ul style="list-style-type:square">
-            <li>version: 4.0.1</li>
+            <li>version: 4.0.2</li>
             <li>This plugin require internet connection at all time.</li>
             <li>It controls the Somfy for IO Blinds or Screens</li>
             <li>Please provide your email and password used to connect Tahoma/Connexoon</li>
@@ -63,6 +63,9 @@ import exceptions
 import time
 import tahoma
 import os
+from tahoma_local import TahomaWebApi
+from tahoma_local import SomfyBox
+
 
 class BasePlugin:
     def __init__(self):
@@ -106,7 +109,11 @@ class BasePlugin:
             return
         
         logging.debug("starting to log in")
-        self.tahoma = tahoma.Tahoma()
+        if Parameters["Mode4"] == "Local":
+            self.tahoma = TahomaWebApi()        
+        else:
+            self.tahoma = tahoma.Tahoma()
+
         try:
             self.tahoma.tahoma_login(str(Parameters["Username"]), str(Parameters["Password"]))
         except exceptions.LoginFailure as exp:
@@ -117,7 +124,13 @@ class BasePlugin:
             self.tahoma.register_listener()
 
         if self.tahoma.logged_in and firstFree() < 249:
-            self.tahoma.get_devices(Devices)
+            filtered_devices = self.tahoma.get_devices()
+            self.create_devices(filtered_devices)
+            event_list = []
+            event_list = self.tahoma.get_events()
+            if event_list is not None and len(event_list) > 0:
+                self.update_devices_status(event_list)
+        return
             
     def onStop(self):
         logging.info("stopping plugin")
@@ -370,6 +383,63 @@ class BasePlugin:
             self._setVersion(MaCurrent,MiCurrent,PaCurrent)
         return can_continue
 
+    def create_devices(self, filtered_devices):
+        logging.debug("get_devices: devices found, domoticz: "+str(len(Devices))+" API: "+str(len(filtered_devices)))
+
+        if (len(Devices) <= len(filtered_devices)):
+            #Domoticz devices already present but less than from API or starting up
+            logging.debug("New device(s) detected")
+
+            for device in filtered_devices:
+                found = False
+                logging.debug("check if need to create device: "+device["label"])
+                if device["label"] in Devices:
+                    logging.debug("create_devices: step 1, do not create new device: "+device["label"]+", device already exists")
+                    found = True
+                    #break
+                for domo_dev in Devices:
+                    if domo_dev == device["deviceURL"]:
+                        logging.debug("create_devices: step 2, do not create new device: "+device["label"]+", device already exists")
+                        found = True
+                        break
+                if (found==False):
+                    #DeviceID not found, create new one
+                    swtype = None
+
+                    logging.debug("create_devices: Must create new device: "+device["label"])
+
+                    if (device["deviceURL"].startswith("io://")):
+                        deviceType = 244
+                        swtype = 13
+                        subtype2 = 73
+                        if (device["uiClass"] == "Awning"):
+                            swtype = 13
+                        elif (device["uiClass"] == "RollerShutter"):
+                            swtype = 21
+                            deviceType = 244
+                            subtype2 = 73                    
+                        elif (device["uiClass"] == "LightSensor"):
+                            swtype = 12
+                            deviceType = 246
+                            subtype2 = 1
+                    elif (device["deviceURL"].startswith("rts://")):
+                        swtype = 6
+
+                    # extended framework: create first device then unit? or create device+unit in one go?
+                    Domoticz.Device(DeviceID=device["deviceURL"]) #use deviceURL as identifier for Domoticz.Device instance
+                    if (device["uiClass"] == "VenetianBlind" or device["uiClass"] == "ExteriorVenetianBlind"):
+                        #create unit for up/down and open/close for venetian blinds
+                        Domoticz.Unit(Name=device["label"] + " up/down", Unit=1, Type=deviceType, Subtype=subtype2, Switchtype=swtype, DeviceID=device["deviceURL"]).Create()
+                        Domoticz.Unit(Name=device["label"] + " orientation", Unit=2, Type=244, Subtype=73, Switchtype=swtype, DeviceID=device["deviceURL"]).Create()
+                    else:
+                        #create a single unit for all other device types
+                        Domoticz.Unit(Name=device["label"], Unit=1, Type=deviceType, Subtype=subtype2, Switchtype=swtype, DeviceID=device["deviceURL"]).Create()
+                     
+                    logging.info("New device created: "+device["label"])
+                else:
+                    found = False
+        logging.debug("finished create devices")
+
     def updateToEx(self):
         """routine to check if we can update to the Domoticz extended plugin framework"""
         if len(Devices)>0:
@@ -462,7 +532,8 @@ def DumpHTTPResponseToLog(httpResp, level=0):
         Domoticz.Debug(indentStr + ">'" + x + "':'" + str(httpResp[x]) + "'")
 
 def firstFree():
-    for num in range(1, 250):
+    """check if there is room to add devices (max 255)"""
+    for num in range(1, 254):
         if num not in Devices:
             return num
     return
