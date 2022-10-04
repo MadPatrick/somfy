@@ -54,9 +54,14 @@ if True:
             print("login status: "+str(status))
         if x == 3: print(str(theBox.logged_in)) #check log in
         if x == 4: #generate token
-            response = theBox.generate_token(p_pin)
-            print("you can store the token in params.py for later use")
-            print(json.dumps(response, sort_keys = True, indent=4))
+            try:
+                response = theBox.generate_token(p_pin)
+                print("you can store the token in params.py for later use")
+                print(json.dumps(response, sort_keys = True, indent=4))
+            except exceptions.LoginFailure as exp:
+                print("Failed to login: " + str(exp))
+            if theBox.token is None:
+                theBox.token = 'F290EEAEC03B4838EBDA4B0CD0034BAB'
         if x == 5: #activate token
             response = theBox.activate_token(p_pin, theBox.token)
             theBox.token = tahoma.token

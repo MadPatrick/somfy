@@ -4,9 +4,8 @@ import exceptions
 def filter_devices(Data):
     logging.debug("start filter devices")
 
-    if (not "uiClass" in Data):
+    if (not "uiClass" in json.dumps(Data)):
         logging.error("filter_devices: missing uiClass in response")
-        Domoticz.Error("filter_devices: missing uiClass in response")
         logging.debug(str(Data))
         return
 
