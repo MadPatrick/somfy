@@ -85,6 +85,7 @@ class TahomaWebApi:
         elif ((response.status_code == 401) or (response.status_code == 400)):
             self.__logged_in = False
             self.cookie = None
+            logging.debug("generate token: response = '" + str(response.json()) + "'")
             logging.error("failed to generate token")
             raise exceptions.LoginFailure("failed to generate token")
         return response.json()
