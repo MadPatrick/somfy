@@ -5,11 +5,11 @@
 # FirstFree function courtesy of @moroen https://github.com/moroen/IKEA-Tradfri-plugin
 # All credits for the plugin are for Nonolk, who is the origin plugin creator
 """
-<plugin key="tahomaIO" name="Somfy Tahoma or Connexoon plugin" author="MadPatrick" version="4.0.2" externallink="https://github.com/MadPatrick/somfy">
+<plugin key="tahomaIO" name="Somfy Tahoma or Connexoon plugin" author="MadPatrick" version="4.0.3" externallink="https://github.com/MadPatrick/somfy">
     <description>
 	<br/><h2>Somfy Tahoma/Connexoon plugin</h2><br/>
         <ul style="list-style-type:square">
-            <li>version: 4.0.2</li>
+            <li>version: 4.0.3</li>
             <li>This plugin require internet connection at all time.</li>
             <li>It controls the Somfy for IO Blinds or Screens</li>
             <li>Please provide your email and password used to connect Tahoma/Connexoon</li>
@@ -41,6 +41,7 @@
                 <option label="Local" value="Local" />
             </options>
         </param>
+        <param field = "Port" label="Portnumber Tahoma box (local)" width="30px" required="true" default="8443"/>
         <param field = "Mode5" label="Log file location" width="300px">
             <description>Enter a location for the logfile (omit final /), or leave empty to create logfile in the domoticz directory.
             <br/>Default directory: '/home/user/domoticz' for raspberry pi</description>
@@ -63,7 +64,7 @@ import exceptions
 import time
 import tahoma
 import os
-from tahoma_local import TahomaWebApi
+#from tahoma_local import TahomaWebApi
 from tahoma_local import SomfyBox
 
 
@@ -82,6 +83,7 @@ class BasePlugin:
         self.logger = None
         self.log_filename = "somfy.log"
         self.version = ""
+        self.local = False
     
     def onStart(self):
         if os.path.exists(Parameters["Mode5"]):
@@ -107,10 +109,14 @@ class BasePlugin:
         self.enabled = self.checkVersion(self.version)
         if not self.enabled:
             return
+
+        pin = Parameters["Mode3"]
+        port = int(Parameters["Port"])
         
         logging.debug("starting to log in")
         if Parameters["Mode4"] == "Local":
-            self.tahoma = TahomaWebApi()        
+            self.tahoma = SomfyBox(pin, port)
+            self.local = True
         else:
             self.tahoma = tahoma.Tahoma()
 
@@ -121,7 +127,16 @@ class BasePlugin:
             return
         
         if self.tahoma.logged_in:
-            self.tahoma.register_listener()
+            if self.local:
+                confToken = getConfigItem('token', '0')
+                if confToken == '0':
+                    self.tahoma.generate_token(pin)
+                    self.tahoma.activate_token(pin,self.tahoma.token)
+                    #store token for later use (not generate one at each start)
+                    setConfigItem('token', self.tahoma.token)
+                self.tahoma.register_listener()
+            else:
+                self.tahoma.register_listener()
 
         if self.tahoma.logged_in and firstFree() < 249:
             filtered_devices = self.tahoma.get_devices()
@@ -507,11 +522,15 @@ def DumpConfigToLog():
     for x in Parameters:
         if Parameters[x] != "":
             Domoticz.Debug("Parameter: '" + x + "':'" + str(Parameters[x]) + "'")
+    Configurations = Domoticz.Configuration()
+    Domoticz.Debug("Configuration count: " + str(len(Configurations)))
+    for x in Configurations:
+        if Configurations[x] != "":
+            Domoticz.Debug( "Configuration '" + x + "':'" + str(Configurations[x]) + "'")
     Domoticz.Debug("Device count: " + str(len(Devices)))
     for x in Devices:
         Domoticz.Debug("Device:           " + str(x) + " - " + str(Devices[x]))
     return
-
 
 def DumpHTTPResponseToLog(httpResp, level=0):
     if (level==0): Domoticz.Debug("HTTP Details ("+str(len(httpResp))+"):")
@@ -537,7 +556,6 @@ def firstFree():
         if num not in Devices:
             return num
     return
-
 
 # Configuration Helpers
 def getConfigItem(Key=None, Default={}):
