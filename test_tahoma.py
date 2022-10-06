@@ -12,7 +12,7 @@ logging.basicConfig(format='%(asctime)s - %(levelname)-8s - %(filename)-18s - %(
                     level=logging.DEBUG)
 logging.info("=== starting test run ===")
 
-menuoptions = ['0 exit',"1 log in", "3 check log in", "4 generate toke", "5 activate token", "6 get tokens", "7 delete token", 
+menuoptions = ['0 exit',"1 log in", "3 check log in", "4 generate toke", "5 activate token", "6 get tokens", "7 delete token", "8 print token",
     "10 web register", "11 web get devices", "12 web get events", "13 web send test command",
     "20 get local API version", "21 get local gateway", "22 get local devices", "23 register local listener", "24 get local events", "25 get local device state", "26 send local command"]
 mymenu = consolemenu.SelectionMenu(menuoptions)
@@ -23,7 +23,7 @@ device_list = list()
 #tahoma = tahoma.Tahoma()
 theBox = SomfyBox(p_pin, p_port)
 print("=====")
-if p_token != '0':
+if str(p_token) != '0':
     theBox.token = p_token
     print ("token loaded from params, no need to get from web")
 else:
@@ -61,7 +61,8 @@ if True:
             except exceptions.LoginFailure as exp:
                 print("Failed to login: " + str(exp))
             if theBox.token is None:
-                theBox.token = 'F290EEAEC03B4838EBDA4B0CD0034BAB'
+                print('not token generated, using default from file')
+                theBox.token = str(p_token)
         if x == 5: #activate token
             response = theBox.activate_token(p_pin, theBox.token)
             theBox.token = tahoma.token
@@ -73,6 +74,8 @@ if True:
             uuid = input("Please enter uuid to delete:")
             response = theBox.delete_tokens(p_pin, uuid)
             print(json.dumps(response, sort_keys = True, indent=4))
+        if x == 8:
+            print("token = " + str(theBox.token))
         if x == 10: # register listener
             theBox.register_listener()
             if theBox.listenerId is None:

@@ -24,7 +24,7 @@ class TahomaWebApi:
     __expiry_date = datetime.datetime.now()
     logged_in_expiry_days = 6
     cookie = None
-    token = None
+    __token = None
     __logged_in = False
 
     @property
@@ -80,7 +80,7 @@ class TahomaWebApi:
         logging.debug("generate token: response = '" + str(response) + "'")
         
         if response.status_code == 200:
-            self.token = response.json()['token']
+            self.__token = response.json()['token']
             logging.debug("succeeded to activate token: " + str(self.token))
         elif ((response.status_code == 401) or (response.status_code == 400)):
             self.__logged_in = False
@@ -89,6 +89,15 @@ class TahomaWebApi:
             logging.error("failed to generate token")
             raise exceptions.LoginFailure("failed to generate token")
         return response.json()
+
+    @property
+    def token(self):
+        return self.__token
+
+    @token.setter
+    def token(self, token):
+        self.__token = token
+        self.headers_json["Authorization"] = "Bearer " + str(token)
 
     def activate_token(self, pin, token):
         url_act = "/enduser-mobile-web/enduserAPI/config/"+pin+"/local/tokens"
@@ -136,19 +145,9 @@ class SomfyBox(TahomaWebApi):
         self.base_url_local = "https://" + str(pin) + ".local:" + str(port) + "/enduser-mobile-web/1/enduserAPI"
         self.headers_json = {"Content-Type": "application/json", "Accept": "application/json"}
         self.listenerId = None
-        self._token = None
-
-    @property
-    def token(self):
-        return self._token
-
-    @token.setter
-    def token(self, token):
-        self._token = token
-        self.headers_json["Authorization"] = "Bearer " + str(token)
 
     def get_version(self):
-        if self._token is None:
+        if self.token is None:
             raise exceptions.TahomaException("No token has been provided")
         response = requests.get(self.base_url_local + "/apiVersion", headers=self.headers_json, verify=False)
         if response.status_code == 200:
@@ -159,7 +158,7 @@ class SomfyBox(TahomaWebApi):
 
     #setup endpoints
     def get_gateways(self):
-        if self._token is None:
+        if self.token is None:
             raise exceptions.TahomaException("No token has been provided")
         response = requests.get(self.base_url_local + "/setup/gateways", headers=self.headers_json, verify=False)
         logging.debug(response)
@@ -170,7 +169,7 @@ class SomfyBox(TahomaWebApi):
         return response.json()
 
     def get_devices(self):
-        if self._token is None:
+        if self.token is None:
             raise exceptions.TahomaException("No token has been provided")
         response = requests.get(self.base_url_local + "/setup/devices", headers=self.headers_json, verify=False)
         logging.debug(response)
@@ -182,7 +181,7 @@ class SomfyBox(TahomaWebApi):
         return json.dumps(filtered_list)
 
     def get_device_state(self, device):
-        if self._token is None:
+        if self.token is None:
             raise exceptions.TahomaException("No token has been provided")
         if not device.startswith("io://"):
             raise exceptions.TahomaException("Invalid url, needs to start with io://")
@@ -198,7 +197,7 @@ class SomfyBox(TahomaWebApi):
         
     #events endpoints
     def get_events(self):
-        if self._token is None:
+        if self.token is None:
             raise exceptions.TahomaException("No token has been provided")
         if self.listenerId is not None:
             response = requests.post(self.base_url_local + "/events/"+self.listenerId+"/fetch", headers=self.headers_json, verify=False)
@@ -214,7 +213,7 @@ class SomfyBox(TahomaWebApi):
 
     def register_listener(self):
         logging.debug("start register")
-        if self._token is None:
+        if self.token is None:
             raise exceptions.TahomaException("No token has been provided")
         response = requests.post(self.base_url_local + "/events/register", headers=self.headers_json, verify=False)
         logging.debug("register response: status '" + str(response.status_code) + "' response body: '"+str(response)+"'")
@@ -227,7 +226,7 @@ class SomfyBox(TahomaWebApi):
 
     #execution endpoints
     def send_command(self, json_data):
-        if self._token is None:
+        if self.token is None:
             raise exceptions.TahomaException("No token has been provided")
         logging.info("Sending command to tahoma api")
         logging.debug("onCommand: data '"+str(json_data)+"'")
