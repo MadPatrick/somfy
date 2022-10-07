@@ -56,7 +56,14 @@
 </plugin>
 """
 
-import DomoticzEx as Domoticz
+try:
+    import DomoticzEx as Domoticz
+except ImportError:
+    from fakeDomoticz import *
+    #from fakeDomoticz import Device
+    from fakeDomoticz import Domoticz
+    Domoticz = Domoticz()
+
 import json
 import sys
 import logging
@@ -427,22 +434,22 @@ class BasePlugin:
                         deviceType = 244
                         swtype = 13
                         subtype2 = 73
-                        if (device["uiClass"] == "Awning"):
+                        if (device["definition"]["uiClass"] == "Awning"):
                             swtype = 13
-                        elif (device["uiClass"] == "RollerShutter"):
+                        elif (device["definition"]["uiClass"] == "RollerShutter"):
                             swtype = 21
                             deviceType = 244
                             subtype2 = 73                    
-                        elif (device["uiClass"] == "LightSensor"):
+                        elif (device["definition"]["uiClass"] == "LightSensor"):
                             swtype = 12
                             deviceType = 246
                             subtype2 = 1
-                    elif (device["deviceURL"].startswith("rts://")):
+                    elif (device["definition"]["deviceURL"].startswith("rts://")):
                         swtype = 6
 
                     # extended framework: create first device then unit? or create device+unit in one go?
                     Domoticz.Device(DeviceID=device["deviceURL"]) #use deviceURL as identifier for Domoticz.Device instance
-                    if (device["uiClass"] == "VenetianBlind" or device["uiClass"] == "ExteriorVenetianBlind"):
+                    if (device["definition"]["uiClass"] == "VenetianBlind" or device["definition"]["uiClass"] == "ExteriorVenetianBlind"):
                         #create unit for up/down and open/close for venetian blinds
                         Domoticz.Unit(Name=device["label"] + " up/down", Unit=1, Type=deviceType, Subtype=subtype2, Switchtype=swtype, DeviceID=device["deviceURL"]).Create()
                         Domoticz.Unit(Name=device["label"] + " orientation", Unit=2, Type=244, Subtype=73, Switchtype=swtype, DeviceID=device["deviceURL"]).Create()
