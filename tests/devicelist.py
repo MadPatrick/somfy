@@ -36,7 +36,7 @@ deviceList = [
 				"value": "online"
 			}
 		],
-		"label": "Button",
+		"label": "Pod",
 		"subsystemId": 0,
 		"attributes": [],
 		"enabled": "True",

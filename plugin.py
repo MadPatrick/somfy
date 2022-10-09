@@ -5,11 +5,11 @@
 # FirstFree function courtesy of @moroen https://github.com/moroen/IKEA-Tradfri-plugin
 # All credits for the plugin are for Nonolk, who is the origin plugin creator
 """
-<plugin key="tahomaIO" name="Somfy Tahoma or Connexoon plugin" author="MadPatrick" version="4.0.4" externallink="https://github.com/MadPatrick/somfy">
+<plugin key="tahomaIO" name="Somfy Tahoma or Connexoon plugin" author="MadPatrick" version="4.0.5" externallink="https://github.com/MadPatrick/somfy">
     <description>
 	<br/><h2>Somfy Tahoma/Connexoon plugin</h2><br/>
         <ul style="list-style-type:square">
-            <li>version: 4.0.4</li>
+            <li>version: 4.0.5</li>
             <li>This plugin require internet connection at all time.</li>
             <li>It controls the Somfy for IO Blinds or Screens</li>
             <li>Please provide your email and password used to connect Tahoma/Connexoon</li>
@@ -407,7 +407,8 @@ class BasePlugin:
 
     def create_devices(self, filtered_devices):
         logging.debug("get_devices: devices found, domoticz: "+str(len(Devices))+" API: "+str(len(filtered_devices)))
-
+        created_devices = 0
+        
         if (len(Devices) <= len(filtered_devices)):
             #Domoticz devices already present but less than from API or starting up
             logging.debug("New device(s) detected")
@@ -448,6 +449,7 @@ class BasePlugin:
                         swtype = 6
 
                     # extended framework: create first device then unit? or create device+unit in one go?
+                    created_devices += 1
                     Domoticz.Device(DeviceID=device["deviceURL"]) #use deviceURL as identifier for Domoticz.Device instance
                     if (device["definition"]["uiClass"] == "VenetianBlind" or device["definition"]["uiClass"] == "ExteriorVenetianBlind"):
                         #create unit for up/down and open/close for venetian blinds
@@ -461,6 +463,7 @@ class BasePlugin:
                 else:
                     found = False
         logging.debug("finished create devices")
+        return len(filtered_devices),created_devices
 
     def updateToEx(self):
         """routine to check if we can update to the Domoticz extended plugin framework"""

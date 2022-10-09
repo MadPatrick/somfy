@@ -22,6 +22,7 @@ class myUnit:
 
 class Domoticz:
     def __init__(self):
+        self.Units = []
         return
 
     def Log(self, s):
@@ -40,4 +41,6 @@ class Domoticz:
         print("creating DeviceID: "+ DeviceID)
 
     def Unit(self, Name="label", Unit=0, Type=0, Subtype=0, Switchtype="", DeviceID="deviceURL"):
-        return myUnit(Name="label", Unit=0, Type=0, Subtype=0, Switchtype="", DeviceID="deviceURL")
+        newUnit = myUnit(Name, Unit, Type, Subtype, Switchtype, DeviceID)
+        self.Units.append(newUnit)
+        return newUnit
