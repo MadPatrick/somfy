@@ -5,11 +5,11 @@
 # FirstFree function courtesy of @moroen https://github.com/moroen/IKEA-Tradfri-plugin
 # All credits for the plugin are for Nonolk, who is the origin plugin creator
 """
-<plugin key="tahomaIO" name="Somfy Tahoma or Connexoon plugin" author="MadPatrick" version="4.0.5" externallink="https://github.com/MadPatrick/somfy">
+<plugin key="tahomaIO" name="Somfy Tahoma or Connexoon plugin" author="MadPatrick" version="4.0.6" externallink="https://github.com/MadPatrick/somfy">
     <description>
 	<br/><h2>Somfy Tahoma/Connexoon plugin</h2><br/>
         <ul style="list-style-type:square">
-            <li>version: 4.0.5</li>
+            <li>version: 4.0.6</li>
             <li>This plugin require internet connection at all time.</li>
             <li>It controls the Somfy for IO Blinds or Screens</li>
             <li>Please provide your email and password used to connect Tahoma/Connexoon</li>
@@ -406,7 +406,7 @@ class BasePlugin:
         return can_continue
 
     def create_devices(self, filtered_devices):
-        logging.debug("get_devices: devices found, domoticz: "+str(len(Devices))+" API: "+str(len(filtered_devices)))
+        logging.debug("create_devices: devices found, domoticz: "+str(len(Devices))+" API: "+str(len(filtered_devices)))
         created_devices = 0
         
         if (len(Devices) <= len(filtered_devices)):
@@ -415,7 +415,10 @@ class BasePlugin:
 
             for device in filtered_devices:
                 found = False
-                logging.debug("check if need to create device: "+device["label"])
+                if type(device) is str:
+                    logging.debug("create_device: device in filter_list is of type string, need to convert")
+                    device = json.loads(device)
+                logging.debug("create_devices: check if need to create device: "+device["label"])
                 if device["label"] in Devices:
                     logging.debug("create_devices: step 1, do not create new device: "+device["label"]+", device already exists")
                     found = True
@@ -462,7 +465,7 @@ class BasePlugin:
                     logging.info("New device created: "+device["label"])
                 else:
                     found = False
-        logging.debug("finished create devices")
+        logging.debug("create_devices: finished create devices")
         return len(filtered_devices),created_devices
 
     def updateToEx(self):
