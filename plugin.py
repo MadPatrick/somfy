@@ -5,11 +5,11 @@
 # FirstFree function courtesy of @moroen https://github.com/moroen/IKEA-Tradfri-plugin
 # All credits for the plugin are for Nonolk, who is the origin plugin creator
 """
-<plugin key="tahomaIO" name="Somfy Tahoma or Connexoon plugin" author="MadPatrick" version="4.0.7" externallink="https://github.com/MadPatrick/somfy">
+<plugin key="tahomaIO" name="Somfy Tahoma or Connexoon plugin" author="MadPatrick" version="4.0.8" externallink="https://github.com/MadPatrick/somfy">
     <description>
 	<br/><h2>Somfy Tahoma/Connexoon plugin</h2><br/>
         <ul style="list-style-type:square">
-            <li>version: 4.0.7</li>
+            <li>version: 4.0.8</li>
             <li>This plugin require internet connection at all time.</li>
             <li>It controls the Somfy for IO Blinds or Screens</li>
             <li>Please provide your email and password used to connect Tahoma/Connexoon</li>
@@ -135,12 +135,17 @@ class BasePlugin:
         
         if self.tahoma.logged_in:
             if self.local:
+                logging.debug("check if token stored in configuration")
                 confToken = getConfigItem('token', '0')
                 if confToken == '0':
+                    logging.debug("no token found, generate a new one")
                     self.tahoma.generate_token(pin)
                     self.tahoma.activate_token(pin,self.tahoma.token)
                     #store token for later use (not generate one at each start)
                     setConfigItem('token', self.tahoma.token)
+                else:
+                    logging.debug("found token in gonfiguration: "+str(confToken))
+                    self.tahoma.token(confToken)
                 self.tahoma.register_listener()
             else:
                 self.tahoma.register_listener()

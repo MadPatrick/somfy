@@ -95,9 +95,9 @@ class TahomaWebApi:
         return self.__token
 
     @token.setter
-    def token(self, token):
-        self.__token = token
-        self.headers_json["Authorization"] = "Bearer " + str(token)
+    def token(self, t):
+        self.__token = t
+        self.headers_json["Authorization"] = "Bearer " + str(self.__token)
 
     def activate_token(self, pin, token):
         url_act = "/enduser-mobile-web/enduserAPI/config/"+pin+"/local/tokens"
