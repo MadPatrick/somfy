@@ -5,11 +5,11 @@
 # FirstFree function courtesy of @moroen https://github.com/moroen/IKEA-Tradfri-plugin
 # All credits for the plugin are for Nonolk, who is the origin plugin creator
 """
-<plugin key="tahomaIO" name="Somfy Tahoma or Connexoon plugin" author="MadPatrick" version="4.0.8" externallink="https://github.com/MadPatrick/somfy">
+<plugin key="tahomaIO" name="Somfy Tahoma or Connexoon plugin" author="MadPatrick" version="4.0.9" externallink="https://github.com/MadPatrick/somfy">
     <description>
 	<br/><h2>Somfy Tahoma/Connexoon plugin</h2><br/>
         <ul style="list-style-type:square">
-            <li>version: 4.0.8</li>
+            <li>version: 4.0.9</li>
             <li>This plugin require internet connection at all time.</li>
             <li>It controls the Somfy for IO Blinds or Screens</li>
             <li>Please provide your email and password used to connect Tahoma/Connexoon</li>
@@ -59,8 +59,8 @@
 try:
     import DomoticzEx as Domoticz
 except ImportError:
+    #import fake domoticz modules and setup fake domoticz instance to enable unit testing
     from fakeDomoticz import *
-    #from fakeDomoticz import Device
     from fakeDomoticz import Domoticz
     Domoticz = Domoticz()
 
@@ -71,9 +71,7 @@ import exceptions
 import time
 import tahoma
 import os
-#from tahoma_local import TahomaWebApi
 from tahoma_local import SomfyBox
-
 
 class BasePlugin:
     def __init__(self):
@@ -120,12 +118,13 @@ class BasePlugin:
         pin = Parameters["Mode3"]
         port = int(Parameters["Port"])
         
-        logging.debug("starting to log in")
+        logging.debug("starting to log in with mode " + Parameters["Mode4"])
         if Parameters["Mode4"] == "Local":
             self.tahoma = SomfyBox(pin, port)
             self.local = True
         else:
             self.tahoma = tahoma.Tahoma()
+            self.local = False
 
         try:
             self.tahoma.tahoma_login(str(Parameters["Username"]), str(Parameters["Password"]))
@@ -144,7 +143,7 @@ class BasePlugin:
                     #store token for later use (not generate one at each start)
                     setConfigItem('token', self.tahoma.token)
                 else:
-                    logging.debug("found token in gonfiguration: "+str(confToken))
+                    logging.debug("found token in configuration: "+str(confToken))
                     self.tahoma.token(confToken)
                 self.tahoma.register_listener()
             else:
