@@ -143,24 +143,21 @@ class BasePlugin:
         if Unit == 1:
             # unit 1 used for up/down movement
             if (str(Command) == "Off" or str(Command) == "Close"):
-                commands["name"] = "open"
-            elif (str(Command) == "On" or str(Command) == "Open"):
                 commands["name"] = "close"
+            elif (str(Command) == "On" or str(Command) == "Open"):
+                commands["name"] = "open"
             elif (str(Command) == "Stop"):
                 commands["name"] = "stop"
-            # elif (str(Command) == "Stop"):
-                # commands["name"] = "my"
             elif ("Set Level" in str(Command)):
                 commands["name"] = "setClosure"
-                #tmp = 100 - int(Level)
-                tmp = int(Level)
-                params.append(tmp)
+                params.append(int(Level))
                 commands["parameters"] = params
         elif Unit == 2:
             # unit 2 used for orientation in venetian blinds
             if ("Set Level" in str(Command)):
                 commands["name"] = "setOrientation"
-                tmp = max(100 - int(Level), 1) #orientation does not accept 0
+                #tmp = max(100 - int(Level), 1) #orientation does not accept 0
+                tmp = max(int(Level), 1) #orientation does not accept 0
                 params.append(tmp)
                 commands["parameters"] = params
             else:
@@ -179,56 +176,6 @@ class BasePlugin:
         data = {"label": "Domoticz - "+Devices[DeviceId].Units[Unit].Name+" - "+commands["name"], "actions": self.actions_serialized}
         self.json_data = json.dumps(data, indent=None, sort_keys=True)
         logging.debug("preparing command: json data: "+str(self.json_data))
-
-        if (not self.tahoma.logged_in):
-            logging.info("Not logged in, must connect")
-            self.command = True
-            self.tahoma.tahoma_login(str(Parameters["Username"]), str(Parameters["Password"]))
-            if self.tahoma.logged_in:
-                self.tahoma.register_listener()
-
-        event_list = []
-        try:
-            event_list = self.tahoma.tahoma_command(self.json_data)
-        except (exceptions.TooManyRetries, exceptions.FailureWithErrorCode, exceptions.FailureWithoutErrorCode) as exp:
-            Domoticz.Error("Failed to send command: " + str(exp))
-            logging.error("Failed to send command: " + str(exp))
-            return
-        if event_list is not None and len(event_list) > 0:
-            self.update_devices_status(event_list)
-        self.heartbeat = False
-        self.actions_serialized = []
-
-    def onCommand_legacy(self, Unit, Command, Level, Hue):
-        logging.debug("onCommand: Unit: '"+str(Unit)+"', Command: '"+str(Command)+"', Level: '"+str(Level)+"', Hue: '"+str(Hue)+"'")
-        commands_serialized = []
-        action = {}
-        commands = {}
-        params = []
-
-        if (str(Command) == "Off"):
-            commands["name"] = "open"
-        elif (str(Command) == "On"):
-            commands["name"] = "close"
-        elif (str(Command) == "Stop"):
-            commands["name"] = "stop"
-        # elif (str(Command) == "Stop"):
-            # commands["name"] = "my"
-        elif ("Set Level" in str(Command)):
-            commands["name"] = "setClosure"
-            #tmp = 100 - int(Level)
-            tmp = int(Level)
-            params.append(tmp)
-            commands["parameters"] = params
-
-        commands_serialized.append(commands)
-        action["deviceURL"] = Devices[Unit].DeviceID
-        action["commands"] = commands_serialized
-        self.actions_serialized.append(action)
-        logging.debug("preparing command: # commands: "+str(len(commands)))
-        logging.debug("preparing command: # actions_serialized: "+str(len(self.actions_serialized)))
-        data = {"label": "Domoticz - "+Devices[Unit].Name+" - "+commands["name"], "actions": self.actions_serialized}
-        self.json_data = json.dumps(data, indent=None, sort_keys=True)
 
         if (not self.tahoma.logged_in):
             logging.info("Not logged in, must connect")
