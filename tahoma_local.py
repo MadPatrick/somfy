@@ -18,7 +18,7 @@ requests.packages.urllib3.disable_warnings()
 class TahomaWebApi:
     base_url_web = "https://ha101-1.overkiz.com"
     headers_url = {"Content-Type": "application/x-www-form-urlencoded"}
-    headers_json = {"Content-Type": "application/json"}
+    #headers_json = {"Content-Type": "application/json"}
     login_url = "/enduser-mobile-web/enduserAPI/login"
     timeout = 10
     __expiry_date = datetime.datetime.now()
@@ -98,6 +98,7 @@ class TahomaWebApi:
     def token(self, t):
         self.__token = t
         self.headers_json["Authorization"] = "Bearer " + str(self.__token)
+        logging.debug("headers_json updated with new token")
 
     def activate_token(self, pin, token):
         url_act = "/enduser-mobile-web/enduserAPI/config/"+pin+"/local/tokens"
