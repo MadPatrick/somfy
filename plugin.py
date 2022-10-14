@@ -206,7 +206,8 @@ class BasePlugin:
             # unit 2 used for orientation in venetian blinds
             if ("Set Level" in str(Command)):
                 commands["name"] = "setOrientation"
-                tmp = max(100 - int(Level), 1) #orientation does not accept 0
+                #tmp = max(100 - int(Level), 1) #orientation does not accept 0
+                tmp = max(int(Level), 1) #orientation does not accept 0
                 params.append(tmp)
                 commands["parameters"] = params
             else:
