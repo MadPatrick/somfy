@@ -5,11 +5,11 @@
 # FirstFree function courtesy of @moroen https://github.com/moroen/IKEA-Tradfri-plugin
 # All credits for the plugin are for Nonolk, who is the origin plugin creator
 """
-<plugin key="tahomaIO" name="Somfy Tahoma or Connexoon plugin" author="MadPatrick" version="4.0.12" externallink="https://github.com/MadPatrick/somfy">
+<plugin key="tahomaIO" name="Somfy Tahoma or Connexoon plugin" author="MadPatrick" version="4.0.13" externallink="https://github.com/MadPatrick/somfy">
     <description>
 	<br/><h2>Somfy Tahoma/Connexoon plugin</h2><br/>
         <ul style="list-style-type:square">
-            <li>version: 4.0.12</li>
+            <li>version: 4.0.13</li>
             <li>This plugin require internet connection at all time.</li>
             <li>It controls the Somfy for IO Blinds or Screens</li>
             <li>Please provide your email and password used to connect Tahoma/Connexoon</li>
@@ -29,9 +29,6 @@
                 <option label="15m" value="90"/>
             </options>
         </param>
-        <param field = "Mode3" label = "Gateway pin" width="200px">
-            <description>The pin of your gateway (eg. 1234-5678-9012)</description>
-        </param>
         <param field = "Mode4" label="API selection" width="75px">
             <description>Choose how to interact with the Somfy/Tahoma/Connexoon box:
             <br/>Web API: via Somfy web server (surrent implementation, default)
@@ -39,6 +36,16 @@
             <options>
                 <option label="Web" value="Web" default="true"/>
                 <option label="Local" value="Local" />
+            </options>
+        </param>
+        <param field = "Mode3" label = "Gateway pin" width="200px">
+            <description>The pin of your gateway (eg. 1234-5678-9012)</description>
+        </param>
+        <param field = "Mode1" label="Reset token (local API)" width="75px">
+            <description>Set to true to request a new token. Can be used when you get access denied.</description>
+            <options>
+                <option label="False" value="False" default="true"/>
+                <option label="True" value="True" />
             </options>
         </param>
         <param field = "Port" label="Portnumber Tahoma box (local)" width="30px" required="true" default="8443"/>
@@ -136,12 +143,13 @@ class BasePlugin:
             if self.local:
                 logging.debug("check if token stored in configuration")
                 confToken = getConfigItem('token', '0')
-                if confToken == '0':
+                if confToken == '0' or Parameters["Mode1"] == "True":
                     logging.debug("no token found, generate a new one")
                     self.tahoma.generate_token(pin)
                     self.tahoma.activate_token(pin,self.tahoma.token)
                     #store token for later use (not generate one at each start)
                     setConfigItem('token', self.tahoma.token)
+                    Parameters["Mode1"] = "False"
                 else:
                     logging.debug("found token in configuration: "+str(confToken))
                     self.tahoma.token = confToken
