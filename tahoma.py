@@ -102,6 +102,7 @@ class Tahoma:
             return
 
         filtered_list = utils.filter_devices(response.json())
+        self.startup = False
         return json.dumps(filtered_list)
 
     def get_events(self):

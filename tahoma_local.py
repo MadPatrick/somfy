@@ -145,6 +145,7 @@ class SomfyBox(TahomaWebApi):
         self.base_url_local = "https://" + str(pin) + ".local:" + str(port) + "/enduser-mobile-web/1/enduserAPI"
         self.headers_json = {"Content-Type": "application/json", "Accept": "application/json"}
         self.listenerId = None
+        self.startup = True
         logging.debug("SomfyBox initialised")
 
     def get_version(self):
@@ -179,6 +180,7 @@ class SomfyBox(TahomaWebApi):
         else:
             utils.handle_response(response, "get devices")
         filtered_list = utils.filter_devices(response.json())
+        self.startup = False
         return json.dumps(filtered_list)
 
     def get_device_state(self, device):
