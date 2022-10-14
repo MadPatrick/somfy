@@ -182,7 +182,8 @@ class SomfyBox(TahomaWebApi):
             utils.handle_response(response, "get devices")
         filtered_list = utils.filter_devices(response.json())
         self.startup = False
-        return json.dumps(filtered_list)
+        #return json.dumps(filtered_list)
+        return filtered_list
 
     def get_device_state(self, device):
         if self.token is None or self.token == "0":
