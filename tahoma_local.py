@@ -145,6 +145,7 @@ class SomfyBox(TahomaWebApi):
         self.base_url_local = "https://" + str(pin) + ".local:" + str(port) + "/enduser-mobile-web/1/enduserAPI"
         self.headers_json = {"Content-Type": "application/json", "Accept": "application/json"}
         self.listenerId = None
+        logging.debug("SomfyBox initialised")
 
     def get_version(self):
         if self.token is None:
