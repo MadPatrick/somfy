@@ -5,11 +5,11 @@
 # FirstFree function courtesy of @moroen https://github.com/moroen/IKEA-Tradfri-plugin
 # All credits for the plugin are for Nonolk, who is the origin plugin creator
 """
-<plugin key="tahomaIO" name="Somfy Tahoma or Connexoon plugin" author="MadPatrick" version="4.0.9" externallink="https://github.com/MadPatrick/somfy">
+<plugin key="tahomaIO" name="Somfy Tahoma or Connexoon plugin" author="MadPatrick" version="4.0.10" externallink="https://github.com/MadPatrick/somfy">
     <description>
 	<br/><h2>Somfy Tahoma/Connexoon plugin</h2><br/>
         <ul style="list-style-type:square">
-            <li>version: 4.0.9</li>
+            <li>version: 4.0.10</li>
             <li>This plugin require internet connection at all time.</li>
             <li>It controls the Somfy for IO Blinds or Screens</li>
             <li>Please provide your email and password used to connect Tahoma/Connexoon</li>
@@ -193,18 +193,14 @@ class BasePlugin:
         if Unit == 1:
             # unit 1 used for up/down movement
             if (str(Command) == "Off" or str(Command) == "Close"):
-                commands["name"] = "open"   
+                commands["name"] = "close"   
             elif (str(Command) == "On" or str(Command) == "Open"):
-                commands["name"] = "close"
+                commands["name"] = "open"
             elif (str(Command) == "Stop"):
                 commands["name"] = "stop"
-            # elif (str(Command) == "Stop"):
-                # commands["name"] = "my"
             elif ("Set Level" in str(Command)):
                 commands["name"] = "setClosure"
-                #tmp = 100 - int(Level)
-                tmp = int(Level)
-                params.append(tmp)
+                params.append(int(Level))
                 commands["parameters"] = params
         elif Unit == 2:
             # unit 2 used for orientation in venetian blinds
