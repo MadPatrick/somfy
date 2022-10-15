@@ -81,6 +81,7 @@ class TahomaWebApi:
         
         if response.status_code == 200:
             self.__token = response.json()['token']
+            self.headers_json["Authorization"] = "Bearer " + str(self.__token)
             logging.debug("succeeded to generate token: " + str(self.token))
         elif ((response.status_code == 401) or (response.status_code == 400)):
             self.__logged_in = False
@@ -96,6 +97,7 @@ class TahomaWebApi:
 
     @token.setter
     def token(self, t):
+        """setter to allow external update of token"""
         self.__token = t
         self.headers_json["Authorization"] = "Bearer " + str(self.__token)
         logging.debug("headers_json updated with new token")
