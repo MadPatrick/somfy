@@ -18,7 +18,7 @@ requests.packages.urllib3.disable_warnings()
 class TahomaWebApi:
     base_url_web = "https://ha101-1.overkiz.com"
     headers_url = {"Content-Type": "application/x-www-form-urlencoded"}
-    #headers_json = {"Content-Type": "application/json"}
+    headers_json = {"Content-Type": "application/json"}
     login_url = "/enduser-mobile-web/enduserAPI/login"
     timeout = 10
     __expiry_date = datetime.datetime.now()
@@ -81,7 +81,7 @@ class TahomaWebApi:
         
         if response.status_code == 200:
             self.__token = response.json()['token']
-            logging.debug("succeeded to activate token: " + str(self.token))
+            logging.debug("succeeded to generate token: " + str(self.token))
         elif ((response.status_code == 401) or (response.status_code == 400)):
             self.__logged_in = False
             self.cookie = None
@@ -144,7 +144,7 @@ class TahomaWebApi:
 class SomfyBox(TahomaWebApi):
     def __init__(self, pin, port):
         self.base_url_local = "https://" + str(pin) + ".local:" + str(port) + "/enduser-mobile-web/1/enduserAPI"
-        self.headers_json = {"Content-Type": "application/json", "Accept": "application/json"}
+        #self.headers_json = {"Content-Type": "application/json", "Accept": "application/json"}
         self.listenerId = None
         self.startup = True
         logging.debug("SomfyBox initialised")
@@ -220,6 +220,7 @@ class SomfyBox(TahomaWebApi):
         logging.debug("start register")
         if self.token is None or self.token == "0":
             raise exceptions.TahomaException("No token has been provided")
+        logging.debug("register response: self.headers_json: '" + json.dumps(self.headers_json) + "'")
         response = requests.post(self.base_url_local + "/events/register", headers=self.headers_json, verify=False)
         logging.debug("register response: status '" + str(response.status_code) + "' response body: '"+str(response)+"'")
         if response.status_code == 200:
