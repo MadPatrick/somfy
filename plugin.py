@@ -5,11 +5,11 @@
 # FirstFree function courtesy of @moroen https://github.com/moroen/IKEA-Tradfri-plugin
 # All credits for the plugin are for Nonolk, who is the origin plugin creator
 """
-<plugin key="tahomaIO" name="Somfy Tahoma or Connexoon plugin" author="MadPatrick" version="4.0.16" externallink="https://github.com/MadPatrick/somfy">
+<plugin key="tahomaIO" name="Somfy Tahoma or Connexoon plugin" author="MadPatrick" version="4.0.18" externallink="https://github.com/MadPatrick/somfy">
     <description>
 	<br/><h2>Somfy Tahoma/Connexoon plugin</h2><br/>
         <ul style="list-style-type:square">
-            <li>version: 4.0.16</li>
+            <li>version: 4.0.18</li>
             <li>This plugin require internet connection at all time.</li>
             <li>It controls the Somfy for IO Blinds or Screens</li>
             <li>Please provide your email and password used to connect Tahoma/Connexoon</li>
@@ -22,9 +22,10 @@
         <param field="Password" label="Password" width="200px" required="true" default="" password="true"/>
         <param field="Mode2" label="Refresh interval" width="75px">
             <options>
-                <option label="20s" value="2"/>
+                <option label="10s" value="1"/>
+                <option label="20s - local" value="2"/>
                 <option label="1m" value="6"/>
-                <option label="5m" value="30" default="true"/>
+                <option label="5m - web" value="30" default="true"/>
                 <option label="10m" value="60"/>
                 <option label="15m" value="90"/>
             </options>
@@ -265,8 +266,9 @@ class BasePlugin:
             logging.debug("Poll unit")
             self.runCounter = int(Parameters['Mode2'])            
 
-            if (self.tahoma.logged_in and (not self.tahoma.startup)):
-                if (not self.tahoma.logged_in):
+            if (self.tahoma.logged_in and not self.tahoma.startup) or self.local:
+                if (not self.tahoma.logged_in and not self.local):
+                    #this part looks useless as this condition will never be true
                     self.tahoma.tahoma_login(str(Parameters["Username"]), str(Parameters["Password"]))
                     if self.tahoma.logged_in:
                         self.tahoma.register_listener()
@@ -299,7 +301,11 @@ class BasePlugin:
 
         logging.debug("updating device status self.tahoma.startup = "+str(self.tahoma.startup)+" on num datasets: "+str(len(Updated_devices)))
         logging.debug("updating device status on data: "+str(Updated_devices))
-        for dataset in Updated_devices:
+        if self.local:
+            eventList = filter_events(Updated_devices)
+        else:
+            eventList = Updated_devices
+        for dataset in eventList:
             logging.debug("checking dataset for URL: "+str(dataset["deviceURL"]))
             if dataset["deviceURL"] not in Devices:
                 #Domoticz.Error("device not found for URL: "+str(dataset["deviceURL"])+" called "+str(dataset["label"]))

@@ -125,8 +125,8 @@ class Tahoma:
                     strData = response.json()
 
                     if (not "DeviceStateChangedEvent" in response.text):
-                      logging.debug("get_events: no DeviceStateChangedEvent found in response: " + str(strData))
-                      return
+                        logging.debug("get_events: no DeviceStateChangedEvent found in response: " + str(strData))
+                        return
 
                     self.events = strData
 
@@ -139,10 +139,7 @@ class Tahoma:
                                 filtered_events.append(event)
 
                         return filtered_events
-                        #self.update_devices_status(filtered_events)
 
-                # elif (response.status_code == 200 and (not self.heartbeat)):
-                  # return
                 else:
                   logging.info("Return status " + str(response.status_code))
             except requests.exceptions.RequestException as exp:

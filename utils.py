@@ -33,6 +33,18 @@ def filter_devices(Data):
     logging.debug("finished filter devices")
     return filtered_devices
 
+def filter_events(Data):
+    logging.debug("start filter events")
+    filtered_events = list()
+
+    for event in Data:
+        if (event["name"] == "DeviceStateChangedEvent"):
+            logging.debug("get_events: add event: URL: '"+event["deviceURL"]+"' num states: '"+str(len(event["deviceStates"]))+"'")
+            filtered_events.append(event)
+
+    logging.debug("finished filter events")
+    return filtered_events
+
 def handle_response(response, action):
     """handle faulty responses"""
     if response.status_code >= 300 and response.status_code < 400:
