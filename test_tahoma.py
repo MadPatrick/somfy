@@ -11,7 +11,7 @@ logging.basicConfig(format='%(asctime)s - %(levelname)-8s - %(filename)-18s - %(
                     level=logging.DEBUG)
 logging.info("=== starting test run ===")
 
-menuoptions = ['0 exit',"1 log in", "3 check log in", "4 generate toke", "5 activate token", "6 get tokens", "7 delete token", "8 print token",
+menuoptions = ['0 exit',"1 log in for local", "2 login for web", "3 check log in", "4 generate toke", "5 activate token", "6 get tokens", "7 delete token", "8 print token",
     "10 web register", "11 web get devices", "12 web get events", "13 web send command",
     "20 get local API version", "21 get local gateway", "22 get local devices", "23 register local listener", "24 get local events", "25 get local device state", "26 send local command"]
 mymenu = consolemenu.SelectionMenu(menuoptions)
@@ -46,11 +46,17 @@ if True:
             status = False
             try:
                 status = theBox.tahoma_login(p_email, p_password)
-                tahoma.cookie = theBox.cookie #forward cookie to web API class
             except exceptions.LoginFailure as exp:
                 print("Failed to login: " + str(exp))
             if theBox.cookie is None:
                 theBox.cookie = dict(JSESSIONID='F290EEAEC03B4838EBDA4B0CD0034BAB')
+            print("login status: "+str(status))
+        if x == 2: #log in
+            status = False
+            try:
+                status = tahoma.tahoma_login(p_email, p_password)
+            except exceptions.LoginFailure as exp:
+                print("Failed to login: " + str(exp))
             if tahoma.cookie is None:
                 tahoma.cookie = 'JSESSIONID=F290EEAEC03B4838EBDA4B0CD0034BAB; Path=/enduser-mobile-web; Secure; HttpOnly; SameSite=None'
             print("login status: "+str(status))
