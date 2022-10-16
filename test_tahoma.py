@@ -12,7 +12,7 @@ logging.basicConfig(format='%(asctime)s - %(levelname)-8s - %(filename)-18s - %(
 logging.info("=== starting test run ===")
 
 menuoptions = ['0 exit',"1 log in", "3 check log in", "4 generate toke", "5 activate token", "6 get tokens", "7 delete token", "8 print token",
-    "10 web register", "11 web get devices", "12 web get events", "13 web send test command",
+    "10 web register", "11 web get devices", "12 web get events", "13 web send command",
     "20 get local API version", "21 get local gateway", "22 get local devices", "23 register local listener", "24 get local events", "25 get local device state", "26 send local command"]
 mymenu = consolemenu.SelectionMenu(menuoptions)
 
@@ -85,8 +85,11 @@ if True:
         if x == 11: print(tahoma.get_devices(device_list))
         if x == 12: print(tahoma.get_events())
         if x == 13: 
-            data = '{"actions": [{"commands": [{"name": "open"}], "deviceURL": "io://1234-5678-9012/10464619"}], "label": "Domoticz - Somfy - test - open"}'
-            print(tahoma.tahoma_command(json.dumps(data)))
+            device = str(input("enter deviceURL to command: "))
+            command = str(input("enter command <open|close>: "))
+            commando = {"actions":[{"commands":[{"name":command}], "deviceURL":device}], "label":"test command"}
+            #data = '{"actions": [{"commands": [{"name": "open"}], "deviceURL": "io://1234-5678-9012/10464619"}], "label": "Domoticz - Somfy - test - open"}'
+            print(tahoma.send_command(json.dumps(commando)))
         if x == 20: #get version of local API
             response = theBox.get_version()
             print(json.dumps(response, sort_keys = True, indent=4))
