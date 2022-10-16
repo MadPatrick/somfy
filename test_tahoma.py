@@ -3,7 +3,6 @@ import logging
 import json
 import consolemenu
 import tahoma
-#from tahoma_local import TahomaWebApi as tahoma
 from tahoma_local import SomfyBox
 import exceptions
 from params import *
@@ -20,7 +19,7 @@ mymenu = consolemenu.SelectionMenu(menuoptions)
 device_list = list()
 
 #tahoma = tahoma()
-#tahoma = tahoma.Tahoma()
+tahoma = tahoma.Tahoma()
 theBox = SomfyBox(p_pin, p_port)
 print("=====")
 if str(p_token) != '0':
@@ -47,10 +46,13 @@ if True:
             status = False
             try:
                 status = theBox.tahoma_login(p_email, p_password)
+                tahoma.cookie = theBox.cookie #forward cookie to web API class
             except exceptions.LoginFailure as exp:
                 print("Failed to login: " + str(exp))
             if theBox.cookie is None:
                 theBox.cookie = dict(JSESSIONID='F290EEAEC03B4838EBDA4B0CD0034BAB')
+            if tahoma.cookie is None:
+                tahoma.cookie = 'JSESSIONID=F290EEAEC03B4838EBDA4B0CD0034BAB; Path=/enduser-mobile-web; Secure; HttpOnly; SameSite=None'
             print("login status: "+str(status))
         if x == 3: print(str(theBox.logged_in)) #check log in
         if x == 4: #generate token
@@ -77,9 +79,9 @@ if True:
         if x == 8:
             print("token = " + str(theBox.token))
         if x == 10: # register listener
-            theBox.register_listener()
-            if theBox.listenerId is None:
-                theBox.listenerId = 'b4e62511-ac10-3e01-60e0-9b9f656aea77'
+            tahoma.register_listener()
+            if tahoma.listenerId is None:
+                tahoma.listenerId = 'b4e62511-ac10-3e01-60e0-9b9f656aea77'
         if x == 11: print(tahoma.get_devices(device_list))
         if x == 12: print(tahoma.get_events())
         if x == 13: 
