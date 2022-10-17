@@ -5,11 +5,11 @@
 # FirstFree function courtesy of @moroen https://github.com/moroen/IKEA-Tradfri-plugin
 # All credits for the plugin are for Nonolk, who is the origin plugin creator
 """
-<plugin key="tahomaIO" name="Somfy Tahoma or Connexoon plugin" author="MadPatrick" version="4.0.18" externallink="https://github.com/MadPatrick/somfy">
+<plugin key="tahomaIO" name="Somfy Tahoma or Connexoon plugin" author="MadPatrick" version="4.0.19" externallink="https://github.com/MadPatrick/somfy">
     <description>
 	<br/><h2>Somfy Tahoma/Connexoon plugin</h2><br/>
         <ul style="list-style-type:square">
-            <li>version: 4.0.18</li>
+            <li>version: 4.0.19</li>
             <li>This plugin require internet connection at all time.</li>
             <li>It controls the Somfy for IO Blinds or Screens</li>
             <li>Please provide your email and password used to connect Tahoma/Connexoon</li>
@@ -80,6 +80,7 @@ import time
 import tahoma
 import os
 from tahoma_local import SomfyBox
+import utils
 
 class BasePlugin:
     def __init__(self):
@@ -89,7 +90,7 @@ class BasePlugin:
         self.heartbeat_delay = 1
         self.con_delay = 0
         self.wait_delay = 30
-        self.json_data = None
+        self.command_data = None
         self.command = False
         self.refresh = True
         self.actions_serialized = []
@@ -180,7 +181,7 @@ class BasePlugin:
           self.update_devices_status(event_list)
 
         elif (self.command):
-          event_list = self.tahoma.tahoma_command(self.json_data)
+          event_list = self.tahoma.tahoma_command(self.command_data)
           self.update_devices_status(event_list)
           self.command = False
           self.heartbeat = False
@@ -233,8 +234,11 @@ class BasePlugin:
         logging.debug("preparing command: # commands: "+str(len(commands)))
         logging.debug("preparing command: # actions_serialized: "+str(len(self.actions_serialized)))
         data = {"label": "Domoticz - "+Devices[DeviceId].Units[Unit].Name+" - "+commands["name"], "actions": self.actions_serialized}
-        self.json_data = json.dumps(data, indent=None, sort_keys=True)
-        logging.debug("preparing command: json data: "+str(self.json_data))
+        if self.local:
+            self.command_data = data
+        else:
+            self.command_data = json.dumps(data, indent=None, sort_keys=True)
+        logging.debug("preparing command: json data: "+str(self.command_data))
 
         if (not self.tahoma.logged_in):
             logging.info("Not logged in, must connect")
@@ -246,7 +250,7 @@ class BasePlugin:
         event_list = []
         try:
             #self.tahoma.send_command(self.json_data)
-            self.tahoma.send_command(data)
+            self.tahoma.send_command(self.command_data)
             event_list = self.tahoma.get_events()
         except (exceptions.TooManyRetries, exceptions.FailureWithErrorCode, exceptions.FailureWithoutErrorCode) as exp:
             Domoticz.Error("Failed to send command: " + str(exp))
@@ -302,7 +306,7 @@ class BasePlugin:
         logging.debug("updating device status self.tahoma.startup = "+str(self.tahoma.startup)+" on num datasets: "+str(len(Updated_devices)))
         logging.debug("updating device status on data: "+str(Updated_devices))
         if self.local:
-            eventList = filter_events(Updated_devices)
+            eventList = utils.filter_events(Updated_devices)
         else:
             eventList = Updated_devices
         for dataset in eventList:

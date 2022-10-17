@@ -106,6 +106,7 @@ class TahomaWebApi:
         url_act = "/enduser-mobile-web/enduserAPI/config/"+pin+"/local/tokens"
         data_act = {"label": "Domoticz token", "token": token, "scope": "devmode"}
         response = requests.post(self.base_url_web + url_act, headers=self.headers_json, json=data_act, cookies=self.cookie)
+        logging.debug("activate_token: response: "+str(response.json()))
 
         if response.status_code == 200:
             logging.debug("succeeded to activate token: " + str(self.token))

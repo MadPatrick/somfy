@@ -18,6 +18,10 @@ class PluginTests(unittest.TestCase):
         logging.info("test: test_createDevicesLocal")
         self.assertEqual(self.thePlug.create_devices(filter_devices(deviceList)), (2,2))
 
+    def test_updateDevicesLocal(self):
+        logging.info("test: test_createDevicesLocal")
+        self.assertEqual(self.thePlug.create_devices(filter_devices(deviceList)), (2,2))
+
 def main():
     logging.basicConfig(format='%(asctime)s - %(levelname)-8s - %(filename)-18s - %(message)s', filename="somfy_unit_test.log",level=logging.DEBUG)
     unittest.main()
