@@ -202,13 +202,9 @@ class BasePlugin:
         if Unit == 1:
             # unit 1 used for up/down movement
             if (str(Command) == "Off" or str(Command) == "Close"):
-                commands["name"] = "open"
-	#	Domoticz Beta will be reversed	
-	#	commands["name"] = "close"
+                commands["name"] = "open"   
             elif (str(Command) == "On" or str(Command) == "Open"):
                 commands["name"] = "close"
-	#	Domoticz Beta will be reversed
-	#	commands["name"] = "open"
             elif (str(Command) == "Stop"):
                 commands["name"] = "stop"
             elif ("Set Level" in str(Command)):
