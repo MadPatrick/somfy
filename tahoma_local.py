@@ -19,6 +19,7 @@ class TahomaWebApi:
     base_url_web = "https://ha101-1.overkiz.com"
     headers_url = {"Content-Type": "application/x-www-form-urlencoded"}
     headers_json = {"Content-Type": "application/json"}
+    headers_with_token = {"Content-Type": "application/json"}
     login_url = "/enduser-mobile-web/enduserAPI/login"
     timeout = 10
     __expiry_date = datetime.datetime.now()
@@ -81,7 +82,7 @@ class TahomaWebApi:
         
         if response.status_code == 200:
             self.__token = response.json()['token']
-            self.headers_json["Authorization"] = "Bearer " + str(self.__token)
+            self.headers_with_token["Authorization"] = "Bearer " + str(self.__token)
             logging.debug("succeeded to generate token: " + str(self.token))
         elif ((response.status_code == 401) or (response.status_code == 400)):
             self.__logged_in = False
@@ -99,8 +100,8 @@ class TahomaWebApi:
     def token(self, t):
         """setter to allow external update of token"""
         self.__token = t
-        self.headers_json["Authorization"] = "Bearer " + str(self.__token)
-        logging.debug("headers_json updated with new token")
+        self.headers_with_token["Authorization"] = "Bearer " + str(self.__token)
+        logging.debug("headers_with_token updated with new token")
 
     def activate_token(self, pin, token):
         url_act = "/enduser-mobile-web/enduserAPI/config/"+pin+"/local/tokens"
@@ -155,7 +156,7 @@ class SomfyBox(TahomaWebApi):
     def get_version(self):
         if self.token is None or self.token == "0":
             raise exceptions.TahomaException("No token has been provided")
-        response = requests.get(self.base_url_local + "/apiVersion", headers=self.headers_json, verify=False)
+        response = requests.get(self.base_url_local + "/apiVersion", headers=self.headers_with_token, verify=False)
         if response.status_code == 200:
             logging.debug("succeeded to get API version: " + str(response.json()))
         else:
@@ -166,7 +167,7 @@ class SomfyBox(TahomaWebApi):
     def get_gateways(self):
         if self.token is None or self.token == "0":
             raise exceptions.TahomaException("No token has been provided")
-        response = requests.get(self.base_url_local + "/setup/gateways", headers=self.headers_json, verify=False)
+        response = requests.get(self.base_url_local + "/setup/gateways", headers=self.headers_with_token, verify=False)
         logging.debug(response)
         if response.status_code == 200:
             logging.debug("succeeded to get local API gateways: " + str(response.json()))
@@ -177,7 +178,7 @@ class SomfyBox(TahomaWebApi):
     def get_devices(self):
         if self.token is None or self.token == "0":
             raise exceptions.TahomaException("No token has been provided")
-        response = requests.get(self.base_url_local + "/setup/devices", headers=self.headers_json, verify=False)
+        response = requests.get(self.base_url_local + "/setup/devices", headers=self.headers_with_token, verify=False)
         logging.debug(response)
         if response.status_code == 200:
             logging.debug("succeeded to get local API devices: " + str(response.json()))
@@ -195,7 +196,7 @@ class SomfyBox(TahomaWebApi):
             raise exceptions.TahomaException("Invalid url, needs to start with io://")
         url = self.base_url_local + "/setup/devices/" + urllib.parse.quote(device, safe="") + "/states"
         logging.debug("url for device state: " + str(url))
-        response = requests.get(url, headers=self.headers_json, verify=False)
+        response = requests.get(url, headers=self.headers_with_token, verify=False)
         logging.debug(response)
         if response.status_code == 200:
             logging.debug("succeeded to get local API device states: " + str(response.json()))
@@ -208,7 +209,7 @@ class SomfyBox(TahomaWebApi):
         if self.token is None or self.token == "0":
             raise exceptions.TahomaException("No token has been provided")
         if self.listenerId is not None:
-            response = requests.post(self.base_url_local + "/events/"+self.listenerId+"/fetch", headers=self.headers_json, verify=False)
+            response = requests.post(self.base_url_local + "/events/"+self.listenerId+"/fetch", headers=self.headers_with_token, verify=False)
         else:
             logging.error("cannot fetch events if no listener registered")
             raise exceptions.TahomaException("cannot fetch events if no listener registered")
@@ -223,8 +224,8 @@ class SomfyBox(TahomaWebApi):
         logging.debug("start register")
         if self.token is None or self.token == "0":
             raise exceptions.TahomaException("No token has been provided")
-        logging.debug("register response: self.headers_json: '" + json.dumps(self.headers_json) + "'")
-        response = requests.post(self.base_url_local + "/events/register", headers=self.headers_json, verify=False)
+        logging.debug("register response: self.headers_with_token: '" + json.dumps(self.headers_with_token) + "'")
+        response = requests.post(self.base_url_local + "/events/register", headers=self.headers_with_token, verify=False)
         logging.debug("register response: status '" + str(response.status_code) + "' response body: '"+str(response)+"'")
         if response.status_code == 200:
             logging.debug("succeeded to get local listener ID: " + str(response.json()))
@@ -240,7 +241,7 @@ class SomfyBox(TahomaWebApi):
         logging.info("Sending command to tahoma api")
         logging.debug("onCommand: data '"+str(json_data)+"'")
         try:
-            response = requests.post(self.base_url_local + "/exec/apply", headers=self.headers_json, data=json.dumps(json_data), verify=False)
+            response = requests.post(self.base_url_local + "/exec/apply", headers=self.headers_with_token, data=json.dumps(json_data), verify=False)
         except requests.exceptions.RequestException as exp:
             logging.error("Send command returns RequestException: " + str(exp))
             return ""
