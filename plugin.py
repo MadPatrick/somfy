@@ -5,11 +5,11 @@
 # FirstFree function courtesy of @moroen https://github.com/moroen/IKEA-Tradfri-plugin
 # All credits for the plugin are for Nonolk, who is the origin plugin creator
 """
-<plugin key="tahomaIO" name="Somfy Tahoma or Connexoon plugin" author="MadPatrick" version="4.0.19" externallink="https://github.com/MadPatrick/somfy">
+<plugin key="tahomaIO" name="Somfy Tahoma or Connexoon plugin" author="MadPatrick" version="4.0.20" externallink="https://github.com/MadPatrick/somfy">
     <description>
 	<br/><h2>Somfy Tahoma/Connexoon plugin</h2><br/>
         <ul style="list-style-type:square">
-            <li>version: 4.0.19</li>
+            <li>version: 4.0.20</li>
             <li>This plugin require internet connection at all time.</li>
             <li>It controls the Somfy for IO Blinds or Screens</li>
             <li>Please provide your email and password used to connect Tahoma/Connexoon</li>
@@ -203,9 +203,9 @@ class BasePlugin:
         if Unit == 1:
             # unit 1 used for up/down movement
             if (str(Command) == "Off" or str(Command) == "Close"):
-                commands["name"] = "open"   
+                commands["name"] = "close"   
             elif (str(Command) == "On" or str(Command) == "Open"):
-                commands["name"] = "close"
+                commands["name"] = "open"
             elif (str(Command) == "Stop"):
                 commands["name"] = "stop"
             elif ("Set Level" in str(Command)):
