@@ -176,17 +176,17 @@ class SomfyBox(TahomaWebApi):
         return response.json()
 
     def get_devices(self):
+        logging.debug("start get devices")
         if self.token is None or self.token == "0":
             raise exceptions.TahomaException("No token has been provided")
         response = requests.get(self.base_url_local + "/setup/devices", headers=self.headers_with_token, verify=False)
-        logging.debug(response)
+        logging.debug("get device response: status '" + str(response.status_code) + "' response body: '"+str(response.json())+"'")
         if response.status_code == 200:
             logging.debug("succeeded to get local API devices: " + str(response.json()))
         else:
             utils.handle_response(response, "get devices")
         filtered_list = utils.filter_devices(response.json())
         self.startup = False
-        #return json.dumps(filtered_list)
         return filtered_list
 
     def get_device_state(self, device):
@@ -206,19 +206,39 @@ class SomfyBox(TahomaWebApi):
         
     #events endpoints
     def get_events(self):
+        logging.debug("start get events")
         if self.token is None or self.token == "0":
             raise exceptions.TahomaException("No token has been provided")
-        if self.listenerId is not None:
-            response = requests.post(self.base_url_local + "/events/"+self.listenerId+"/fetch", headers=self.headers_with_token, verify=False)
-        else:
+        if self.listenerId is None:
             logging.error("cannot fetch events if no listener registered")
             raise exceptions.TahomaException("cannot fetch events if no listener registered")
-        logging.debug(response)
-        if response.status_code == 200:
-            logging.debug("succeeded to get local API events: " + str(response.json()))
+        for i in range(1,4):
+            #do several retries on reaching events end point before going to time out error
+            try:
+                response = requests.post(self.base_url_local + "/events/"+self.listenerId+"/fetch", headers=self.headers_with_token, verify=False)
+                logging.debug("get events response: status '" + str(response.status_code) + "' response body: '"+str(response)+"'")
+                if response.status_code != 200:
+                    logging.error("error during get events, status: " + str(response.status_code) + ", " + str(response.text))
+                    utils.handle_response(response, "get events")
+                    return
+                elif (response.status_code == 200 and self.__logged_in and (not self.startup)):
+                    strData = response.json()
+                    logging.debug("succeeded to get local API events: " + str(response.json()))
+                    if (not "DeviceStateChangedEvent" in response.text):
+                        logging.debug("get_events: no DeviceStateChangedEvent found in response: " + str(strData))
+                        return
+                    else:
+                        return response.json()
+
+                else:
+                  logging.info("Return status " + str(response.status_code))
+            except requests.exceptions.RequestException as exp:
+                logging.error("get_events RequestException: " + str(exp))
+            #wait increasing time before next try
+            time.sleep(i ** 3)
         else:
-            utils.handle_response(response, "get events")
-        return response.json()
+            raise exceptions.TooManyRetries
+        logging.debug("finished get events")
 
     def register_listener(self):
         logging.debug("start register")

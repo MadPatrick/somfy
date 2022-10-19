@@ -4,8 +4,8 @@ import exceptions
 import urllib.parse
 import datetime
 import time
-import utils
 import json
+import utils
 
 try:
 	import DomoticzEx as Domoticz
@@ -52,20 +52,17 @@ class Tahoma:
         data = "userId="+urllib.parse.quote(username)+"&userPassword="+urllib.parse.quote(password)+""
         response = requests.post(url, data=data, headers=headers, timeout=self.timeout)
 
-        Status = response.status_code
         Data = response.json()
         logging.debug("Login respone: status_code: '"+str(Status)+"' reponse body: '"+str(Data)+"'")
 
-        if (Status == 200 and not self.__logged_in):
+        if (response.status_code == 200 and not self.__logged_in):
             self.__logged_in = True
             self.__expiry_date = datetime.datetime.now() + datetime.timedelta(days=self.logged_in_expiry_days)
             logging.info("Tahoma authentication succeeded, login valid until " + self.__expiry_date.strftime("%Y-%m-%d %H:%M:%S"))
-            #self.cookie = response.cookies
             self.cookie = response.headers["Set-Cookie"]
             logging.debug("login: cookies: '"+ str(response.cookies)+"', headers: '"+str(response.headers)+"'")
-            #self.register_listener()
 
-        elif ((Status == 401) or (Status == 400)):
+        elif ((response.status_code == 401) or (response.status_code == 400)):
             strData = Data["error"]
             #logging.error("Tahoma error: must reconnect")
             self.__logged_in = False
@@ -103,11 +100,12 @@ class Tahoma:
 
         filtered_list = utils.filter_devices(response.json())
         self.startup = False
-        #return json.dumps(filtered_list)
         return filtered_list
 
     def get_events(self):
         logging.debug("start get events")
+        if self.listenerId is None:
+            raise exceptions.TahomaException("No listenerId has been provided")
         Headers = { 'Host': self.srvaddr,"Connection": "keep-alive","Accept-Encoding": "gzip, deflate", "Accept": "*/*", "Content-Type": "application/json", "Cookie": self.cookie}
         url = self.base_url + '/enduser-mobile-web/enduserAPI/events/'+self.listenerId+'/fetch'
 
@@ -116,7 +114,6 @@ class Tahoma:
             try:
                 response = requests.post(url, headers=Headers, timeout=self.timeout)
                 logging.debug("get events response: status '" + str(response.status_code) + "' response body: '"+str(response)+"'")
-                #logging.debug("get events response: status '" + str(response.status_code) + "' response body: '"+str(response.json())+"'")
                 if response.status_code != 200:
                     logging.error("error during get events, status: " + str(response.status_code) + ", " + str(response.text))
                     self.__logged_in = False

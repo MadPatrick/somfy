@@ -270,8 +270,8 @@ class BasePlugin:
             logging.debug("Poll unit")
             self.runCounter = int(Parameters['Mode2'])            
 
-            if (self.tahoma.logged_in and not self.tahoma.startup) or self.local:
-                if (not self.tahoma.logged_in and not self.local):
+            if self.local or (self.tahoma.logged_in and not self.tahoma.startup):
+                if (not self.local and not self.tahoma.logged_in):
                     #this part looks useless as this condition will never be true
                     self.tahoma.tahoma_login(str(Parameters["Username"]), str(Parameters["Password"]))
                     if self.tahoma.logged_in:

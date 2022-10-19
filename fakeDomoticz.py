@@ -8,6 +8,7 @@
 #   It also emulates the Device and Unit from the Ex framework
 #
 Devices = [""]
+Parameters = {"Mode2": 1, "Mode3" : "0000-0000-0000", "Mode4": "Local", "Mode5": "", "Mode6": "Debug", "port": 8443, "Username": "mail@domain.com" , "Password": "aNicerp@ssword", "Version" : "0.0.0" }
 
 class myUnit:
     def __init__(self,Name="label", Unit=0, Type=0, Subtype=0, Switchtype="", DeviceID="deviceURL"):
