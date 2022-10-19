@@ -5,11 +5,11 @@
 # FirstFree function courtesy of @moroen https://github.com/moroen/IKEA-Tradfri-plugin
 # All credits for the plugin are for Nonolk, who is the origin plugin creator
 """
-<plugin key="tahomaIO" name="Somfy Tahoma or Connexoon plugin" author="MadPatrick" version="4.0.20" externallink="https://github.com/MadPatrick/somfy">
+<plugin key="tahomaIO" name="Somfy Tahoma or Connexoon plugin" author="MadPatrick" version="4.0.21" externallink="https://github.com/MadPatrick/somfy">
     <description>
 	<br/><h2>Somfy Tahoma/Connexoon plugin</h2><br/>
         <ul style="list-style-type:square">
-            <li>version: 4.0.20</li>
+            <li>version: 4.0.21</li>
             <li>This plugin require internet connection at all time.</li>
             <li>It controls the Somfy for IO Blinds or Screens</li>
             <li>Please provide your email and password used to connect Tahoma/Connexoon</li>
@@ -309,6 +309,7 @@ class BasePlugin:
             eventList = utils.filter_events(Updated_devices)
         else:
             eventList = Updated_devices
+        num_updates = 0
         for dataset in eventList:
             logging.debug("checking dataset for URL: "+str(dataset["deviceURL"]))
             if dataset["deviceURL"] not in Devices:
@@ -384,8 +385,9 @@ class BasePlugin:
                                 Devices[dev].Units[1].nValue = 3
                                 Devices[dev].Units[1].sValue = str(lumlevel)
                                 Devices[dev].Units[1].Update()
+                    num_updates += 1
 
-        return
+        return num_updates
 
     def onDeviceAdded(self, DeviceID, Unit):
         logging.debug("onDeviceAdded called for DeviceID {0} and Unit {1}".format(DeviceID, Unit))
