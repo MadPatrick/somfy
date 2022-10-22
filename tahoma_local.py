@@ -6,6 +6,7 @@ import datetime
 import time
 import json
 import utils
+import listener
 
 try:
 	import DomoticzEx as Domoticz
@@ -149,8 +150,8 @@ class SomfyBox(TahomaWebApi):
     def __init__(self, pin, port):
         self.base_url_local = "https://" + str(pin) + ".local:" + str(port) + "/enduser-mobile-web/1/enduserAPI"
         #self.headers_json = {"Content-Type": "application/json", "Accept": "application/json"}
-        self.listenerId = None
         self.startup = True
+        self.listener = listener.Listener()
         logging.debug("SomfyBox initialised")
 
     def get_version(self):
@@ -209,7 +210,7 @@ class SomfyBox(TahomaWebApi):
         logging.debug("start get events")
         if self.token is None or self.token == "0":
             raise exceptions.TahomaException("No token has been provided")
-        if self.listenerId is None:
+        if not self.listener.valid:
             logging.error("cannot fetch events if no listener registered")
             raise exceptions.TahomaException("cannot fetch events if no listener registered")
         for i in range(1,4):
@@ -240,19 +241,27 @@ class SomfyBox(TahomaWebApi):
             raise exceptions.TooManyRetries
         logging.debug("finished get events")
 
+    # def register_listener(self):
+        # logging.debug("start register")
+        # if self.token is None or self.token == "0":
+            # raise exceptions.TahomaException("No token has been provided")
+        # logging.debug("register response: self.headers_with_token: '" + json.dumps(self.headers_with_token) + "'")
+        # response = requests.post(self.base_url_local + "/events/register", headers=self.headers_with_token, verify=False)
+        # logging.debug("register response: status '" + str(response.status_code) + "' response body: '"+str(response)+"'")
+        # if response.status_code == 200:
+            # logging.debug("succeeded to get local listener ID: " + str(response.json()))
+            # self.listenerId = response.json()['id']
+            # self.listener_expiry = datetime.datetime.now() + datetime.timedelta(minutes=8)
+        # else:
+            # utils.handle_response(response, "get local listener ID")
+        # return response.json()
+
     def register_listener(self):
         logging.debug("start register")
         if self.token is None or self.token == "0":
             raise exceptions.TahomaException("No token has been provided")
-        logging.debug("register response: self.headers_with_token: '" + json.dumps(self.headers_with_token) + "'")
-        response = requests.post(self.base_url_local + "/events/register", headers=self.headers_with_token, verify=False)
-        logging.debug("register response: status '" + str(response.status_code) + "' response body: '"+str(response)+"'")
-        if response.status_code == 200:
-            logging.debug("succeeded to get local listener ID: " + str(response.json()))
-            self.listenerId = response.json()['id']
-        else:
-            utils.handle_response(response, "get local listener ID")
-        return response.json()
+        response = self.listener.register_listener(self.base_url_local + "/events/register", headers=self.headers_with_token, verify=False)
+        return response
 
     #execution endpoints
     def send_command(self, json_data):
