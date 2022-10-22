@@ -53,7 +53,7 @@ class Tahoma:
         response = requests.post(url, data=data, headers=headers, timeout=self.timeout)
 
         Data = response.json()
-        logging.debug("Login respone: status_code: '"+str(Status)+"' reponse body: '"+str(Data)+"'")
+        logging.debug("Login respone: status_code: '"+str(response.status_code)+"' reponse body: '"+str(Data)+"'")
 
         if (response.status_code == 200 and not self.__logged_in):
             self.__logged_in = True
@@ -84,6 +84,9 @@ class Tahoma:
             if (not self.__logged_in):
                 self.tahoma_login(username, password)
                 return
+        else:
+            logging.error("other error occured during login: "+str(response.status_code)+", content: "+str(response))
+            raise exceptions.LoginFailure("Other error")
         return self.__logged_in
 
     def get_devices(self):

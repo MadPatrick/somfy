@@ -221,7 +221,7 @@ class SomfyBox(TahomaWebApi):
                     logging.error("error during get events, status: " + str(response.status_code) + ", " + str(response.text))
                     utils.handle_response(response, "get events")
                     return
-                elif (response.status_code == 200 and self.__logged_in and (not self.startup)):
+                elif response.status_code == 200:
                     strData = response.json()
                     logging.debug("succeeded to get local API events: " + str(response.json()))
                     if (not "DeviceStateChangedEvent" in response.text):
