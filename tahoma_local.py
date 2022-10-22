@@ -55,7 +55,7 @@ class TahomaWebApi:
             #logging.error("Tahoma error: must reconnect")
             self.__logged_in = False
             self.cookie = None
-            self.listenerId = None
+            #self.listenerId = None
 
             if ("Too many" in strData):
                 logging.error("Too many connections, must wait")
@@ -216,7 +216,7 @@ class SomfyBox(TahomaWebApi):
         for i in range(1,4):
             #do several retries on reaching events end point before going to time out error
             try:
-                response = requests.post(self.base_url_local + "/events/"+self.listenerId+"/fetch", headers=self.headers_with_token, verify=False)
+                response = requests.post(self.base_url_local + "/events/"+self.listener.listenerId+"/fetch", headers=self.headers_with_token, verify=False)
                 logging.debug("get events response: status '" + str(response.status_code) + "' response body: '"+str(response)+"'")
                 if response.status_code != 200:
                     logging.error("error during get events, status: " + str(response.status_code) + ", " + str(response.text))
