@@ -20,7 +20,7 @@
     <params>
         <param field="Username" label="Username" width="200px" required="true" default=""/>
         <param field="Password" label="Password" width="200px" required="true" default="" password="true"/>
-        <param field="Mode2" label="Refresh interval" width="75px">
+        <param field="Mode2" label="Refresh interval" width="100px">
             <options>
                 <option label="10s" value="1"/>
                 <option label="20s - local" value="2"/>
