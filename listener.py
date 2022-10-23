@@ -30,6 +30,11 @@ class Listener:
             logging.error("It is not allowed to set the listener to valid externally")
             raise AttributeError
 
+    def refresh_listener(self):
+        """method to reset expiry time after succesfull interaction"""
+        self.__listener_expiry = datetime.datetime.now() + datetime.timedelta(minutes=8)
+        self.__valid = True        
+
     def register_listener(self, url, headers, verify=False):
         logging.debug("start register listener")
         logging.debug("register request: self.headers_with_token: '" + json.dumps(headers) + "'")
