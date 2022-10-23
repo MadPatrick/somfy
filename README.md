@@ -80,7 +80,10 @@ cd domoticz/plugins/somfy
 git pull
 ```
 
-In the Domoticz UI, navigate to the Hardware page. In the hardware dropdown list there will be an entry called "Somfy Tahoma or Connexoon plugin".
+In the Domoticz UI, navigate to the Hardware page. 
+<br />In the hardware dropdown list there will be an entry called "Somfy Tahoma or Connexoon plugin".
+<br />Add the hardware to your Domoticz system and fill in the required fields
+
 |Field          | Input         |
 | :------------ | :------------ |
 |Username | Your login name for your Somfy account|
@@ -91,3 +94,6 @@ In the Domoticz UI, navigate to the Hardware page. In the hardware dropdown list
 |Portnumber | The connection port of your Somby box. <br />By default this is set to 8443|
 |Log file location | You can set a custom log location if you like|
 |Debug | Default is False <br />If you need some extra information in the log you can set this on True|
+
+
+After completing the field the devices will be created in your Devices section.
