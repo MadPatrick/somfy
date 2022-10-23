@@ -21,6 +21,12 @@ class ListenerTests(unittest.TestCase):
         with self.assertRaises(AttributeError):
             self.listener.valid = True
 
+    def test_refresh(self):
+        """check set up of listener object"""
+        logging.info("test: test_refresh")
+        self.listener.refresh_listener()
+        self.assertEqual(self.listener.valid, True)
+
 def main():
     logging.basicConfig(format='%(asctime)s - %(levelname)-8s - %(filename)-18s - %(message)s', filename="somfy_unit_test.log",level=logging.DEBUG)
     logging.debug("=== unit tests for listener ===")

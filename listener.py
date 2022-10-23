@@ -11,6 +11,7 @@ class Listener:
         self.__listener_expiry = datetime.datetime.now()
         self.__valid = False
         logging.debug("listener created")
+        self.__expiry_time = datetime.timedelta(minutes=30)
 
     @property
     def listenerId(self):
@@ -32,7 +33,7 @@ class Listener:
 
     def refresh_listener(self):
         """method to reset expiry time after succesfull interaction"""
-        self.__listener_expiry = datetime.datetime.now() + datetime.timedelta(minutes=8)
+        self.__listener_expiry = datetime.datetime.now() + self.__expiry_time
         self.__valid = True        
 
     def register_listener(self, url, headers, verify=False):
@@ -43,7 +44,7 @@ class Listener:
         if response.status_code == 200:
             logging.debug("succeeded to get listener ID: " + str(response.json()))
             self.__listenerId = response.json()['id']
-            self.__listener_expiry = datetime.datetime.now() + datetime.timedelta(minutes=8)
+            self.__listener_expiry = datetime.datetime.now() + self.__expiry_time
             self.__valid = True
         else:
             self.__valid = False
