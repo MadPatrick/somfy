@@ -13,7 +13,7 @@ The plugin currently support the following device types: roller shutters, screen
 When upgrading to version 3.x, it is required to first remove all devices attached to the Somfy hardware. This has to do with the upgrade to the Domoticz Extended Framework, which enabled the slats/orientation control for the blinds.
  The plugin will not upgrade when there are still devices attached to the Somfy hardware.
 ### version 4.x
-As of version 4.x the plugin ssupports local access to the Somfy box (Connexoon not supported). This is currently still in beta version. Addtional installation steps mentioned below.
+As of version 4.x the plugin supports local access to the Somfy box (Connexoon not supported). This is currently still in beta version. Addtional installation steps mentioned below.
 
 ## Somfy login
 
