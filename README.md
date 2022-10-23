@@ -58,6 +58,10 @@ To be able to run the local test tool, also install:
 ```
 pip3 install console-menu
 ```
+to run the test tool:
+```
+python3 test test_tahoma.py
+```
 
 ### plugin
 Then go in your Domoticz directory using a command line and open the plugins directory.
@@ -77,3 +81,13 @@ git pull
 ```
 
 In the Domoticz UI, navigate to the Hardware page. In the hardware dropdown list there will be an entry called "Somfy Tahoma or Connexoon plugin".
+|Field          | Input         |
+| :------------ | :------------ |
+|Username | Your login name for your Somfy account|
+|Password | Your password for your Somfy account|
+|Refresh Interval | Select the time of updating the devices. <br />For Web login don't refresh to frequently the avoid login errors from Somfy webserver|
+|API selection | Select Local or Web <br />Local needs the delveloper mode on your Somfy box <br />Web is the API website of Somfy |
+|Rest token | Set as default to False If you have error with the token your request a new token|
+|Portnumber | The connection port of your Somby box. <br />By default this is set to 8443|
+|Log file location | You can set a custom log location if you like|
+|Debug | Default is False <br />If you need some extra information in the log you can set this on True|
