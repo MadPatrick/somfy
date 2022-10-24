@@ -34,3 +34,8 @@ class LoginFailure(TahomaException):
         self.message = login_message
         super().__init__(self.message)
 
+class NoListenerFailure(TahomaException):
+    def __init__(self):
+        self.message = "Trying to fetch events without listener registered"
+        super().__init__(self.message)
+    

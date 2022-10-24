@@ -212,7 +212,7 @@ class SomfyBox(TahomaWebApi):
             raise exceptions.TahomaException("No token has been provided")
         if not self.listener.valid:
             logging.error("cannot fetch events if no listener registered")
-            raise exceptions.TahomaException("cannot fetch events if no listener registered")
+            raise exceptions.NoListenerFailure()
         for i in range(1,4):
             #do several retries on reaching events end point before going to time out error
             try:
@@ -220,6 +220,11 @@ class SomfyBox(TahomaWebApi):
                 logging.debug("get events response: status '" + str(response.status_code) + "' response body: '"+str(response)+"'")
                 if response.status_code != 200:
                     logging.error("error during get events, status: " + str(response.status_code) + ", " + str(response.text))
+                    if response.status_code ==400 and "error" in response.json():
+                        if "No registered event listener" in response.json()["error"]:
+                            self.listener.valid = False
+                            logging.error("fetch events failed due to no valid listener registered")
+                            raise exceptions.NoListenerFailure()
                     utils.handle_response(response, "get events")
                     return
                 elif response.status_code == 200:
@@ -241,21 +246,6 @@ class SomfyBox(TahomaWebApi):
         else:
             raise exceptions.TooManyRetries
         logging.debug("finished get events")
-
-    # def register_listener(self):
-        # logging.debug("start register")
-        # if self.token is None or self.token == "0":
-            # raise exceptions.TahomaException("No token has been provided")
-        # logging.debug("register response: self.headers_with_token: '" + json.dumps(self.headers_with_token) + "'")
-        # response = requests.post(self.base_url_local + "/events/register", headers=self.headers_with_token, verify=False)
-        # logging.debug("register response: status '" + str(response.status_code) + "' response body: '"+str(response)+"'")
-        # if response.status_code == 200:
-            # logging.debug("succeeded to get local listener ID: " + str(response.json()))
-            # self.listenerId = response.json()['id']
-            # self.listener_expiry = datetime.datetime.now() + datetime.timedelta(minutes=8)
-        # else:
-            # utils.handle_response(response, "get local listener ID")
-        # return response.json()
 
     def register_listener(self):
         logging.debug("start register")

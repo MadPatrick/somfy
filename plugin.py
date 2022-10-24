@@ -28,6 +28,7 @@
                 <option label="5m - web" value="30" default="true"/>
                 <option label="10m" value="60"/>
                 <option label="15m" value="90"/>
+                <option label="25m" value="150"/>
             </options>
         </param>
         <param field = "Mode4" label="API selection" width="75px">
@@ -282,6 +283,11 @@ class BasePlugin:
                     Domoticz.Error("Failed to request data: " + str(exp))
                     logging.error("Failed to request data: " + str(exp))
                     return
+                except exceptions.NoListenerFailure:
+                    self.tahoma.register_listener() #register a new listener
+                    self.runCounter = 1 #make sure that a new update is done on next heartbeat
+                    return
+                    
                 if event_list is not None and len(event_list) > 0:
                     self.update_devices_status(event_list)
                 self.heartbeat = True
