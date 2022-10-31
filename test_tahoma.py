@@ -88,7 +88,7 @@ if True:
             tahoma.register_listener()
             if tahoma.listenerId is None:
                 tahoma.listenerId = 'b4e62511-ac10-3e01-60e0-9b9f656aea77'
-        if x == 11: print(tahoma.get_devices(device_list))
+        if x == 11: print(tahoma.get_devices())
         if x == 12: print(tahoma.get_events())
         if x == 13: 
             device = str(input("enter deviceURL to command: "))

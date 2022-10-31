@@ -6,11 +6,12 @@ import datetime
 import time
 import json
 import utils
+import listener
 
 try:
-	import DomoticzEx as Domoticz
+    import DomoticzEx as Domoticz
 except ImportError:
-	import fakeDomoticz as Domoticz
+    import fakeDomoticz as Domoticz
 
 class Tahoma:
     """class to interface with tahoma web API"""
@@ -35,6 +36,7 @@ class Tahoma:
         self.__expiry_date = datetime.datetime.now()
         self.logged_in_expiry_days = 6
         self.execId = None
+        self.listener = listener.Listener()
 
     @property
     def logged_in(self):
@@ -67,7 +69,8 @@ class Tahoma:
             #logging.error("Tahoma error: must reconnect")
             self.__logged_in = False
             self.cookie = None
-            self.listenerId = None
+            #self.listenerId = None
+            self.listener.valid = False
 
             if ("Too many" in strData):
                 logging.error("Too many connections, must wait")
@@ -107,10 +110,10 @@ class Tahoma:
 
     def get_events(self):
         logging.debug("start get events")
-        if self.listenerId is None:
+        if not self.listener.valid:
             raise exceptions.TahomaException("No listenerId has been provided")
         Headers = { 'Host': self.srvaddr,"Connection": "keep-alive","Accept-Encoding": "gzip, deflate", "Accept": "*/*", "Content-Type": "application/json", "Cookie": self.cookie}
-        url = self.base_url + '/enduser-mobile-web/enduserAPI/events/'+self.listenerId+'/fetch'
+        url = self.base_url + '/enduser-mobile-web/enduserAPI/events/'+self.listener.listenerId+'/fetch'
 
         for i in range(1,4):
             #do several retries on reaching events end point before going to time out error
@@ -120,6 +123,11 @@ class Tahoma:
                 if response.status_code != 200:
                     logging.error("error during get events, status: " + str(response.status_code) + ", " + str(response.text))
                     self.__logged_in = False
+                    if response.status_code ==400 and "error" in response.json():
+                        if "No registered event listener" in response.json()["error"]:
+                            self.listener.valid = False
+                            logging.error("fetch events failed due to no valid listener registered")
+                            raise exceptions.NoListenerFailure()
                     return
                 elif (response.status_code == 200 and self.__logged_in and (not self.startup)):
                     strData = response.json()
@@ -129,6 +137,7 @@ class Tahoma:
                         return
 
                     self.events = strData
+                    self.listener.refresh_listener()
 
                     if (self.events):
                         filtered_events = list()
@@ -151,6 +160,14 @@ class Tahoma:
         logging.debug("finished get events")
 
     def register_listener(self):
+        logging.debug("start register")
+        if not self.__logged_in:
+            raise exceptions.TahomaException("Not logged in")
+        response = self.listener.register_listener(self.base_url_local + "/events/register", headers=self.headers_with_token, verify=False)
+        self.refresh = False
+        return response
+
+    def register_listener_old(self):
         logging.debug("start register")
         Headers = { 'Host': self.srvaddr,"Connection": "keep-alive","Accept-Encoding": "gzip, deflate", "Accept": "*/*", "Content-Type": "application/json", "Cookie": self.cookie}
         response = requests.post(self.base_url + '/enduser-mobile-web/enduserAPI/events/register', headers=Headers, timeout=self.timeout)

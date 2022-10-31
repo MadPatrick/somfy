@@ -5,11 +5,11 @@
 # FirstFree function courtesy of @moroen https://github.com/moroen/IKEA-Tradfri-plugin
 # All credits for the plugin are for Nonolk, who is the origin plugin creator
 """
-<plugin key="tahomaIO" name="Somfy Tahoma or Connexoon plugin" author="MadPatrick" version="4.0.26" externallink="https://github.com/MadPatrick/somfy">
+<plugin key="tahomaIO" name="Somfy Tahoma or Connexoon plugin" author="MadPatrick" version="4.0.27" externallink="https://github.com/MadPatrick/somfy">
     <description>
 	<br/><h2>Somfy Tahoma/Connexoon plugin</h2><br/>
         <ul style="list-style-type:square">
-            <li>version: 4.0.26</li>
+            <li>version: 4.0.27</li>
             <li>This plugin require internet connection at all time.</li>
             <li>It controls the Somfy for IO Blinds or Screens</li>
             <li>Please provide your email and password used to connect Tahoma/Connexoon</li>
