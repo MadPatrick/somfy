@@ -37,10 +37,10 @@ class Listener:
         self.__listener_expiry = datetime.datetime.now() + self.__expiry_time
         self.__valid = True        
 
-    def register_listener(self, url, headers, verify=False):
+    def register_listener(self, url, headers, verify=False, timeout=10):
         logging.debug("start register listener")
         logging.debug("register request: self.headers_with_token: '" + json.dumps(headers) + "'")
-        response = requests.post(url, headers=headers, verify=verify)
+        response = requests.post(url, headers=headers, verify=verify, timeout=timeout)
         logging.debug("register response: status '" + str(response.status_code) + "' response body: '"+str(response)+"'")
         if response.status_code == 200:
             logging.debug("succeeded to get listener ID: " + str(response.json()))

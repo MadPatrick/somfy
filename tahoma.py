@@ -163,7 +163,8 @@ class Tahoma:
         logging.debug("start register")
         if not self.__logged_in:
             raise exceptions.TahomaException("Not logged in")
-        response = self.listener.register_listener(self.base_url_local + "/events/register", headers=self.headers_with_token, verify=False)
+        Headers = { 'Host': self.srvaddr,"Connection": "keep-alive","Accept-Encoding": "gzip, deflate", "Accept": "*/*", "Content-Type": "application/json", "Cookie": self.cookie}
+        response = self.listener.register_listener(self.base_url + '/enduser-mobile-web/enduserAPI/events/register', headers=Headers, verify = True, timeout=self.timeout)
         self.refresh = False
         return response
 
