@@ -5,22 +5,27 @@
 # FirstFree function courtesy of @moroen https://github.com/moroen/IKEA-Tradfri-plugin
 # All credits for the plugin are for Nonolk, who is the origin plugin creator
 """
-<plugin key="tahomaIO" name="Somfy Tahoma or Connexoon plugin" author="MadPatrick" version="4.0.27" externallink="https://github.com/MadPatrick/somfy">
+<plugin key="tahomaIO" name="Somfy Tahoma or Connexoon plugin" author="MadPatrick" version="4.0.28" externallink="https://github.com/MadPatrick/somfy">
     <description>
 	<br/><h2>Somfy Tahoma/Connexoon plugin</h2><br/>
-        <ul style="list-style-type:square">
-            <li>version: 4.0.27</li>
-            <li>This plugin require internet connection at all time.</li>
-            <li>It controls the Somfy for IO Blinds or Screens</li>
-            <li>Please provide your email and password used to connect Tahoma/Connexoon</li>
-            <li><u>note</u></li>
-            <li> Beta version to test local access</li>
-        </ul>
+        version: 4.0.28
+        <br/>This plugin connects to the Tahoma or Connexoon box either via the web API or via local access.
+        <br/>Various devices are supported(RollerShutter, LightSensor, Screen, Awning, Window, VenetianBlind, etc.).
+        <br/>For new devices, please raise a ticket at the Github link above.
+        <h2>Configuration</h2><br/>
+        The configuration contains the following sections:
+        <ol>
+            <li>General: enter here your credentials and select the connection method</li>
+            <li>Local: when connection method local is selected, fill this section as well</li>
+            <li>Debug: allows to set log level and specify log file location</li>
+        </ol>
     </description>
     <params>
-        <param field="Username" label="Username" width="200px" required="true" default=""/>
+        <param field="Username" label="Username" width="200px" required="true" default="">
+            <description>==== general configuration ====</description>
+        </param>
         <param field="Password" label="Password" width="200px" required="true" default="" password="true"/>
-        <param field="Mode2" label="Refresh interval" width="75px">
+        <param field="Mode2" label="Refresh interval" width="100px">
             <options>
                 <option label="10s" value="1"/>
                 <option label="20s - local" value="2"/>
@@ -31,31 +36,33 @@
                 <option label="25m" value="150"/>
             </options>
         </param>
-        <param field = "Mode4" label="API selection" width="75px">
+        <param field = "Mode4" label="Connection" width="100px">
             <description>Choose how to interact with the Somfy/Tahoma/Connexoon box:
-            <br/>Web API: via Somfy web server (surrent implementation, default)
-            <br/>Local API: connect directly to the box (under development, not for Connexoon)</description>
+            <br/>Web API: via Somfy web server (requires continues internet access)
+            <br/>Local API: connect directly to the box (default, not for Connexoon)</description>
             <options>
-                <option label="Web" value="Web" default="true"/>
-                <option label="Local" value="Local" />
+                <option label="Web" value="Web"/>
+                <option label="Local" value="Local" default="true"/>
             </options>
         </param>
         <param field = "Mode3" label = "Gateway pin" width="200px">
-            <description>The pin of your gateway (eg. 1234-5678-9012)</description>
+            <description>==== local configuration ====
+            <br/>The pin of your gateway (eg. 1234-5678-9012)</description>
         </param>
-        <param field = "Mode1" label="Reset token (local API)" width="75px">
+        <param field = "Mode1" label="Reset token" width="100px">
             <description>Set to true to request a new token. Can be used when you get access denied.</description>
             <options>
                 <option label="False" value="False" default="true"/>
                 <option label="True" value="True" />
             </options>
         </param>
-        <param field = "Port" label="Portnumber Tahoma box (local)" width="30px" required="true" default="8443"/>
+        <param field = "Port" label="Portnumber Tahoma box" width="30px" required="true" default="8443"/>
         <param field = "Mode5" label="Log file location" width="300px">
-            <description>Enter a location for the logfile (omit final /), or leave empty to create logfile in the domoticz directory.
+            <description>==== debug configuration ====
+            <br/>Enter a location for the logfile (omit final /), or leave empty to create logfile in the domoticz directory.
             <br/>Default directory: '/home/user/domoticz' for raspberry pi</description>
         </param>
-        <param field = "Mode6" label="Debug" width="75px">
+        <param field = "Mode6" label="Debug logging" width="100px">
             <options>
                 <option label="True" value="Debug"/>
                 <option label="False" value="Normal"  default="true" />
