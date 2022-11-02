@@ -42,6 +42,7 @@ sudo apt-get install python3-requests
 - Find the different available options for your TaHoma box and activate **Developer Mode**.
 - Follow instructions as provided by [Somfy](https://github.com/Somfy-Developer/Somfy-TaHoma-Developer-Mode)
 
+
 Activating this mode will enable a local API on your TaHoma box. Be aware that Somfy will not be able to provide support for usage of this API.
 
 2. Your Somfy box needs the traceable in your network.
