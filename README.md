@@ -51,7 +51,7 @@ Add your Somfy Box PIN number to the IP in your local network in etc/hosts or in
 ```
 192.168.1.1 1234-1234-1234.local
 ```
-192.168.1.1 is the IP of your Somfy box
+192.168.1.1 is the IP of your Somfy box<br/>
 1234-1234-1234 is the PIN number of your Somfy box and don't forget to add .local to the PIN number
 
 
