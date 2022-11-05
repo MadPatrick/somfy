@@ -51,6 +51,9 @@ Add your Somfy Box PIN number to the IP in your local network in etc/hosts or in
 ```
 192.168.1.1 1234-1234-1234.local
 ```
+192.168.1.1 is the IP of your Somfy box
+1234-1234-1234 is the PIN number of your Somfy box and don't forget to add .local to the PIN number
+
 
 3. To be able to run the local test tool, also install:
  - ```pip3 install console-menu```
