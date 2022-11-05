@@ -5,35 +5,64 @@
 # FirstFree function courtesy of @moroen https://github.com/moroen/IKEA-Tradfri-plugin
 # All credits for the plugin are for Nonolk, who is the origin plugin creator
 """
-<plugin key="tahomaIO" name="Somfy Tahoma or Connexoon plugin" author="MadPatrick" version="4.0.0" externallink="https://github.com/MadPatrick/somfy">
+<plugin key="tahomaIO" name="Somfy Tahoma or Connexoon plugin" author="MadPatrick" version="4.0.28" externallink="https://github.com/MadPatrick/somfy">
     <description>
 	<br/><h2>Somfy Tahoma/Connexoon plugin</h2><br/>
-        <ul style="list-style-type:square">
-            <li>version: 4.0.0</li>
-            <li>This plugin require internet connection at all time.</li>
-            <li>It controls the Somfy for IO Blinds or Screens</li>
-            <li>Please provide your email and password used to connect Tahoma/Connexoon</li>
-            <li><u>note</u></li>
-            <li> Beta version to test local access</li>
-        </ul>
+        version: 4.0.28
+        <br/>This plugin connects to the Tahoma or Connexoon box either via the web API or via local access.
+        <br/>Various devices are supported(RollerShutter, LightSensor, Screen, Awning, Window, VenetianBlind, etc.).
+        <br/>For new devices, please raise a ticket at the Github link above.
+        <h2>Configuration</h2><br/>
+        The configuration contains the following sections:
+        <ol>
+            <li>General: enter here your credentials and select the connection method</li>
+            <li>Local: when connection method local is selected, fill this section as well</li>
+            <li>Debug: allows to set log level and specify log file location</li>
+        </ol>
     </description>
     <params>
-        <param field="Username" label="Username" width="200px" required="true" default=""/>
+        <param field="Username" label="Username" width="200px" required="true" default="">
+            <description>==== general configuration ====</description>
+        </param>
         <param field="Password" label="Password" width="200px" required="true" default="" password="true"/>
-        <param field="Mode2" label="Refresh interval" width="75px">
+        <param field="Mode2" label="Refresh interval" width="100px">
             <options>
-                <option label="20s" value="2"/>
+                <option label="10s" value="1"/>
+                <option label="20s - local" value="2"/>
                 <option label="1m" value="6"/>
-                <option label="5m" value="30" default="true"/>
+                <option label="5m - web" value="30" default="true"/>
                 <option label="10m" value="60"/>
                 <option label="15m" value="90"/>
+                <option label="25m" value="150"/>
             </options>
         </param>
-        <param field="Mode5" label="Log file location" width="300px">
-            <description>Enter a location for the logfile (omit final /), or leave empty to create logfile in the domoticz directory.
+        <param field = "Mode4" label="Connection" width="100px">
+            <description>Choose how to interact with the Somfy/Tahoma/Connexoon box:
+            <br/>Web API: via Somfy web server (requires continues internet access)
+            <br/>Local API: connect directly to the box (default, not for Connexoon)</description>
+            <options>
+                <option label="Web" value="Web"/>
+                <option label="Local" value="Local" default="true"/>
+            </options>
+        </param>
+        <param field = "Mode3" label = "Gateway pin" width="200px">
+            <description>==== local configuration ====
+            <br/>The pin of your gateway (eg. 1234-5678-9012)</description>
+        </param>
+        <param field = "Mode1" label="Reset token" width="100px">
+            <description>Set to true to request a new token. Can be used when you get access denied.</description>
+            <options>
+                <option label="False" value="False" default="true"/>
+                <option label="True" value="True" />
+            </options>
+        </param>
+        <param field = "Port" label="Portnumber Tahoma box" width="30px" required="true" default="8443"/>
+        <param field = "Mode5" label="Log file location" width="300px">
+            <description>==== debug configuration ====
+            <br/>Enter a location for the logfile (omit final /), or leave empty to create logfile in the domoticz directory.
             <br/>Default directory: '/home/user/domoticz' for raspberry pi</description>
         </param>
-        <param field="Mode6" label="Debug" width="75px">
+        <param field = "Mode6" label="Debug logging" width="100px">
             <options>
                 <option label="True" value="Debug"/>
                 <option label="False" value="Normal"  default="true" />
@@ -43,7 +72,14 @@
 </plugin>
 """
 
-import DomoticzEx as Domoticz
+try:
+    import DomoticzEx as Domoticz
+except ImportError:
+    #import fake domoticz modules and setup fake domoticz instance to enable unit testing
+    from fakeDomoticz import *
+    from fakeDomoticz import Domoticz
+    Domoticz = Domoticz()
+
 import json
 import sys
 import logging
@@ -51,6 +87,8 @@ import exceptions
 import time
 import tahoma
 import os
+from tahoma_local import SomfyBox
+import utils
 
 class BasePlugin:
     def __init__(self):
@@ -60,13 +98,14 @@ class BasePlugin:
         self.heartbeat_delay = 1
         self.con_delay = 0
         self.wait_delay = 30
-        self.json_data = None
+        self.command_data = None
         self.command = False
         self.refresh = True
         self.actions_serialized = []
         self.logger = None
         self.log_filename = "somfy.log"
         self.version = ""
+        self.local = False
     
     def onStart(self):
         if os.path.exists(Parameters["Mode5"]):
@@ -92,9 +131,18 @@ class BasePlugin:
         self.enabled = self.checkVersion(self.version)
         if not self.enabled:
             return
+
+        pin = Parameters["Mode3"]
+        port = int(Parameters["Port"])
         
-        logging.debug("starting to log in")
-        self.tahoma = tahoma.Tahoma()
+        logging.debug("starting to log in with mode " + Parameters["Mode4"])
+        if Parameters["Mode4"] == "Local":
+            self.tahoma = SomfyBox(pin, port)
+            self.local = True
+        else:
+            self.tahoma = tahoma.Tahoma()
+            self.local = False
+
         try:
             self.tahoma.tahoma_login(str(Parameters["Username"]), str(Parameters["Password"]))
         except exceptions.LoginFailure as exp:
@@ -102,12 +150,32 @@ class BasePlugin:
             return
         
         if self.tahoma.logged_in:
-            self.tahoma.register_listener()
+            if self.local:
+                logging.debug("check if token stored in configuration")
+                confToken = getConfigItem('token', '0')
+                if confToken == '0' or Parameters["Mode1"] == "True":
+                    logging.debug("no token found, generate a new one")
+                    self.tahoma.generate_token(pin)
+                    self.tahoma.activate_token(pin,self.tahoma.token)
+                    #store token for later use (not generate one at each start)
+                    setConfigItem('token', self.tahoma.token)
+                    Parameters["Mode1"] = "False"
+                else:
+                    logging.debug("found token in configuration: "+str(confToken))
+                    self.tahoma.token = confToken
+                self.tahoma.register_listener()
+            else:
+                self.tahoma.register_listener()
 
         if self.tahoma.logged_in and firstFree() < 249:
-            self.tahoma.get_devices(Devices)
+            filtered_devices = self.tahoma.get_devices()
+            self.create_devices(filtered_devices)
+            event_list = []
+            event_list = self.tahoma.get_events()
+            if event_list is not None and len(event_list) > 0:
+                self.update_devices_status(event_list)
+        return
             
-        
     def onStop(self):
         logging.info("stopping plugin")
         self.heartbeat = False
@@ -121,7 +189,7 @@ class BasePlugin:
           self.update_devices_status(event_list)
 
         elif (self.command):
-          event_list = self.tahoma.tahoma_command(self.json_data)
+          event_list = self.tahoma.tahoma_command(self.command_data)
           self.update_devices_status(event_list)
           self.command = False
           self.heartbeat = False
@@ -143,13 +211,9 @@ class BasePlugin:
         if Unit == 1:
             # unit 1 used for up/down movement
             if (str(Command) == "Off" or str(Command) == "Close"):
-                commands["name"] = "open"
-                #Domoticz Beta will be reversed	
-                #commands["name"] = "close"
+                commands["name"] = "close"   
             elif (str(Command) == "On" or str(Command) == "Open"):
-                commands["name"] = "close"
-                #Domoticz Beta will be reversed
-                #commands["name"] = "open"
+                commands["name"] = "open"
             elif (str(Command) == "Stop"):
                 commands["name"] = "stop"
             elif ("Set Level" in str(Command)):
@@ -178,8 +242,11 @@ class BasePlugin:
         logging.debug("preparing command: # commands: "+str(len(commands)))
         logging.debug("preparing command: # actions_serialized: "+str(len(self.actions_serialized)))
         data = {"label": "Domoticz - "+Devices[DeviceId].Units[Unit].Name+" - "+commands["name"], "actions": self.actions_serialized}
-        self.json_data = json.dumps(data, indent=None, sort_keys=True)
-        logging.debug("preparing command: json data: "+str(self.json_data))
+        if self.local:
+            self.command_data = data
+        else:
+            self.command_data = json.dumps(data, indent=None, sort_keys=True)
+        logging.debug("preparing command: json data: "+str(self.command_data))
 
         if (not self.tahoma.logged_in):
             logging.info("Not logged in, must connect")
@@ -190,7 +257,8 @@ class BasePlugin:
 
         event_list = []
         try:
-            event_list = self.tahoma.tahoma_command(self.json_data)
+            self.tahoma.send_command(self.command_data)
+            event_list = self.tahoma.get_events()
         except (exceptions.TooManyRetries, exceptions.FailureWithErrorCode, exceptions.FailureWithoutErrorCode) as exp:
             Domoticz.Error("Failed to send command: " + str(exp))
             logging.error("Failed to send command: " + str(exp))
@@ -209,8 +277,9 @@ class BasePlugin:
             logging.debug("Poll unit")
             self.runCounter = int(Parameters['Mode2'])            
 
-            if (self.tahoma.logged_in and (not self.tahoma.startup)):
-                if (not self.tahoma.logged_in):
+            if self.local or (self.tahoma.logged_in and not self.tahoma.startup):
+                if (not self.local and not self.tahoma.logged_in):
+                    #this part looks useless as this condition will never be true
                     self.tahoma.tahoma_login(str(Parameters["Username"]), str(Parameters["Password"]))
                     if self.tahoma.logged_in:
                         self.tahoma.register_listener()
@@ -221,6 +290,11 @@ class BasePlugin:
                     Domoticz.Error("Failed to request data: " + str(exp))
                     logging.error("Failed to request data: " + str(exp))
                     return
+                except exceptions.NoListenerFailure:
+                    self.tahoma.register_listener() #register a new listener
+                    self.runCounter = 1 #make sure that a new update is done on next heartbeat
+                    return
+                    
                 if event_list is not None and len(event_list) > 0:
                     self.update_devices_status(event_list)
                 self.heartbeat = True
@@ -243,7 +317,12 @@ class BasePlugin:
 
         logging.debug("updating device status self.tahoma.startup = "+str(self.tahoma.startup)+" on num datasets: "+str(len(Updated_devices)))
         logging.debug("updating device status on data: "+str(Updated_devices))
-        for dataset in Updated_devices:
+        if self.local:
+            eventList = utils.filter_events(Updated_devices)
+        else:
+            eventList = Updated_devices
+        num_updates = 0
+        for dataset in eventList:
             logging.debug("checking dataset for URL: "+str(dataset["deviceURL"]))
             if dataset["deviceURL"] not in Devices:
                 #Domoticz.Error("device not found for URL: "+str(dataset["deviceURL"])+" called "+str(dataset["label"]))
@@ -318,8 +397,9 @@ class BasePlugin:
                                 Devices[dev].Units[1].nValue = 3
                                 Devices[dev].Units[1].sValue = str(lumlevel)
                                 Devices[dev].Units[1].Update()
+                    num_updates += 1
 
-        return
+        return num_updates
 
     def onDeviceAdded(self, DeviceID, Unit):
         logging.debug("onDeviceAdded called for DeviceID {0} and Unit {1}".format(DeviceID, Unit))
@@ -358,6 +438,69 @@ class BasePlugin:
             #store new version info
             self._setVersion(MaCurrent,MiCurrent,PaCurrent)
         return can_continue
+
+    def create_devices(self, filtered_devices):
+        logging.debug("create_devices: devices found, domoticz: "+str(len(Devices))+" API: "+str(len(filtered_devices)))
+        created_devices = 0
+        
+        if (len(Devices) <= len(filtered_devices)):
+            #Domoticz devices already present but less than from API or starting up
+            logging.debug("New device(s) detected")
+
+            for device in filtered_devices:
+                found = False
+                if type(device) is str:
+                    logging.debug("create_device: device in filter_list is of type string, need to convert")
+                    device = json.loads(device)
+                logging.debug("create_devices: check if need to create device: "+device["label"])
+                if device["label"] in Devices:
+                    logging.debug("create_devices: step 1, do not create new device: "+device["label"]+", device already exists")
+                    found = True
+                    #break
+                for domo_dev in Devices:
+                    if domo_dev == device["deviceURL"]:
+                        logging.debug("create_devices: step 2, do not create new device: "+device["label"]+", device already exists")
+                        found = True
+                        break
+                if (found==False):
+                    #DeviceID not found, create new one
+                    swtype = None
+
+                    logging.debug("create_devices: Must create new device: "+device["label"])
+
+                    if (device["deviceURL"].startswith("io://")):
+                        deviceType = 244
+                        swtype = 13
+                        subtype2 = 73
+                        if (device["definition"]["uiClass"] == "Awning"):
+                            swtype = 13
+                        elif (device["definition"]["uiClass"] == "RollerShutter"):
+                            swtype = 21
+                            deviceType = 244
+                            subtype2 = 73                    
+                        elif (device["definition"]["uiClass"] == "LightSensor"):
+                            swtype = 12
+                            deviceType = 246
+                            subtype2 = 1
+                    elif (device["definition"]["deviceURL"].startswith("rts://")):
+                        swtype = 6
+
+                    # extended framework: create first device then unit? or create device+unit in one go?
+                    created_devices += 1
+                    Domoticz.Device(DeviceID=device["deviceURL"]) #use deviceURL as identifier for Domoticz.Device instance
+                    if (device["definition"]["uiClass"] == "VenetianBlind" or device["definition"]["uiClass"] == "ExteriorVenetianBlind"):
+                        #create unit for up/down and open/close for venetian blinds
+                        Domoticz.Unit(Name=device["label"] + " up/down", Unit=1, Type=deviceType, Subtype=subtype2, Switchtype=swtype, DeviceID=device["deviceURL"]).Create()
+                        Domoticz.Unit(Name=device["label"] + " orientation", Unit=2, Type=244, Subtype=73, Switchtype=swtype, DeviceID=device["deviceURL"]).Create()
+                    else:
+                        #create a single unit for all other device types
+                        Domoticz.Unit(Name=device["label"], Unit=1, Type=deviceType, Subtype=subtype2, Switchtype=swtype, DeviceID=device["deviceURL"]).Create()
+                     
+                    logging.info("New device created: "+device["label"])
+                else:
+                    found = False
+        logging.debug("create_devices: finished create devices")
+        return len(filtered_devices),created_devices
 
     def updateToEx(self):
         """routine to check if we can update to the Domoticz extended plugin framework"""
@@ -426,11 +569,15 @@ def DumpConfigToLog():
     for x in Parameters:
         if Parameters[x] != "":
             Domoticz.Debug("Parameter: '" + x + "':'" + str(Parameters[x]) + "'")
+    Configurations = Domoticz.Configuration()
+    Domoticz.Debug("Configuration count: " + str(len(Configurations)))
+    for x in Configurations:
+        if Configurations[x] != "":
+            Domoticz.Debug( "Configuration '" + x + "':'" + str(Configurations[x]) + "'")
     Domoticz.Debug("Device count: " + str(len(Devices)))
     for x in Devices:
         Domoticz.Debug("Device:           " + str(x) + " - " + str(Devices[x]))
     return
-
 
 def DumpHTTPResponseToLog(httpResp, level=0):
     if (level==0): Domoticz.Debug("HTTP Details ("+str(len(httpResp))+"):")
@@ -451,11 +598,11 @@ def DumpHTTPResponseToLog(httpResp, level=0):
         Domoticz.Debug(indentStr + ">'" + x + "':'" + str(httpResp[x]) + "'")
 
 def firstFree():
-    for num in range(1, 250):
+    """check if there is room to add devices (max 255)"""
+    for num in range(1, 254):
         if num not in Devices:
             return num
     return
-
 
 # Configuration Helpers
 def getConfigItem(Key=None, Default={}):

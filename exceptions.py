@@ -16,7 +16,6 @@ class TooManyRetries(TahomaException):
         self.message = "Failed to call Tahoma/Somfy API (too many retries)"
         super().__init__(self.message)
 
-
 class FailureWithErrorCode(TahomaException):
     """Too many retries to call API"""
     def __init__(self, code):
@@ -34,3 +33,9 @@ class LoginFailure(TahomaException):
     def __init__(self, login_message = "Failed to login"):
         self.message = login_message
         super().__init__(self.message)
+
+class NoListenerFailure(TahomaException):
+    def __init__(self):
+        self.message = "Trying to fetch events without listener registered"
+        super().__init__(self.message)
+    

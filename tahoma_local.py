@@ -5,6 +5,8 @@ import urllib.parse
 import datetime
 import time
 import json
+import utils
+import listener
 
 try:
 	import DomoticzEx as Domoticz
@@ -15,17 +17,17 @@ import requests.packages.urllib3
 requests.packages.urllib3.disable_warnings()
 
 class TahomaWebApi:
-    def __init__(self):
-        self.base_url = "https://ha101-1.overkiz.com"
-        self.headers_url = {"Content-Type": "application/x-www-form-urlencoded"}
-        self.headers_json = {"Content-Type": "application/json"}
-        self.login_url = "/enduser-mobile-web/enduserAPI/login"
-        self.timeout = 10
-        self.__expiry_date = datetime.datetime.now()
-        self.logged_in_expiry_days = 6
-        self.cookie = None
-        self.token = None
-        self.__logged_in = False
+    base_url_web = "https://ha101-1.overkiz.com"
+    headers_url = {"Content-Type": "application/x-www-form-urlencoded"}
+    headers_json = {"Content-Type": "application/json"}
+    headers_with_token = {"Content-Type": "application/json"}
+    login_url = "/enduser-mobile-web/enduserAPI/login"
+    timeout = 10
+    __expiry_date = datetime.datetime.now()
+    logged_in_expiry_days = 6
+    cookie = None
+    __token = None
+    __logged_in = False
 
     @property
     def logged_in(self):
@@ -37,25 +39,23 @@ class TahomaWebApi:
 
     def tahoma_login(self, username, password):
         data = {"userId": username, "userPassword": password}
-        response = requests.post(self.base_url + self.login_url, headers=self.headers_url, data=data, timeout=self.timeout)
+        response = requests.post(self.base_url_web + self.login_url, headers=self.headers_url, data=data, timeout=self.timeout)
         Data = response.json()
-        logging.debug("Login respone: status_code: '"+str(response.status_code)+"' reponse body: '"+str(Data)+"'")
+        logging.debug("Login respone: status_code: '"+str(response.status_code)+"' reponse body: '"+str(response.json())+"'")
 
         if (response.status_code == 200 and not self.__logged_in):
             self.__logged_in = True
             self.__expiry_date = datetime.datetime.now() + datetime.timedelta(days=self.logged_in_expiry_days)
             logging.info("Tahoma authentication succeeded, login valid until " + self.__expiry_date.strftime("%Y-%m-%d %H:%M:%S"))
-            #self.cookie = response.cookies
             self.cookie = response.cookies
             logging.debug("login: cookies: '"+ str(response.cookies)+"', headers: '"+str(response.headers)+"'")
-            #self.register_listener()
 
         elif ((response.status_code == 401) or (response.status_code == 400)):
             strData = Data["error"]
             #logging.error("Tahoma error: must reconnect")
             self.__logged_in = False
             self.cookie = None
-            self.listenerId = None
+            #self.listenerId = None
 
             if ("Too many" in strData):
                 logging.error("Too many connections, must wait")
@@ -78,22 +78,37 @@ class TahomaWebApi:
         url_gen = "/enduser-mobile-web/enduserAPI/config/"+pin+"/local/tokens/generate"
         logging.debug("generate token: url_gen = '" + url_gen + "'")
         logging.debug("generate token: cookie = '" + str(self.cookie) + "'")
-        response = requests.get(self.base_url + url_gen, headers=self.headers_json, cookies=self.cookie)
+        response = requests.get(self.base_url_web + url_gen, headers=self.headers_json, cookies=self.cookie)
+        logging.debug("generate token: response = '" + str(response) + "'")
         
         if response.status_code == 200:
-            self.token = response.json()['token']
-            logging.debug("succeeded to activate token: " + str(self.token))
+            self.__token = response.json()['token']
+            self.headers_with_token["Authorization"] = "Bearer " + str(self.__token)
+            logging.debug("succeeded to generate token: " + str(self.token))
         elif ((response.status_code == 401) or (response.status_code == 400)):
             self.__logged_in = False
             self.cookie = None
+            logging.debug("generate token: response = '" + str(response.json()) + "'")
             logging.error("failed to generate token")
             raise exceptions.LoginFailure("failed to generate token")
         return response.json()
 
+    @property
+    def token(self):
+        return self.__token
+
+    @token.setter
+    def token(self, t):
+        """setter to allow external update of token"""
+        self.__token = t
+        self.headers_with_token["Authorization"] = "Bearer " + str(self.__token)
+        logging.debug("headers_with_token updated with new token")
+
     def activate_token(self, pin, token):
         url_act = "/enduser-mobile-web/enduserAPI/config/"+pin+"/local/tokens"
         data_act = {"label": "Domoticz token", "token": token, "scope": "devmode"}
-        response = requests.post(self.base_url + url_act, headers=self.headers_json, json=data_act, cookies=self.cookie)
+        response = requests.post(self.base_url_web + url_act, headers=self.headers_json, json=data_act, cookies=self.cookie)
+        logging.debug("activate_token: response: "+str(response.json()))
 
         if response.status_code == 200:
             logging.debug("succeeded to activate token: " + str(self.token))
@@ -106,7 +121,7 @@ class TahomaWebApi:
 
     def get_tokens(self, pin):
         url_act = "/enduser-mobile-web/enduserAPI/config/"+pin+"/local/tokens/devmode"
-        response = requests.get(self.base_url + url_act, headers=self.headers_json, cookies=self.cookie)
+        response = requests.get(self.base_url_web + url_act, headers=self.headers_json, cookies=self.cookie)
 
         if response.status_code == 200:
             #self.token = response.json()['token']
@@ -120,7 +135,7 @@ class TahomaWebApi:
 
     def delete_tokens(self, pin, uuid):
         url_del = "/enduser-mobile-web/enduserAPI/config/"+pin+"/local/tokens/"+str(uuid)
-        response = requests.delete(self.base_url + url_del, headers=self.headers_json, cookies=self.cookie)
+        response = requests.delete(self.base_url_web + url_del, headers=self.headers_json, cookies=self.cookie)
 
         if response.status_code == 200:
             logging.debug("succeeded to delete token: " + str(response.json()))
@@ -131,116 +146,129 @@ class TahomaWebApi:
             raise exceptions.LoginFailure("failed to delete tokens")
         return response.json()
 
-class SomfyBox:
+class SomfyBox(TahomaWebApi):
     def __init__(self, pin, port):
-        self.base_url = "https://" + str(pin) + ".local:" + str(port) + "/enduser-mobile-web/1/enduserAPI"
-        self.headers_json = {"Content-Type": "application/json", "Authorization": "Bearer ", "Accept": "application/json"}
-        self.listenerId = None
-        self._token = None
-
-    @property
-    def token(self):
-        return self._token
-
-    @token.setter
-    def token(self, token):
-        self._token = token
-        self.headers_json["Authorization"] = "Bearer " + str(token)
+        self.base_url_local = "https://" + str(pin) + ".local:" + str(port) + "/enduser-mobile-web/1/enduserAPI"
+        #self.headers_json = {"Content-Type": "application/json", "Accept": "application/json"}
+        self.startup = True
+        self.listener = listener.Listener()
+        logging.debug("SomfyBox initialised")
 
     def get_version(self):
-        if self._token is None:
+        if self.token is None or self.token == "0":
             raise exceptions.TahomaException("No token has been provided")
-        response = requests.get(self.base_url + "/apiVersion", headers=self.headers_json, verify=False)
+        response = requests.get(self.base_url_local + "/apiVersion", headers=self.headers_with_token, verify=False)
         if response.status_code == 200:
             logging.debug("succeeded to get API version: " + str(response.json()))
-        elif ((response.status_code == 401) or (response.status_code == 400)):
-            logging.error("failed to get API version")
-            raise exceptions.TahomaException("failed to get API version, response: " + str(response.status_code))
+        else:
+            utils.handle_response(response, "get API version")
         return response.json()
 
     #setup endpoints
     def get_gateways(self):
-        if self._token is None:
+        if self.token is None or self.token == "0":
             raise exceptions.TahomaException("No token has been provided")
-        response = requests.get(self.base_url + "/setup/gateways", headers=self.headers_json, verify=False)
+        response = requests.get(self.base_url_local + "/setup/gateways", headers=self.headers_with_token, verify=False)
         logging.debug(response)
         if response.status_code == 200:
             logging.debug("succeeded to get local API gateways: " + str(response.json()))
-        elif ((response.status_code == 401) or (response.status_code == 400)):
-            logging.error("failed to get local API gateways")
-            raise exceptions.TahomaException("failed to get local API gateways, response: " + str(response.status_code))
+        else:
+            utils.handle_response(response, "get gateways")
         return response.json()
 
     def get_devices(self):
-        if self._token is None:
+        logging.debug("start get devices")
+        if self.token is None or self.token == "0":
             raise exceptions.TahomaException("No token has been provided")
-        response = requests.get(self.base_url + "/setup/devices", headers=self.headers_json, verify=False)
-        logging.debug(response)
+        response = requests.get(self.base_url_local + "/setup/devices", headers=self.headers_with_token, verify=False)
+        logging.debug("get device response: status '" + str(response.status_code) + "' response body: '"+str(response.json())+"'")
         if response.status_code == 200:
             logging.debug("succeeded to get local API devices: " + str(response.json()))
-        elif ((response.status_code == 401) or (response.status_code == 400)):
-            logging.error("failed to get local API devices")
-            raise exceptions.TahomaException("failed to get local API device, response: " + str(response.status_code))
-        return response.json()
+        else:
+            utils.handle_response(response, "get devices")
+        filtered_list = utils.filter_devices(response.json())
+        self.startup = False
+        return filtered_list
 
     def get_device_state(self, device):
-        # if self._token is None:
-            # raise exceptions.TahomaException("No token has been provided")
-        # if not device.startswith("io://"):
-            # raise exceptions.TahomaException("Invalid url, needs to start with io://")
-        url = self.base_url + "/setup/devices/" + urllib.parse.quote(device, safe="") + "/states"
+        if self.token is None or self.token == "0":
+            raise exceptions.TahomaException("No token has been provided")
+        if not device.startswith("io://"):
+            raise exceptions.TahomaException("Invalid url, needs to start with io://")
+        url = self.base_url_local + "/setup/devices/" + urllib.parse.quote(device, safe="") + "/states"
         logging.debug("url for device state: " + str(url))
-        response = requests.get(url, headers=self.headers_json, verify=False)
+        response = requests.get(url, headers=self.headers_with_token, verify=False)
         logging.debug(response)
         if response.status_code == 200:
             logging.debug("succeeded to get local API device states: " + str(response.json()))
-        elif ((response.status_code == 401) or (response.status_code == 400)):
-            logging.error("failed to get local API device states")
-            raise exceptions.TahomaException("failed to get local API device state, response: " + str(response.status_code))
+        else:
+            utils.handle_response(response, "get device state")
         return response.json()
         
     #events endpoints
     def get_events(self):
-        if self._token is None:
+        logging.debug("start get events")
+        if self.token is None or self.token == "0":
             raise exceptions.TahomaException("No token has been provided")
-        if self.listenerId is not None:
-            response = requests.post(self.base_url + "/events/"+self.listenerId+"/fetch", headers=self.headers_json, verify=False)
-        else:
+        if not self.listener.valid:
             logging.error("cannot fetch events if no listener registered")
-            raise exceptions.TahomaException("cannot fetch events if no listener registered")
-        logging.debug(response)
-        if response.status_code == 200:
-            logging.debug("succeeded to get local API events: " + str(response.json()))
-        elif ((response.status_code == 401) or (response.status_code == 400)):
-            logging.error("failed to get local API events")
-            raise exceptions.TahomaException("failed to get local API events, response: " + str(response.status_code))
-        return response.json()
+            raise exceptions.NoListenerFailure()
+        for i in range(1,4):
+            #do several retries on reaching events end point before going to time out error
+            try:
+                response = requests.post(self.base_url_local + "/events/"+self.listener.listenerId+"/fetch", headers=self.headers_with_token, verify=False)
+                logging.debug("get events response: status '" + str(response.status_code) + "' response body: '"+str(response)+"'")
+                if response.status_code != 200:
+                    logging.error("error during get events, status: " + str(response.status_code) + ", " + str(response.text))
+                    if response.status_code ==400 and "error" in response.json():
+                        if "No registered event listener" in response.json()["error"]:
+                            self.listener.valid = False
+                            logging.error("fetch events failed due to no valid listener registered")
+                            raise exceptions.NoListenerFailure()
+                    utils.handle_response(response, "get events")
+                    return
+                elif response.status_code == 200:
+                    strData = response.json()
+                    self.listener.refresh_listener()
+                    logging.debug("succeeded to get local API events: " + str(response.json()))
+                    if (not "DeviceStateChangedEvent" in response.text):
+                        logging.debug("get_events: no DeviceStateChangedEvent found in response: " + str(strData))
+                        return
+                    else:
+                        return response.json()
+
+                else:
+                  logging.info("Return status " + str(response.status_code))
+            except requests.exceptions.RequestException as exp:
+                logging.error("get_events RequestException: " + str(exp))
+            #wait increasing time before next try
+            time.sleep(i ** 3)
+        else:
+            raise exceptions.TooManyRetries
+        logging.debug("finished get events")
 
     def register_listener(self):
-        if self._token is None:
+        logging.debug("start register")
+        if self.token is None or self.token == "0":
             raise exceptions.TahomaException("No token has been provided")
-        response = requests.post(self.base_url + "/events/register", headers=self.headers_json, verify=False)
-        logging.debug(response)
-        if response.status_code == 200:
-            logging.debug("succeeded to get local listener ID: " + str(response.json()))
-            self.listenerId = response.json()['id']
-        elif ((response.status_code == 401) or (response.status_code == 400)):
-            logging.error("failed to get local listener ID")
-            raise exceptions.TahomaException("failed to get local listener ID, response: " + str(response.status_code))
-        return response.json()
+        response = self.listener.register_listener(self.base_url_local + "/events/register", headers=self.headers_with_token, verify=False)
+        return response
 
     #execution endpoints
-    def send_command(self, command):
-        # if self._token is None:
-            # raise exceptions.TahomaException("No token has been provided")
-        logging.debug(json.dumps(command))
-        #response = requests.post(self.base_url + "/exec/apply", headers=self.headers_json, json=command, verify=False)
-        response = requests.post(self.base_url + "/exec/apply", headers=self.headers_json, data=json.dumps(command), verify=False)
-        logging.debug(response)
+    def send_command(self, json_data):
+        if self.token is None or self.token == "0":
+            raise exceptions.TahomaException("No token has been provided")
+        logging.info("Sending command to tahoma api")
+        logging.debug("onCommand: data '"+str(json_data)+"'")
+        try:
+            response = requests.post(self.base_url_local + "/exec/apply", headers=self.headers_with_token, data=json.dumps(json_data), verify=False)
+        except requests.exceptions.RequestException as exp:
+            logging.error("Send command returns RequestException: " + str(exp))
+            return ""
+        logging.debug("command response: status '" + str(response.status_code) + "' response body: '"+str(response.json())+"'")
         if response.status_code == 200:
             logging.debug("succeeded to post command: " + str(response.json()))
             self.execId = response.json()['execId']
-        elif ((response.status_code == 401) or (response.status_code == 400)):
-            logging.error("failed to post command")
-            raise exceptions.TahomaException("failed to post command, response: " + str(response.status_code))
+        else:
+            utils.handle_response(response, "send command")
         return response.json()

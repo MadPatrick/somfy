@@ -2,8 +2,7 @@ import time
 import logging
 import json
 import consolemenu
-#import tahoma
-from tahoma_local import TahomaWebApi as tahoma
+import tahoma
 from tahoma_local import SomfyBox
 import exceptions
 from params import *
@@ -12,24 +11,25 @@ logging.basicConfig(format='%(asctime)s - %(levelname)-8s - %(filename)-18s - %(
                     level=logging.DEBUG)
 logging.info("=== starting test run ===")
 
-menuoptions = ['0 exit',"1 log in", "3 check log in", "4 generate toke", "5 activate token", "6 get tokens", "7 delete token", 
-    "10 web register", "11 web get devices", "12 web get events", "13 web send test command",
+menuoptions = ['0 exit',"1 log in for local", "2 login for web", "3 check log in", "4 generate toke", "5 activate token", "6 get tokens", "7 delete token", "8 print token",
+    "10 web register", "11 web get devices", "12 web get events", "13 web send command",
     "20 get local API version", "21 get local gateway", "22 get local devices", "23 register local listener", "24 get local events", "25 get local device state", "26 send local command"]
 mymenu = consolemenu.SelectionMenu(menuoptions)
 
 device_list = list()
 
-tahoma = tahoma()
+#tahoma = tahoma()
+tahoma = tahoma.Tahoma()
 theBox = SomfyBox(p_pin, p_port)
 print("=====")
-if p_token != '0':
+if str(p_token) != '0':
     theBox.token = p_token
     print ("token loaded from params, no need to get from web")
 else:
     print("No token loaded from param, first get it from web, steps <10")
 
-if tahoma.cookie is None:
-    tahoma.cookie = dict(JSESSIONID='F290EEAEC03B4838EBDA4B0CD0034BAB')
+if theBox.cookie is None:
+    theBox.cookie = dict(JSESSIONID='F290EEAEC03B4838EBDA4B0CD0034BAB')
 
 if True:
     while True:
@@ -45,37 +45,57 @@ if True:
         if x == 1: #log in
             status = False
             try:
+                status = theBox.tahoma_login(p_email, p_password)
+            except exceptions.LoginFailure as exp:
+                print("Failed to login: " + str(exp))
+            if theBox.cookie is None:
+                theBox.cookie = dict(JSESSIONID='F290EEAEC03B4838EBDA4B0CD0034BAB')
+            print("login status: "+str(status))
+        if x == 2: #log in
+            status = False
+            try:
                 status = tahoma.tahoma_login(p_email, p_password)
             except exceptions.LoginFailure as exp:
                 print("Failed to login: " + str(exp))
             if tahoma.cookie is None:
-                tahoma.cookie = dict(JSESSIONID='F290EEAEC03B4838EBDA4B0CD0034BAB')
+                tahoma.cookie = 'JSESSIONID=F290EEAEC03B4838EBDA4B0CD0034BAB; Path=/enduser-mobile-web; Secure; HttpOnly; SameSite=None'
             print("login status: "+str(status))
-        if x == 3: print(str(tahoma.logged_in)) #check log in
+        if x == 3: print(str(theBox.logged_in)) #check log in
         if x == 4: #generate token
-            response = tahoma.generate_token(p_pin)
-            print("you can store the token in params.py for later use")
-            print(json.dumps(response, sort_keys = True, indent=4))
+            try:
+                response = theBox.generate_token(p_pin)
+                print("you can store the token in params.py for later use")
+                print(json.dumps(response, sort_keys = True, indent=4))
+            except exceptions.LoginFailure as exp:
+                print("Failed to login: " + str(exp))
+            if theBox.token is None:
+                print('not token generated, using default from file')
+                theBox.token = str(p_token)
         if x == 5: #activate token
-            response = tahoma.activate_token(p_pin, tahoma.token)
-            theBox.token = tahoma.token
+            response = theBox.activate_token(p_pin, theBox.token)
+            #theBox.token = tahoma.token
             print(json.dumps(response, sort_keys = True, indent=4))
         if x == 6: #get list of tokens
-            response = tahoma.get_tokens(p_pin)
+            response = theBox.get_tokens(p_pin)
             print(json.dumps(response, sort_keys = True, indent=4))
         if x == 7:#delete token
             uuid = input("Please enter uuid to delete:")
-            response = tahoma.delete_tokens(p_pin, uuid)
+            response = theBox.delete_tokens(p_pin, uuid)
             print(json.dumps(response, sort_keys = True, indent=4))
+        if x == 8:
+            print("token = " + str(theBox.token))
         if x == 10: # register listener
             tahoma.register_listener()
             if tahoma.listenerId is None:
                 tahoma.listenerId = 'b4e62511-ac10-3e01-60e0-9b9f656aea77'
-        if x == 11: print(tahoma.get_devices(device_list))
+        if x == 11: print(tahoma.get_devices())
         if x == 12: print(tahoma.get_events())
         if x == 13: 
-            data = '{"actions": [{"commands": [{"name": "open"}], "deviceURL": "io://1234-5678-9012/10464619"}], "label": "Domoticz - Somfy - test - open"}'
-            print(tahoma.tahoma_command(json.dumps(data)))
+            device = str(input("enter deviceURL to command: "))
+            command = str(input("enter command <open|close>: "))
+            commando = {"actions":[{"commands":[{"name":command}], "deviceURL":device}], "label":"test command"}
+            #data = '{"actions": [{"commands": [{"name": "open"}], "deviceURL": "io://1234-5678-9012/10464619"}], "label": "Domoticz - Somfy - test - open"}'
+            print(tahoma.send_command(json.dumps(commando)))
         if x == 20: #get version of local API
             response = theBox.get_version()
             print(json.dumps(response, sort_keys = True, indent=4))
