@@ -5,10 +5,10 @@
 # FirstFree function courtesy of @moroen https://github.com/moroen/IKEA-Tradfri-plugin
 # All credits for the plugin are for Nonolk, who is the origin plugin creator
 """
-<plugin key="tahomaIO" name="Somfy Tahoma or Connexoon plugin" author="MadPatrick" version="4.1.0" externallink="https://github.com/MadPatrick/somfy">
+<plugin key="tahomaIO" name="Somfy Tahoma or Connexoon plugin" author="MadPatrick" version="4.1.1" externallink="https://github.com/MadPatrick/somfy">
     <description>
 	<br/><h2>Somfy Tahoma/Connexoon plugin</h2><br/>
-        version: 4.1.0
+        version: 4.1.1
         <br/>This plugin connects to the Tahoma or Connexoon box either via the web API or via local access.
         <br/>Various devices are supported(RollerShutter, LightSensor, Screen, Awning, Window, VenetianBlind, etc.).
         <br/>For new devices, please raise a ticket at the Github link above.
@@ -216,6 +216,8 @@ class BasePlugin:
                 commands["name"] = "open"
             elif (str(Command) == "Stop"):
                 commands["name"] = "stop"
+            elif (str(Command) == "On" and DeviceID.startswith("internal://")):
+                commands["name"] = "update"
             elif ("Set Level" in str(Command)):
                 commands["name"] = "setClosure"
                 params.append(int(Level))
@@ -482,7 +484,6 @@ class BasePlugin:
                             deviceType = 246
                             swtype = 12
                             subtype2 = 1
-                    #elif (device["definition"]["deviceURL"].startswith("rts://")):
                     elif (device["deviceURL"].startswith("rts://")):
                         swtype = 6
                     elif (device["definition"]["uiClass"] == "Pod"):
