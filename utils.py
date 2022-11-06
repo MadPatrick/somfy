@@ -23,6 +23,7 @@ def filter_devices(Data):
             or (device["definition"]["uiClass"] == "Window") 
             or (device["definition"]["uiClass"] == "VenetianBlind") 
             or (device["definition"]["uiClass"] == "ExteriorVenetianBlind")) 
+            or (device["definition"]["uiClass"] == "Pod")) 
             and ((device["deviceURL"].startswith("io://")) or (device["deviceURL"].startswith("rts://")))):
             logging.debug("filter_devices: type of device = "+str(type(device)))
             filtered_devices.append(device)
