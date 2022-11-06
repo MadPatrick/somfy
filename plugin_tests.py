@@ -19,10 +19,12 @@ class PluginTestsLocal(unittest.TestCase):
         logging.info("===start unit test run===")
 
     def test_createDevices(self):
+        """test create devices for local API"""
         logging.info("test: test_createDevices Local")
-        self.assertEqual(self.thePlug.create_devices(filter_devices(deviceList)), (2,2))
+        self.assertEqual(self.thePlug.create_devices(filter_devices(deviceList)), (3,3))
 
     def test_updateDevicesLocal(self):
+        """test update devices for local API"""
         logging.info("test: test_updateDevices Local")
         self.assertEqual(self.thePlug.update_devices_status(eventsLocal), 0)
 
@@ -35,10 +37,12 @@ class PluginTestsWeb(unittest.TestCase):
         logging.info("===start unit test run===")
 
     def test_createDevices(self):
+        """test create devices for web API"""
         logging.info("test: test_createDevices Web")
-        self.assertEqual(self.thePlug.create_devices(filter_devices(deviceListWeb)), (2,2))
+        self.assertEqual(self.thePlug.create_devices(filter_devices(deviceListWeb)), (3,3))
 
     def test_updateDevices(self):
+        """test update devices for web API"""
         logging.info("test: test_updateDevices Web")
         self.assertEqual(self.thePlug.update_devices_status(eventsWeb), 0)
 

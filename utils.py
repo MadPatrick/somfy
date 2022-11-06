@@ -23,8 +23,8 @@ def filter_devices(Data):
             or (device["definition"]["uiClass"] == "Window") 
             or (device["definition"]["uiClass"] == "VenetianBlind") 
             or (device["definition"]["uiClass"] == "ExteriorVenetianBlind")) 
-            or (device["definition"]["uiClass"] == "Pod")) 
-            and ((device["deviceURL"].startswith("io://")) or (device["deviceURL"].startswith("rts://")))):
+            and ((device["deviceURL"].startswith("io://")) or (device["deviceURL"].startswith("rts://")))
+            or (device["definition"]["uiClass"] == "Pod" and device["deviceURL"].startswith("internal://"))):
             logging.debug("filter_devices: type of device = "+str(type(device)))
             filtered_devices.append(device)
             logging.info("supported device found: "+ str(device))

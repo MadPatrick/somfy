@@ -482,12 +482,13 @@ class BasePlugin:
                             deviceType = 246
                             swtype = 12
                             subtype2 = 1
-                        elif (device["definition"]["uiClass"] == "Pod"):
-                            deviceType = 244
-                            subtype2 = 73
-                            swtype = 9
-                    elif (device["definition"]["deviceURL"].startswith("rts://")):
+                    #elif (device["definition"]["deviceURL"].startswith("rts://")):
+                    elif (device["deviceURL"].startswith("rts://")):
                         swtype = 6
+                    elif (device["definition"]["uiClass"] == "Pod"):
+                        deviceType = 244
+                        subtype2 = 73
+                        swtype = 9
 
                     # extended framework: create first device then unit? or create device+unit in one go?
                     created_devices += 1
