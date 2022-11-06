@@ -24,6 +24,7 @@ class myUnit:
 class Domoticz:
     def __init__(self):
         self.Units = []
+        self.Devices = dict()
         return
 
     def Log(self, s):
@@ -39,9 +40,11 @@ class Domoticz:
         print(s)
     
     def Device(self, DeviceID=""):
+        self.Devices[DeviceID] = DeviceID
         print("creating DeviceID: "+ DeviceID)
 
     def Unit(self, Name="label", Unit=0, Type=0, Subtype=0, Switchtype="", DeviceID="deviceURL"):
         newUnit = myUnit(Name, Unit, Type, Subtype, Switchtype, DeviceID)
+        #self.Devices[DeviceID].Units.append(newUnit)
         self.Units.append(newUnit)
         return newUnit
