@@ -475,13 +475,17 @@ class BasePlugin:
                         if (device["definition"]["uiClass"] == "Awning"):
                             swtype = 13
                         elif (device["definition"]["uiClass"] == "RollerShutter"):
-                            swtype = 21
                             deviceType = 244
+                            swtype = 21
                             subtype2 = 73                    
                         elif (device["definition"]["uiClass"] == "LightSensor"):
-                            swtype = 12
                             deviceType = 246
+                            swtype = 12
                             subtype2 = 1
+                        elif (device["definition"]["uiClass"] == "Pod"):
+                            deviceType = 244
+                            subtype2 = 73
+                            swtype = 0
                     elif (device["definition"]["deviceURL"].startswith("rts://")):
                         swtype = 6
 
