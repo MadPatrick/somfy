@@ -5,10 +5,10 @@
 # FirstFree function courtesy of @moroen https://github.com/moroen/IKEA-Tradfri-plugin
 # All credits for the plugin are for Nonolk, who is the origin plugin creator
 """
-<plugin key="tahomaIO" name="Somfy Tahoma or Connexoon plugin" author="MadPatrick" version="4.1.2" externallink="https://github.com/MadPatrick/somfy">
+<plugin key="tahomaIO" name="Somfy Tahoma or Connexoon plugin" author="MadPatrick" version="4.1.3" externallink="https://github.com/MadPatrick/somfy">
     <description>
 	<br/><h2>Somfy Tahoma/Connexoon plugin</h2><br/>
-        version: 4.1.2
+        version: 4.1.3
         <br/>This plugin connects to the Tahoma or Connexoon box either via the web API or via local access.
         <br/>Various devices are supported(RollerShutter, LightSensor, Screen, Awning, Window, VenetianBlind, etc.).
         <br/>For new devices, please raise a ticket at the Github link above.
@@ -210,7 +210,7 @@ class BasePlugin:
         
         if Unit == 1:
             # unit 1 used for up/down movement
-            if (str(Command) == "On" and DeviceID.startswith("internal://")):
+            if (str(Command) == "On" and DeviceId.startswith("internal://")):
                 commands["name"] = "update"
             elif (str(Command) == "Off" or str(Command) == "Close"):
                 commands["name"] = "close"   
@@ -232,10 +232,10 @@ class BasePlugin:
                 commands["parameters"] = params
             else:
                 logging.error("command "+str(Command)+" not supported")
-                return
+                return False
         else:
             logging.error("unit not supported")
-            return
+            return False
 
         commands_serialized.append(commands)
         action["deviceURL"] = DeviceId
@@ -264,11 +264,12 @@ class BasePlugin:
         except (exceptions.TooManyRetries, exceptions.FailureWithErrorCode, exceptions.FailureWithoutErrorCode) as exp:
             Domoticz.Error("Failed to send command: " + str(exp))
             logging.error("Failed to send command: " + str(exp))
-            return
+            return False
         if event_list is not None and len(event_list) > 0:
             self.update_devices_status(event_list)
         self.heartbeat = False
         self.actions_serialized = []
+        return True
 
     def onDisconnect(self, Connection):
         return
@@ -507,6 +508,7 @@ class BasePlugin:
                     found = False
         logging.debug("create_devices: finished create devices")
         return len(filtered_devices),created_devices
+        #return Devices
 
     def updateToEx(self):
         """routine to check if we can update to the Domoticz extended plugin framework"""

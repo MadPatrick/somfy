@@ -5,6 +5,7 @@ from tests.devicelist import *
 from tests.devicelistWeb import *
 from tests.eventsLocal import *
 from tests.eventsWeb import *
+from tests.command import *
 from utils import *
 from params import *
 from tahoma_local import SomfyBox
@@ -16,7 +17,7 @@ class PluginTestsLocal(unittest.TestCase):
         self.thePlug=plugin.BasePlugin()
         self.thePlug.local = True
         self.thePlug.tahoma = SomfyBox(p_pin, p_port)
-        logging.info("===start unit test run===")
+        logging.info("===start unit test case===")
 
     def test_createDevices(self):
         """test create devices for local API"""
@@ -28,13 +29,21 @@ class PluginTestsLocal(unittest.TestCase):
         logging.info("test: test_updateDevices Local")
         self.assertEqual(self.thePlug.update_devices_status(eventsLocal), 0)
 
+    def test_OnCommand(self):
+        """test building command local"""
+        logging.info("test: test_OnCommand Local")
+        Devices = self.thePlug.create_devices(filter_devices(deviceList))
+        self.thePlug.Devices = Devices
+        print("len(self.thePlug.Devices): "+str(len(self.thePlug.Devices)))
+        self.assertEqual(self.thePlug.onCommand(commandOn["DeviceId"], commandOn["Unit"], commandOn["Command"], commandOn["Level"], commandOn["Hue"]), True)
+
 class PluginTestsWeb(unittest.TestCase):
     """test cases for web API"""
     def setUp(self):
         self.thePlug=plugin.BasePlugin()
         self.thePlug.local = False
         self.thePlug.tahoma = Tahoma()
-        logging.info("===start unit test run===")
+        logging.info("===start unit test case===")
 
     def test_createDevices(self):
         """test create devices for web API"""
@@ -48,6 +57,7 @@ class PluginTestsWeb(unittest.TestCase):
 
 def main():
     logging.basicConfig(format='%(asctime)s - %(levelname)-8s - %(filename)-18s - %(message)s', filename="somfy_unit_test.log",level=logging.DEBUG)
+    logging.info("====== start unit test run ======")
     unittest.main()
 
 
