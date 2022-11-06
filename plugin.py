@@ -485,7 +485,7 @@ class BasePlugin:
                         elif (device["definition"]["uiClass"] == "Pod"):
                             deviceType = 244
                             subtype2 = 73
-                            swtype = 0
+                            swtype = 9
                     elif (device["definition"]["deviceURL"].startswith("rts://")):
                         swtype = 6
 
