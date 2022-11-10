@@ -3,7 +3,6 @@ import logging
 import plugin
 from tests.devicelist import *
 from tests.devicelistWeb import *
-from tests.deviceListMikey import *
 from tests.eventsLocal import *
 from tests.eventsWeb import *
 from tests.command import *
@@ -56,19 +55,6 @@ class PluginTestsWeb(unittest.TestCase):
         """test update devices for web API"""
         logging.info("test: test_updateDevices Web")
         self.assertEqual(self.thePlug.update_devices_status(eventsWeb), 0)
-
-class PluginTestsMikey(unittest.TestCase):
-    """test cases for Mikey"""
-    def setUp(self):
-        self.thePlug=plugin.BasePlugin()
-        self.thePlug.local = False
-        self.thePlug.tahoma = Tahoma()
-        logging.info("===start unit test case: Mikey===")
-
-    def test_createDevices(self):
-        """test create devices for Mikey"""
-        logging.info("test: test_createDevices Mikey")
-        self.assertEqual(self.thePlug.create_devices(filter_devices(deviceListMikey)), (3,3))
 
 def main():
     logging.basicConfig(format='%(asctime)s - %(levelname)-8s - %(filename)-18s - %(message)s', filename="somfy_unit_test.log",level=logging.DEBUG)
