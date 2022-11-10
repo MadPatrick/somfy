@@ -24,7 +24,6 @@ def filter_devices(Data):
             or (device["definition"]["uiClass"] == "VenetianBlind") 
             or (device["definition"]["uiClass"] == "ExteriorVenetianBlind")) 
             and ((device["deviceURL"].startswith("io://")) or (device["deviceURL"].startswith("rts://")))):
-            logging.debug("filter_devices: type of device = "+str(type(device)))
             filtered_devices.append(device)
             logging.info("supported device found: "+ str(device))
         else:
