@@ -5,10 +5,10 @@
 # FirstFree function courtesy of @moroen https://github.com/moroen/IKEA-Tradfri-plugin
 # All credits for the plugin are for Nonolk, who is the origin plugin creator
 """
-<plugin key="tahomaIO" name="Somfy Tahoma or Connexoon plugin" author="MadPatrick" version="4.0.28" externallink="https://github.com/MadPatrick/somfy">
+<plugin key="tahomaIO" name="Somfy Tahoma or Connexoon plugin" author="MadPatrick" version="4.1.4" externallink="https://github.com/MadPatrick/somfy">
     <description>
 	<br/><h2>Somfy Tahoma/Connexoon plugin</h2><br/>
-        version: 4.0.28
+        version: 4.1.4
         <br/>This plugin connects to the Tahoma or Connexoon box either via the web API or via local access.
         <br/>Various devices are supported(RollerShutter, LightSensor, Screen, Awning, Window, VenetianBlind, etc.).
         <br/>For new devices, please raise a ticket at the Github link above.
@@ -210,7 +210,15 @@ class BasePlugin:
         
         if Unit == 1:
             # unit 1 used for up/down movement
-            if (str(Command) == "Off" or str(Command) == "Close"):
+            if (str(Command) == "On" and DeviceId.startswith("internal://")):
+                # commands["name"] = "update"
+                # commands["name"] = "refreshPodMode"
+                # commands["name"] = "setPodLedOff"
+                # commands["name"] = "setPodLedOn"
+                # commands["name"] = "refreshBatteryStatus"
+                commands["name"] = "activateCalendar"
+                # commands["name"] = "refreshUpdateStatus"
+            elif (str(Command) == "Off" or str(Command) == "Close"):
                 commands["name"] = "close"   
             elif (str(Command) == "On" or str(Command) == "Open"):
                 commands["name"] = "open"
@@ -230,10 +238,10 @@ class BasePlugin:
                 commands["parameters"] = params
             else:
                 logging.error("command "+str(Command)+" not supported")
-                return
+                return False
         else:
             logging.error("unit not supported")
-            return
+            return False
 
         commands_serialized.append(commands)
         action["deviceURL"] = DeviceId
@@ -262,11 +270,12 @@ class BasePlugin:
         except (exceptions.TooManyRetries, exceptions.FailureWithErrorCode, exceptions.FailureWithoutErrorCode) as exp:
             Domoticz.Error("Failed to send command: " + str(exp))
             logging.error("Failed to send command: " + str(exp))
-            return
+            return False
         if event_list is not None and len(event_list) > 0:
             self.update_devices_status(event_list)
         self.heartbeat = False
         self.actions_serialized = []
+        return True
 
     def onDisconnect(self, Connection):
         return
@@ -475,15 +484,19 @@ class BasePlugin:
                         if (device["definition"]["uiClass"] == "Awning"):
                             swtype = 13
                         elif (device["definition"]["uiClass"] == "RollerShutter"):
-                            swtype = 21
                             deviceType = 244
+                            swtype = 21
                             subtype2 = 73                    
                         elif (device["definition"]["uiClass"] == "LightSensor"):
-                            swtype = 12
                             deviceType = 246
+                            swtype = 12
                             subtype2 = 1
-                    elif (device["definition"]["deviceURL"].startswith("rts://")):
+                    elif (device["deviceURL"].startswith("rts://")):
                         swtype = 6
+                    elif (device["definition"]["uiClass"] == "Pod"):
+                        deviceType = 244
+                        subtype2 = 73
+                        swtype = 9
 
                     # extended framework: create first device then unit? or create device+unit in one go?
                     created_devices += 1
@@ -501,6 +514,7 @@ class BasePlugin:
                     found = False
         logging.debug("create_devices: finished create devices")
         return len(filtered_devices),created_devices
+        #return Devices
 
     def updateToEx(self):
         """routine to check if we can update to the Domoticz extended plugin framework"""

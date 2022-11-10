@@ -258,7 +258,7 @@ class SomfyBox(TahomaWebApi):
     def send_command(self, json_data):
         if self.token is None or self.token == "0":
             raise exceptions.TahomaException("No token has been provided")
-        logging.info("Sending command to tahoma api")
+        logging.info("Sending command to local api")
         logging.debug("onCommand: data '"+str(json_data)+"'")
         try:
             response = requests.post(self.base_url_local + "/exec/apply", headers=self.headers_with_token, data=json.dumps(json_data), verify=False)
