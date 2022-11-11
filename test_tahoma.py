@@ -144,7 +144,8 @@ class testTahoma():
                     response = self.theBox.get_devices()
                     print(json.dumps(response, sort_keys = True, indent=4))
                     device = str(input("enter deviceURL to command: "))
-                    params = str(input("enter percentage: "))
+                    params = []
+                    params.append(int(input("enter percentage: ")))
                     commando = {"actions":[{"commands":[{"name":"set closure"},{"parameters" : params}], "deviceURL":device}], "label":"test command"}
                     response = self.theBox.send_command(commando)
                     print(json.dumps(response, sort_keys = True, indent=4))
