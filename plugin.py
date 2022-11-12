@@ -5,7 +5,7 @@
 # FirstFree function courtesy of @moroen https://github.com/moroen/IKEA-Tradfri-plugin
 # All credits for the plugin are for Nonolk, who is the origin plugin creator
 """
-<plugin key="tahomaIO" name="Somfy Tahoma or Connexoon plugin" author="MadPatrick" version="4.1.5" externallink="https://github.com/MadPatrick/somfy">
+<plugin key="tahomaIO" name="Somfy Tahoma or Connexoon plugin" author="MadPatrick" version="4.1.6" externallink="https://github.com/MadPatrick/somfy">
     <description>
 	<br/><h2>Somfy Tahoma/Connexoon plugin</h2><br/>
         version: 4.1.5
@@ -226,14 +226,17 @@ class BasePlugin:
                 commands["name"] = "stop"
             elif ("Set Level" in str(Command)):
                 commands["name"] = "setClosure"
-                params.append(int(Level))
+                tmp = max(100 - int(Level), 0) #invert open/close percentage
+                #tmp = max(int(Level), 0)
+                params.append(tmp)
+                #params.append(int(Level))
                 commands["parameters"] = params
         elif Unit == 2:
             # unit 2 used for orientation in venetian blinds
             if ("Set Level" in str(Command)):
                 commands["name"] = "setOrientation"
-                #tmp = max(100 - int(Level), 1) #orientation does not accept 0
-                tmp = max(int(Level), 1) #orientation does not accept 0
+                tmp = max(100 - int(Level), 1) #orientation does not accept 0
+                #tmp = max(int(Level), 1) #orientation does not accept 0
                 params.append(tmp)
                 commands["parameters"] = params
             else:
@@ -358,12 +361,12 @@ class BasePlugin:
 
                     if ((state["name"] == "core:ClosureState") or (state["name"] == "core:DeploymentState")):
                         level = int(state["value"])
-                        #level = 100 - level
+                        level = 100 - level #invert open/clsoe percentage
                         status_num = 1
                       
                     if ((state["name"] == "core:SlateOrientationState")):
                         level = int(state["value"])
-                        level = 100 - level
+                        #level = 100 - level 
                         status_num = 2
 
                     if (state["name"] == "core:LuminanceState"):
