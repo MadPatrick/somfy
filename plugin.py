@@ -5,10 +5,10 @@
 # FirstFree function courtesy of @moroen https://github.com/moroen/IKEA-Tradfri-plugin
 # All credits for the plugin are for Nonolk, who is the origin plugin creator
 """
-<plugin key="tahomaIO" name="Somfy Tahoma or Connexoon plugin" author="MadPatrick" version="4.1.6" externallink="https://github.com/MadPatrick/somfy">
+<plugin key="tahomaIO" name="Somfy Tahoma or Connexoon plugin" author="MadPatrick" version="4.1.7" externallink="https://github.com/MadPatrick/somfy">
     <description>
 	<br/><h2>Somfy Tahoma/Connexoon plugin</h2><br/>
-        version: 4.1.5
+        version: 4.1.7
         <br/>This plugin connects to the Tahoma or Connexoon box either via the web API or via local access.
         <br/>Various devices are supported(RollerShutter, LightSensor, Screen, Awning, Window, VenetianBlind, etc.).
         <br/>For new devices, please raise a ticket at the Github link above.
@@ -27,13 +27,15 @@
         <param field="Password" label="Password" width="200px" required="true" default="" password="true"/>
         <param field="Mode2" label="Refresh interval" width="100px">
             <options>
-                <option label="10s" value="1"/>
-                <option label="20s - local" value="2"/>
-                <option label="1m" value="6"/>
-                <option label="5m - web" value="30" default="true"/>
-                <option label="10m" value="60"/>
-                <option label="15m" value="90"/>
-                <option label="25m" value="150"/>
+                <option label="1s" value="1"/>
+                <option label="5s" value="5"/>
+                <option label="10s" value="10"/>
+                <option label="20s - local" value="20"/>
+                <option label="1m" value="60"/>
+                <option label="5m - web" value="300" default="true"/>
+                <option label="10m" value="600"/>
+                <option label="15m" value="900"/>
+                <option label="25m" value="1500"/>
             </options>
         </param>
         <param field = "Mode4" label="Connection" width="100px">
@@ -125,6 +127,7 @@ class BasePlugin:
         Domoticz.Debug("os.path.exists(Parameters['Mode5']) = {}".format(os.path.exists(Parameters["Mode5"])))
         logging.info("starting plugin version "+Parameters["Version"])
         self.runCounter = int(Parameters['Mode2'])
+        Domoticz.Heartbeat(1)
         
         #check upgrading of version needs actions
         self.version = Parameters["Version"]
@@ -210,15 +213,7 @@ class BasePlugin:
         
         if Unit == 1:
             # unit 1 used for up/down movement
-            if (str(Command) == "On" and DeviceId.startswith("internal://")):
-                # commands["name"] = "update"
-                # commands["name"] = "refreshPodMode"
-                # commands["name"] = "setPodLedOff"
-                # commands["name"] = "setPodLedOn"
-                # commands["name"] = "refreshBatteryStatus"
-                commands["name"] = "activateCalendar"
-                # commands["name"] = "refreshUpdateStatus"
-            elif (str(Command) == "Off" or str(Command) == "Close"):
+            if (str(Command) == "Off" or str(Command) == "Close"):
                 commands["name"] = "close"   
             elif (str(Command) == "On" or str(Command) == "Open"):
                 commands["name"] = "open"
