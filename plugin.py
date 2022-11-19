@@ -5,10 +5,10 @@
 # FirstFree function courtesy of @moroen https://github.com/moroen/IKEA-Tradfri-plugin
 # All credits for the plugin are for Nonolk, who is the origin plugin creator
 """
-<plugin key="tahomaIO" name="Somfy Tahoma or Connexoon plugin" author="MadPatrick" version="4.1.7" externallink="https://github.com/MadPatrick/somfy">
+<plugin key="tahomaIO" name="Somfy Tahoma or Connexoon plugin" author="MadPatrick" version="4.1.8" externallink="https://github.com/MadPatrick/somfy">
     <description>
 	<br/><h2>Somfy Tahoma/Connexoon plugin</h2><br/>
-        version: 4.1.7
+        version: 4.1.8
         <br/>This plugin connects to the Tahoma or Connexoon box either via the web API or via local access.
         <br/>Various devices are supported(RollerShutter, LightSensor, Screen, Awning, Window, VenetianBlind, etc.).
         <br/>For new devices, please raise a ticket at the Github link above.
@@ -329,13 +329,13 @@ class BasePlugin:
         else:
             eventList = Updated_devices
         num_updates = 0
+        logging.debug("checking device updates for "+str(len(eventList))+" filtered events")
         for dataset in eventList:
-            logging.debug("checking dataset for URL: "+str(dataset["deviceURL"]))
+            #logging.debug("checking dataset for URL: "+str(dataset['deviceURL']))
+            logging.debug("checking dataset: "+str(dataset))
             if dataset["deviceURL"] not in Devices:
-                #Domoticz.Error("device not found for URL: "+str(dataset["deviceURL"])+" called "+str(dataset["label"]))
                 Domoticz.Error("device not found for URL: "+str(dataset["deviceURL"]))
-                break #no deviceURL found that matches to domoticz Devices, skip to next dataset
-                #return
+                continue #no deviceURL found that matches to domoticz Devices, skip to next dataset
             if (dataset["deviceURL"].startswith("io://")):
                 dev = dataset["deviceURL"]
                 level = 0
@@ -348,7 +348,7 @@ class BasePlugin:
                     states = dataset["deviceStates"]
                     if (dataset["name"] != "DeviceStateChangedEvent"):
                         logging.debug("update_devices_status: dataset['name'] != DeviceStateChangedEvent: "+str(dataset["name"])+": breaking out")
-                        break #dataset does not contain correct event, skip to next dataset
+                        continue #dataset does not contain correct event, skip to next dataset
 
                 for state in states:
                     status_num = 0
@@ -368,6 +368,9 @@ class BasePlugin:
                         lumlevel = state["value"]
                         lumstatus_l = True
                       
+                    if (state["name"] == "core:CyclicButtonState"):
+                        Devices[dev].Units[1].Refresh() #refresh button state to trigger events, allowing Domoticz scripts to run
+
                     if status_num > 0:
                         if (Devices[dev].Units[status_num].sValue):
                             int_level = int(Devices[dev].Units[status_num].sValue)

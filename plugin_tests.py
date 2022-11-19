@@ -21,22 +21,25 @@ class PluginTestsLocal(unittest.TestCase):
 
     def test_createDevices(self):
         """test create devices for local API"""
-        logging.info("test: test_createDevices Local")
+        logging.info("test start: test_createDevices Local")
         self.assertEqual(self.thePlug.create_devices(filter_devices(deviceList)), (3,3))
+        logging.info("test end: test_createDevices Local")
 
     def test_updateDevicesLocal(self):
         """test update devices for local API"""
-        logging.info("test: test_updateDevices Local")
+        logging.info("test start: test_updateDevices Local")
         self.assertEqual(self.thePlug.update_devices_status(eventsLocal), 0)
+        logging.info("test end: test_updateDevices Local")
 
     @unittest.skip("creating devices not working yet")
     def test_OnCommand(self):
         """test building command local"""
-        logging.info("test: test_OnCommand Local")
+        logging.info("test start: test_OnCommand Local")
         Devices = self.thePlug.create_devices(filter_devices(deviceList))
         self.thePlug.Devices = Devices
         print("len(self.thePlug.Devices): "+str(len(self.thePlug.Devices)))
         self.assertEqual(self.thePlug.onCommand(commandOn["DeviceId"], commandOn["Unit"], commandOn["Command"], commandOn["Level"], commandOn["Hue"]), True)
+        logging.info("test end: test_OnCommand Local")
 
 class PluginTestsWeb(unittest.TestCase):
     """test cases for web API"""
@@ -48,13 +51,15 @@ class PluginTestsWeb(unittest.TestCase):
 
     def test_createDevices(self):
         """test create devices for web API"""
-        logging.info("test: test_createDevices Web")
+        logging.info("test start: test_createDevices Web")
         self.assertEqual(self.thePlug.create_devices(filter_devices(deviceListWeb)), (3,3))
+        logging.info("test end: test_createDevices Web")
 
     def test_updateDevices(self):
         """test update devices for web API"""
-        logging.info("test: test_updateDevices Web")
+        logging.info("test start: test_updateDevices Web")
         self.assertEqual(self.thePlug.update_devices_status(eventsWeb), 0)
+        logging.info("test end: test_updateDevices Web")
 
 def main():
     logging.basicConfig(format='%(asctime)s - %(levelname)-8s - %(filename)-18s - %(message)s', filename="somfy_unit_test.log",level=logging.DEBUG)

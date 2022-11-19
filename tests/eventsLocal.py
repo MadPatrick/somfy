@@ -13,6 +13,17 @@ eventsLocal = [
 		"name": "DeviceStateChangedEvent"
 	},
 	{
+		"deviceURL": "internal://1237-2024-7920/pod/0",
+		"deviceStates": [
+			{
+				"type": 3,
+				"name": "core:CyclicButtonState",
+				"value": "stop"
+			}
+		],
+		"name": "DeviceStateChangedEvent"
+	},
+	{
 		"name": "ExecutionRegisteredEvent",
 		"execId": "6f7a4bf8-0b9b-4604-8091-7ebc133890e3",
 		"actions": [

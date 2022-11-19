@@ -23,9 +23,8 @@ def filter_devices(Data):
             or (device["definition"]["uiClass"] == "Window") 
             or (device["definition"]["uiClass"] == "VenetianBlind") 
             or (device["definition"]["uiClass"] == "ExteriorVenetianBlind")) 
-            and ((device["deviceURL"].startswith("io://")) or (device["deviceURL"].startswith("rts://")))
+            and ((device["deviceURL"].startswith("io://")) or (device["deviceURL"].startswith("rts://"))) 
             or (device["definition"]["uiClass"] == "Pod" and device["deviceURL"].startswith("internal://"))):
-            logging.debug("filter_devices: type of device = "+str(type(device)))
             filtered_devices.append(device)
             logging.info("supported device found: "+ str(device))
         else:
@@ -41,6 +40,8 @@ def filter_events(Data):
     for event in Data:
         if (event["name"] == "DeviceStateChangedEvent"):
             logging.debug("get_events: add event: URL: '"+event["deviceURL"]+"' num states: '"+str(len(event["deviceStates"]))+"'")
+            for event_state in event["deviceStates"]:
+                logging.debug("   get_events: eventname: '"+event_state["name"]+"' with value: '"+str(event_state["value"])+"'")
             filtered_events.append(event)
 
     logging.debug("finished filter events")
