@@ -11,7 +11,7 @@ class Listener:
         self.__listener_expiry = datetime.datetime.now()
         self.__valid = False
         logging.debug("listener created")
-        self.__expiry_time = datetime.timedelta(minutes=30)
+        self.__expiry_time = datetime.timedelta(minutes=5)
 
     @property
     def listenerId(self):
