@@ -123,8 +123,8 @@ class Tahoma:
                 if response.status_code != 200:
                     logging.error("error during get events, status: " + str(response.status_code) + ", " + str(response.text))
                     self.__logged_in = False
-                    if response.status_code ==400 and "error" in response.json():
-                        if "No registered event listener" in response.json()["error"]:
+                    if (response.status_code ==400 or response.status_code ==401) and "error" in response.json():
+                        if ("No registered event listener" in response.json()["error"]) or ("authenticated" in response.json()["error"]):
                             self.listener.valid = False
                             logging.error("fetch events failed due to no valid listener registered")
                             raise exceptions.NoListenerFailure()
