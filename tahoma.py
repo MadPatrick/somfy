@@ -40,7 +40,7 @@ class Tahoma:
 
     @property
     def logged_in(self):
-        logging.debug("checking logged in status: self.__logged_in = "+str(self.__logged_in)+" and self.__expiry_date >= datetime.datetime.now() = " + str(self.__expiry_date >= datetime.datetime.now()))
+        logging.debug("checking logged in status: self.__logged_in = "+str(self.__logged_in)+" and self.__expiry_date ("+str(self.__expiry_date)+") >= datetime.datetime.now() = " + str(self.__expiry_date >= datetime.datetime.now()))
         if self.__logged_in and (self.__expiry_date >= datetime.datetime.now()):
             return True
         else:
@@ -214,6 +214,7 @@ class Tahoma:
             logging.error("status code " + str(response.status_code) + " this is a bug, bad request made, url or body needs to be checked")
             raise exceptions.TahomaException("failed request during "+ action + ", check url or body: " + str(response.status_code))
         elif response.status_code == 401:
+            self.__logged_in = False
             logging.error("status code " + str(response.status_code) + " authorisation failed, check credentials")
             raise exceptions.TahomaException("failed request during "+ action + ", check credentials: " + str(response.status_code))
         elif response.status_code == 404:
