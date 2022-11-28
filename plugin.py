@@ -375,9 +375,6 @@ class BasePlugin:
                         lumlevel = state["value"]
                         lumstatus_l = True
                       
-                    if (state["name"] == "core:CyclicButtonState"):
-                        Devices[dev].Units[1].Refresh() #refresh button state to trigger events, allowing Domoticz scripts to run
-
                     if status_num > 0:
                         if (Devices[dev].Units[status_num].sValue):
                             int_level = int(Devices[dev].Units[status_num].sValue)
