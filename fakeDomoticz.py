@@ -11,13 +11,14 @@ Devices = dict()
 Parameters = {"Mode1": "False", "Mode2": 1, "Mode3" : "0000-0000-0000", "Mode4": "Local", "Mode5": "", "Mode6": "Debug", "Port": 8443, "Username": "mail@domain.com" , "Password": "aNicerp@ssword", "Version" : "0.0.0" }
 
 class myUnit:
-    def __init__(self,Name="label", Unit=0, Type=0, Subtype=0, Switchtype="", DeviceID="deviceURL"):
+    def __init__(self,Name="label", Unit=0, Type=0, Subtype=0, Switchtype="", DeviceID="deviceURL", Used=0):
         self.Name=Name
         self.Unit=Unit,
         self.Type=Type
         self.Subtype=Subtype
         self.Switchtype=Switchtype
         self.DeviceID=DeviceID
+        self.Used=Used
     def Create(self):
         print("Creating unit "+self.Name+" for deviceID "+self.DeviceID)
 
@@ -43,8 +44,8 @@ class Domoticz:
         self.Devices[DeviceID] = DeviceID
         print("creating DeviceID: "+ DeviceID)
 
-    def Unit(self, Name="label", Unit=0, Type=0, Subtype=0, Switchtype="", DeviceID="deviceURL"):
-        newUnit = myUnit(Name, Unit, Type, Subtype, Switchtype, DeviceID)
+    def Unit(self, Name="label", Unit=0, Type=0, Subtype=0, Switchtype="", DeviceID="deviceURL", Used=0):
+        newUnit = myUnit(Name, Unit, Type, Subtype, Switchtype, DeviceID, Used)
         #self.Devices[DeviceID].Units.append(newUnit)
         self.Units.append(newUnit)
         return newUnit
