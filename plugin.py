@@ -5,10 +5,10 @@
 # FirstFree function courtesy of @moroen https://github.com/moroen/IKEA-Tradfri-plugin
 # All credits for the plugin are for Nonolk, who is the origin plugin creator
 """
-<plugin key="tahomaIO" name="Somfy Tahoma or Connexoon plugin" author="MadPatrick" version="4.1.13" externallink="https://github.com/MadPatrick/somfy">
+<plugin key="tahomaIO" name="Somfy Tahoma or Connexoon plugin" author="MadPatrick" version="4.1.14" externallink="https://github.com/MadPatrick/somfy">
     <description>
 	<br/><h2>Somfy Tahoma/Connexoon plugin</h2><br/>
-        version: 4.1.13
+        version: 4.1.14
         <br/>This plugin connects to the Tahoma or Connexoon box either via the web API or via local access.
         <br/>Various devices are supported(RollerShutter, LightSensor, Screen, Awning, Window, VenetianBlind, etc.).
         <br/>For new devices, please raise a ticket at the Github link above.
@@ -285,7 +285,8 @@ class BasePlugin:
         self.runCounter = self.runCounter - 1
         if (self.runCounter <= 0 or self.heartbeat) and self.enabled:
             logging.debug("Poll unit")
-            self.runCounter = int(Parameters['Mode2'])            
+            self.runCounter = int(Parameters['Mode2'])
+            self.heartbeat = False
 
             if self.local or (self.tahoma.logged_in and not self.tahoma.startup):
                 if (not self.local and not self.tahoma.logged_in):
