@@ -5,10 +5,10 @@
 # FirstFree function courtesy of @moroen https://github.com/moroen/IKEA-Tradfri-plugin
 # All credits for the plugin are for Nonolk, who is the origin plugin creator
 """
-<plugin key="tahomaIO" name="Somfy Tahoma or Connexoon plugin" author="MadPatrick" version="4.1.15" externallink="https://github.com/MadPatrick/somfy">
+<plugin key="tahomaIO" name="Somfy Tahoma or Connexoon plugin" author="MadPatrick" version="4.1.16" externallink="https://github.com/MadPatrick/somfy">
     <description>
 	<br/><h2>Somfy Tahoma/Connexoon plugin</h2><br/>
-        version: 4.1.15
+        version: 4.1.16
         <br/>This plugin connects to the Tahoma or Connexoon box either via the web API or via local access.
         <br/>Various devices are supported(RollerShutter, LightSensor, Screen, Awning, Window, VenetianBlind, etc.).
         <br/>For new devices, please raise a ticket at the Github link above.
@@ -221,8 +221,8 @@ class BasePlugin:
                 commands["name"] = "stop"
             elif ("Set Level" in str(Command)):
                 commands["name"] = "setClosure"
-                #tmp = max(100 - int(Level), 0) #invert open/close percentage
-                tmp = max(int(Level), 0)
+                tmp = max(100 - int(Level), 0) #invert open/close percentage
+                #tmp = max(int(Level), 0)
                 params.append(tmp)
                 #params.append(int(Level))
                 commands["parameters"] = params
@@ -289,6 +289,8 @@ class BasePlugin:
             self.heartbeat = False
 
             if self.local or (self.tahoma.logged_in and not self.tahoma.startup):
+                if not self.tahoma.listener.valid:
+                    self.tahoma.register_listener()
                 if (not self.local and not self.tahoma.logged_in):
                     #this part looks useless as this condition will never be true
                     self.tahoma.tahoma_login(str(Parameters["Username"]), str(Parameters["Password"]))
@@ -362,8 +364,8 @@ class BasePlugin:
                     lumstatus_l = False
 
                     if ((state["name"] == "core:ClosureState") or (state["name"] == "core:DeploymentState")):
-                        level = int(state["value"])
-                        #level = 100 - level #invert open/clsoe percentage
+                        #level = int(state["value"])
+                        level = 100 - level #invert open/clsoe percentage
                         status_num = 1
                       
                     if ((state["name"] == "core:SlateOrientationState")):
