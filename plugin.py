@@ -310,7 +310,7 @@ class BasePlugin:
                     
                 if event_list is not None and len(event_list) > 0:
                     self.update_devices_status(event_list)
-                self.heartbeat = True
+                    self.heartbeat = True
 
             # elif (self.heartbeat and (self.con_delay < self.wait_delay) and (not self.tahoma.logged_in)):
                 # self.con_delay +=1
