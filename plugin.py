@@ -5,7 +5,7 @@
 # FirstFree function courtesy of @moroen https://github.com/moroen/IKEA-Tradfri-plugin
 # All credits for the plugin are for Nonolk, who is the origin plugin creator
 """
-<plugin key="tahomaIO" name="Somfy Tahoma or Connexoon plugin" author="MadPatrick" version="4.1.16" externallink="https://github.com/MadPatrick/somfy">
+<plugin key="tahomaIO" name="Somfy Tahoma or Connexoon plugin" author="MadPatrick" version="4.1.18" externallink="https://github.com/MadPatrick/somfy">
     <description>
 	<br/><h2>Somfy Tahoma/Connexoon plugin</h2><br/>
         version: 4.1.16
@@ -32,7 +32,8 @@
                 <option label="10s" value="10"/>
                 <option label="20s - local" value="20"/>
                 <option label="1m" value="60"/>
-                <option label="5m - web" value="300" default="true"/>
+                <option label="1m50 - web" value="110" default="true"/>
+		<option label="5m" value="300"/>
                 <option label="10m" value="600"/>
                 <option label="15m" value="900"/>
                 <option label="25m" value="1500"/>
