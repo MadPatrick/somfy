@@ -6,12 +6,12 @@ import utils
 import json
 
 class Listener:
-    def __init__(self):
+    def __init__(self, Minutes=4):
         self.__listenerId = None
         self.__listener_expiry = datetime.datetime.now()
         self.__valid = False
         logging.debug("listener created")
-        self.__expiry_time = datetime.timedelta(minutes=4)
+        self.__expiry_time = datetime.timedelta(minutes=Minutes)
 
     @property
     def listenerId(self):
@@ -30,7 +30,7 @@ class Listener:
         elif not self.__valid:
             logging.error("It is not allowed to set the listener to valid externally")
             raise AttributeError
-
+        
     def refresh_listener(self):
         """method to reset expiry time after succesfull interaction"""
         self.__listener_expiry = datetime.datetime.now() + self.__expiry_time

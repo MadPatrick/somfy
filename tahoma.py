@@ -36,7 +36,7 @@ class Tahoma:
         self.__expiry_date = datetime.datetime.now()
         self.logged_in_expiry_days = 6
         self.execId = None
-        self.listener = listener.Listener()
+        self.listener = listener.Listener(2)
 
     @property
     def logged_in(self):
@@ -61,7 +61,9 @@ class Tahoma:
             self.__logged_in = True
             self.__expiry_date = datetime.datetime.now() + datetime.timedelta(days=self.logged_in_expiry_days)
             logging.info("Tahoma authentication succeeded, login valid until " + self.__expiry_date.strftime("%Y-%m-%d %H:%M:%S"))
-            self.cookie = response.headers["Set-Cookie"]
+            #self.cookie = response.headers["Set-Cookie"]
+            cookie_tmp = response.headers["Set-Cookie"]
+            self.cookie = cookie_tmp[:cookie_tmp.index(';')]
             logging.debug("login: cookies: '"+ str(response.cookies)+"', headers: '"+str(response.headers)+"'")
 
         elif ((response.status_code == 401) or (response.status_code == 400)):

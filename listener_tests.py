@@ -8,6 +8,7 @@ class ListenerTests(unittest.TestCase):
     def setUp(self):
         logging.debug("setting up a test run")
         self.listener = listener.Listener()
+        self.listener2 = listener.Listener(4)
         
     def test_creation(self):
         """check set up of listener object"""
