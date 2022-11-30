@@ -36,7 +36,7 @@ class Tahoma:
         self.__expiry_date = datetime.datetime.now()
         self.logged_in_expiry_days = 6
         self.execId = None
-        self.listener = listener.Listener(2)
+        self.listener = listener.Listener(1)
 
     @property
     def logged_in(self):
