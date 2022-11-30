@@ -5,10 +5,10 @@
 # FirstFree function courtesy of @moroen https://github.com/moroen/IKEA-Tradfri-plugin
 # All credits for the plugin are for Nonolk, who is the origin plugin creator
 """
-<plugin key="tahomaIO" name="Somfy Tahoma or Connexoon plugin" author="MadPatrick" version="4.1.17" externallink="https://github.com/MadPatrick/somfy">
+<plugin key="tahomaIO" name="Somfy Tahoma or Connexoon plugin" author="MadPatrick" version="4.1.18" externallink="https://github.com/MadPatrick/somfy">
     <description>
 	<br/><h2>Somfy Tahoma/Connexoon plugin</h2><br/>
-        version: 4.1.17
+        version: 4.1.18
         <br/>This plugin connects to the Tahoma or Connexoon box either via the web API or via local access.
         <br/>Various devices are supported(RollerShutter, LightSensor, Screen, Awning, Window, VenetianBlind, etc.).
         <br/>For new devices, please raise a ticket at the Github link above.
@@ -484,7 +484,7 @@ class BasePlugin:
 
                     logging.debug("create_devices: Must create new device: "+device["label"])
 
-                    if (device["deviceURL"].startswith("io://")):
+                    if (device["deviceURL"].startswith("io://") or (device["deviceURL"].startswith("rts://"))):
                         deviceType = 244
                         swtype = 13
                         subtype2 = 73
@@ -499,11 +499,11 @@ class BasePlugin:
                             deviceType = 246
                             swtype = 12
                             subtype2 = 1
-                    elif (device["deviceURL"].startswith("rts://")):
-                        deviceType = 244
-                        subtype2 = 73
-                        used = 1 # 1 = True
-                        swtype = 6
+                    # elif (device["deviceURL"].startswith("rts://")):
+                        # deviceType = 244
+                        # subtype2 = 73
+                        # used = 1 # 1 = True
+                        # swtype = 6 # -> switch type 6 no longer supported
                     elif (device["definition"]["uiClass"] == "Pod"):
                         deviceType = 244
                         subtype2 = 73
