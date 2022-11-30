@@ -88,6 +88,12 @@ In the Domoticz UI, navigate to the Hardware page.
 
 After completing the field the devices will be created in your Devices section.
 
+## Slider status in Domoticz
+The slider status of the created devices can be changed if this does not meet your requirements
+Some people like to heve slider with status **Open** at 0% and **Close** at 100%
+You can change this per devies if you edit the device and click the box "Reverse Position" 
+(To set the position correctly move your devices a few time)
+
 ## Update the plugin:
 ```
 cd domoticz/plugins/somfy
