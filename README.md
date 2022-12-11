@@ -85,8 +85,8 @@ In the Domoticz UI, navigate to the Hardware page.
 |Portnumber | The connection port of your Somby box. <br />By default this is set to 8443|
 |Log file location | You can set a custom log location if you like|
 |Debug logging| Default is False <br />If you need some extra information in the log you can set this to True|
-![Domoticz - Hardware2](https://user-images.githubusercontent.com/81873830/206902138-29d95de5-de75-46e3-a908-856421bf5133.png)
 
+![Domoticz - Hardware2](https://user-images.githubusercontent.com/81873830/206902138-29d95de5-de75-46e3-a908-856421bf5133.png)
 
 After completing the field the devices will be created in your Devices section.
 
