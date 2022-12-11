@@ -72,6 +72,7 @@ Add your Somfy Box PIN number to the IP in your local network in etc/hosts or in
 In the Domoticz UI, navigate to the Hardware page. 
 <br />In the hardware dropdown list there will be an entry called "Somfy Tahoma or Connexoon plugin".
 <br />Add the hardware to your Domoticz system and fill in the required fields
+![Domoticz - Hardware](https://user-images.githubusercontent.com/81873830/206902090-8d6cc4cb-a945-4779-87ab-a5ccadacc919.png)
 
 |Field          | Input         |
 | :------------ | :------------ |
@@ -84,6 +85,7 @@ In the Domoticz UI, navigate to the Hardware page.
 |Portnumber | The connection port of your Somby box. <br />By default this is set to 8443|
 |Log file location | You can set a custom log location if you like|
 |Debug logging| Default is False <br />If you need some extra information in the log you can set this to True|
+![Domoticz - Hardware2](https://user-images.githubusercontent.com/81873830/206902138-29d95de5-de75-46e3-a908-856421bf5133.png)
 
 
 After completing the field the devices will be created in your Devices section.
@@ -93,6 +95,8 @@ The slider status of the created devices can be changed if this does not meet yo
 Some people like to heve slider with status **Open** at 0% and **Close** at 100%
 You can change this per devies if you edit the device and click the box "Reverse Position" 
 (To set the position correctly move your devices a few time)
+
+![Domoticz - Devices_613_LightEdit](https://user-images.githubusercontent.com/81873830/206902008-46de4127-313e-4c0a-ba2a-3c729762734a.png)
 
 ## Update the plugin:
 ```
