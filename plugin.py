@@ -5,10 +5,10 @@
 # FirstFree function courtesy of @moroen https://github.com/moroen/IKEA-Tradfri-plugin
 # All credits for the plugin are for Nonolk, who is the origin plugin creator
 """
-<plugin key="tahomaIO" name="Somfy Tahoma or Connexoon plugin" author="MadPatrick" version="4.1.20" externallink="https://github.com/MadPatrick/somfy">
+<plugin key="tahomaIO" name="Somfy Tahoma or Connexoon plugin" author="MadPatrick" version="4.2.0" externallink="https://github.com/MadPatrick/somfy">
     <description>
 	<br/><h2>Somfy Tahoma/Connexoon plugin</h2><br/>
-        version: 4.1.20
+        version: 4.2.0
         <br/>This plugin connects to the Tahoma or Connexoon box either via the web API or via local access.
         <br/>Various devices are supported(RollerShutter, LightSensor, Screen, Awning, Window, VenetianBlind, etc.).
         <br/>For new devices, please raise a ticket at the Github link above.
@@ -173,10 +173,11 @@ class BasePlugin:
         if self.tahoma.logged_in and firstFree() < 249:
             filtered_devices = self.tahoma.get_devices()
             self.create_devices(filtered_devices)
-            event_list = []
-            event_list = self.tahoma.get_events()
-            if event_list is not None and len(event_list) > 0:
-                self.update_devices_status(event_list)
+            self.update_devices_status(filter_states(filtered_devices))
+            # event_list = []
+            # event_list = self.tahoma.get_events()
+            # if event_list is not None and len(event_list) > 0:
+                # self.update_devices_status(event_list)
         return
             
     def onStop(self):
@@ -347,6 +348,7 @@ class BasePlugin:
             logging.debug("checking dataset: "+str(dataset))
             if dataset["deviceURL"] not in Devices:
                 Domoticz.Error("device not found for URL: "+str(dataset["deviceURL"]))
+                logging.error("device not found for URL: "+str(dataset["deviceURL"])+" while updating states")
                 continue #no deviceURL found that matches to domoticz Devices, skip to next dataset
             if (dataset["deviceURL"].startswith("io://")):
                 dev = dataset["deviceURL"]
@@ -358,7 +360,7 @@ class BasePlugin:
                     states = dataset["states"]
                 else:
                     states = dataset["deviceStates"]
-                    if (dataset["name"] != "DeviceStateChangedEvent"):
+                    if not (dataset["name"] == "DeviceStateChangedEvent" or dataset["name"] == "DeviceState"):
                         logging.debug("update_devices_status: dataset['name'] != DeviceStateChangedEvent: "+str(dataset["name"])+": breaking out")
                         continue #dataset does not contain correct event, skip to next dataset
 

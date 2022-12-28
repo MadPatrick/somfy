@@ -25,6 +25,12 @@ class PluginTestsLocal(unittest.TestCase):
         self.assertEqual(self.thePlug.create_devices(filter_devices(deviceList)), (3,3))
         logging.info("test end: test_createDevices Local")
 
+    def test_UpdateDevicesFromState(self):
+        """test update devices status from setup for Local API"""
+        logging.info("test start: test_UpdateDevicesFromState Local")
+        self.assertEqual(self.thePlug.update_devices_status(filter_states(deviceList)), 0) # should return 18 but this fails because there are no devices registered in fake domoticz
+        logging.info("test end: test_UpdateDevicesFromState Local")
+
     def test_updateDevicesLocal(self):
         """test update devices for local API"""
         logging.info("test start: test_updateDevices Local")
@@ -54,6 +60,12 @@ class PluginTestsWeb(unittest.TestCase):
         logging.info("test start: test_createDevices Web")
         self.assertEqual(self.thePlug.create_devices(filter_devices(deviceListWeb)), (3,3))
         logging.info("test end: test_createDevices Web")
+
+    def test_UpdateDevicesFromState(self):
+        """test update devices status from setup for Web API"""
+        logging.info("test start: test_UpdateDevicesFromState Web")
+        self.assertEqual(self.thePlug.update_devices_status(filter_states(deviceListWeb)), 0) # should return 2 but this fails because there are no devices registered in fake domoticz
+        logging.info("test end: test_UpdateDevicesFromState Web")
 
     def test_updateDevices(self):
         """test update devices for web API"""

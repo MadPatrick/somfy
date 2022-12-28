@@ -2,6 +2,8 @@ import logging
 import exceptions
 import json
 
+stateSet = {"core:ClosureState","core:OpenClosedState","core:LuminanceState"} #list of states that trigger domoticz widget update
+
 def filter_devices(Data):
     logging.debug("start filter devices")
 
@@ -34,11 +36,12 @@ def filter_devices(Data):
     return filtered_devices
 
 def filter_events(Data):
+    """filters relevant (DeviceStateChangedEvent) out of a events list"""
     logging.debug("start filter events")
     filtered_events = list()
 
     for event in Data:
-        if (event["name"] == "DeviceStateChangedEvent"):
+        if (event["name"] == "DeviceStateChangedEvent" or event["name"] == "DeviceState"):
             logging.debug("get_events: add event: URL: '"+event["deviceURL"]+"' num states: '"+str(len(event["deviceStates"]))+"'")
             for event_state in event["deviceStates"]:
                 logging.debug("   get_events: eventname: '"+event_state["name"]+"' with value: '"+str(event_state["value"])+"'")
@@ -46,6 +49,27 @@ def filter_events(Data):
 
     logging.debug("finished filter events")
     return filtered_events
+
+def filter_states(Data):
+    """filters relevant state data from a device setup API reply"""
+    logging.debug("start filter states")
+    filtered_states = list()
+    deviceURL = ""
+    
+    for device in Data:
+        stateList = list()
+        deviceURL = device["deviceURL"]
+        if not "states" in device:
+            continue
+        for state in device["states"]:
+            if state["name"] in stateSet:
+                stateList.append(state)
+        if len(stateList)>0:
+            stateToAdd = {"deviceURL":deviceURL, 
+                "deviceStates":stateList,
+                "name":"DeviceState"}
+            filtered_states.append(stateToAdd)
+    return filtered_states
 
 def handle_response(response, action):
     """handle faulty responses"""
