@@ -5,10 +5,10 @@
 # FirstFree function courtesy of @moroen https://github.com/moroen/IKEA-Tradfri-plugin
 # All credits for the plugin are for Nonolk, who is the origin plugin creator
 """
-<plugin key="tahomaIO" name="Somfy Tahoma or Connexoon plugin" author="MadPatrick" version="4.2.0" externallink="https://github.com/MadPatrick/somfy">
+<plugin key="tahomaIO" name="Somfy Tahoma or Connexoon plugin" author="MadPatrick" version="4.2.1" externallink="https://github.com/MadPatrick/somfy">
     <description>
 	<br/><h2>Somfy Tahoma/Connexoon plugin</h2><br/>
-        version: 4.2.0
+        version: 4.2.1
         <br/>This plugin connects to the Tahoma or Connexoon box either via the web API or via local access.
         <br/>Various devices are supported(RollerShutter, LightSensor, Screen, Awning, Window, VenetianBlind, etc.).
         <br/>For new devices, please raise a ticket at the Github link above.
@@ -133,7 +133,7 @@ class BasePlugin:
         self.version = Parameters["Version"]
         self.enabled = self.checkVersion(self.version)
         if not self.enabled:
-            return
+            return False
 
         pin = Parameters["Mode3"]
         port = int(Parameters["Port"])
@@ -150,7 +150,7 @@ class BasePlugin:
             self.tahoma.tahoma_login(str(Parameters["Username"]), str(Parameters["Password"]))
         except exceptions.LoginFailure as exp:
             Domoticz.Error("Failed to login: " + str(exp))
-            return
+            return False
         
         if self.tahoma.logged_in:
             if self.local:
@@ -173,12 +173,12 @@ class BasePlugin:
         if self.tahoma.logged_in and firstFree() < 249:
             filtered_devices = self.tahoma.get_devices()
             self.create_devices(filtered_devices)
-            self.update_devices_status(filter_states(filtered_devices))
+            self.update_devices_status(utils.filter_states(filtered_devices))
             # event_list = []
             # event_list = self.tahoma.get_events()
             # if event_list is not None and len(event_list) > 0:
                 # self.update_devices_status(event_list)
-        return
+        return True
             
     def onStop(self):
         logging.info("stopping plugin")
