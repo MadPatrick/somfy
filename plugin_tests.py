@@ -47,6 +47,12 @@ class PluginTestsLocal(unittest.TestCase):
         self.assertEqual(self.thePlug.onCommand(commandOn["DeviceId"], commandOn["Unit"], commandOn["Command"], commandOn["Level"], commandOn["Hue"]), True)
         logging.info("test end: test_OnCommand Local")
 
+    def test_OnStart(self):
+        """test running onStart local"""
+        logging.info("test start: test_OnStart Local")
+        self.assertEqual(self.thePlug.onStart(), False)
+        logging.info("test end: test_OnStart Local")
+
 class PluginTestsWeb(unittest.TestCase):
     """test cases for web API"""
     def setUp(self):

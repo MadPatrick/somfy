@@ -9,6 +9,7 @@
 #
 Devices = dict()
 Parameters = {"Mode1": "False", "Mode2": 1, "Mode3" : "0000-0000-0000", "Mode4": "Local", "Mode5": "", "Mode6": "Debug", "Port": 8443, "Username": "mail@domain.com" , "Password": "aNicerp@ssword", "Version" : "0.0.0" }
+config = dict()
 
 class myUnit:
     def __init__(self,Name="label", Unit=0, Type=0, Subtype=0, Switchtype="", DeviceID="deviceURL", Used=0):
@@ -40,6 +41,12 @@ class Domoticz:
     def Debug(self, s):
         print(s)
     
+    def Debugging(self, level):
+        print("debugging set to "+ str(level))
+    
+    def Heartbeat(self, level):
+        print("heartbeat set to "+ str(level))
+    
     def Device(self, DeviceID=""):
         self.Devices[DeviceID] = DeviceID
         print("creating DeviceID: "+ DeviceID)
@@ -49,3 +56,6 @@ class Domoticz:
         #self.Devices[DeviceID].Units.append(newUnit)
         self.Units.append(newUnit)
         return newUnit
+
+    def Configuration(self):
+        return config
