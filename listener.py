@@ -48,5 +48,5 @@ class Listener:
             self.__valid = True
         else:
             self.__valid = False
-            utils.handle_response(response, "get listener ID")
-        return response.json()
+            #utils.handle_response(response, "get listener ID")
+        return response

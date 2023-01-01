@@ -34,7 +34,7 @@ class Tahoma:
         self.refresh = True
         self.timeout = 10
         self.__expiry_date = datetime.datetime.now()
-        self.logged_in_expiry_days = 6
+        self.logged_in_expiry = 5
         self.execId = None
         self.listener = listener.Listener(1)
 
@@ -57,9 +57,10 @@ class Tahoma:
         Data = response.json()
         logging.debug("Login respone: status_code: '"+str(response.status_code)+"' reponse body: '"+str(Data)+"'")
 
-        if (response.status_code == 200 and not self.__logged_in):
+        #if (response.status_code == 200 and not self.__logged_in):
+        if (response.status_code == 200):
             self.__logged_in = True
-            self.__expiry_date = datetime.datetime.now() + datetime.timedelta(days=self.logged_in_expiry_days)
+            self.__expiry_date = datetime.datetime.now() + datetime.timedelta(minutes=self.logged_in_expiry)
             logging.info("Tahoma authentication succeeded, login valid until " + self.__expiry_date.strftime("%Y-%m-%d %H:%M:%S"))
             #self.cookie = response.headers["Set-Cookie"]
             cookie_tmp = response.headers["Set-Cookie"]
@@ -86,7 +87,7 @@ class Tahoma:
                 logging.error("login failed, unhandled reason: "+strData)
                 raise exceptions.LoginFailure("login failed, unhandled reason: "+strData)
 
-            if (not self.__logged_in):
+            if (not self.logged_in):
                 self.tahoma_login(username, password)
                 return
         else:
@@ -131,7 +132,7 @@ class Tahoma:
                             logging.error("fetch events failed due to no valid listener registered")
                             raise exceptions.NoListenerFailure()
                     return
-                elif (response.status_code == 200 and self.__logged_in and (not self.startup)):
+                elif (response.status_code == 200 and self.logged_in and (not self.startup)):
                     strData = response.json()
 
                     if (not "DeviceStateChangedEvent" in response.text):
@@ -163,10 +164,14 @@ class Tahoma:
 
     def register_listener(self):
         logging.debug("start register")
-        if not self.__logged_in:
+        if not self.logged_in:
             raise exceptions.TahomaException("Not logged in")
         Headers = { 'Host': self.srvaddr,"Connection": "keep-alive","Accept-Encoding": "gzip, deflate", "Accept": "*/*", "Content-Type": "application/json", "Cookie": self.cookie}
         response = self.listener.register_listener(self.base_url + '/enduser-mobile-web/enduserAPI/events/register', headers=Headers, verify = True, timeout=self.timeout)
+        if response.status_code == 200:
+            logging.debug("succeeded to get listener ID: " + str(response.json()))
+        else:
+            self.handle_response(response, "register listener")
         self.refresh = False
         return response
 
@@ -208,7 +213,9 @@ class Tahoma:
         return response.json()
 
     def handle_response(self, response, action):
-        """handle faulty responses"""
+        """handle (faulty) responses"""
+        if response.status_code >= 200 and response.status_code < 300:
+            return
         if response.status_code >= 300 and response.status_code < 400:
             logging.error("status code " + str(response.status_code) + " this is likely a bug")
             raise exceptions.TahomaException("failed request during "+ action + ": " + str(response.status_code))
