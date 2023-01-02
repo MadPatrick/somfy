@@ -34,7 +34,7 @@ class Tahoma:
         self.refresh = True
         self.timeout = 10
         self.__expiry_date = datetime.datetime.now()
-        self.logged_in_expiry = 120 #expiry time out in seconds
+        self.logged_in_expiry = 90 #expiry time out in seconds
         self.execId = None
         self.listener = listener.Listener(1)
 
