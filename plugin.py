@@ -381,7 +381,8 @@ class BasePlugin:
                     if (state["name"] == "core:LuminanceState"):
                         lumlevel = state["value"]
                         lumstatus_l = True
-                      
+                    
+                    logging.debug("checking for update on state[name]: '" +state["name"]+"' with status_num = '"+str(status_num)+ "' for device: '"+dev+"'")
                     if status_num > 0:
                         if (Devices[dev].Units[status_num].sValue):
                             int_level = int(Devices[dev].Units[status_num].sValue)
