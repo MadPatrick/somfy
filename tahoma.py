@@ -34,7 +34,7 @@ class Tahoma:
         self.refresh = True
         self.timeout = 10
         self.__expiry_date = datetime.datetime.now()
-        self.logged_in_expiry = 5
+        self.logged_in_expiry = 120 #expiry time out in seconds
         self.execId = None
         self.listener = listener.Listener(1)
 
@@ -60,7 +60,7 @@ class Tahoma:
         #if (response.status_code == 200 and not self.__logged_in):
         if (response.status_code == 200):
             self.__logged_in = True
-            self.__expiry_date = datetime.datetime.now() + datetime.timedelta(minutes=self.logged_in_expiry)
+            self.__expiry_date = datetime.datetime.now() + datetime.timedelta(seconds=self.logged_in_expiry)
             logging.info("Tahoma authentication succeeded, login valid until " + self.__expiry_date.strftime("%Y-%m-%d %H:%M:%S"))
             #self.cookie = response.headers["Set-Cookie"]
             cookie_tmp = response.headers["Set-Cookie"]
