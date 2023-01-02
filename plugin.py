@@ -5,10 +5,10 @@
 # FirstFree function courtesy of @moroen https://github.com/moroen/IKEA-Tradfri-plugin
 # All credits for the plugin are for Nonolk, who is the origin plugin creator
 """
-<plugin key="tahomaIO" name="Somfy Tahoma or Connexoon plugin" author="MadPatrick" version="4.2.2" externallink="https://github.com/MadPatrick/somfy">
+<plugin key="tahomaIO" name="Somfy Tahoma or Connexoon plugin" author="MadPatrick" version="4.2.3" externallink="https://github.com/MadPatrick/somfy">
     <description>
 	<br/><h2>Somfy Tahoma/Connexoon plugin</h2><br/>
-        version: 4.2.2
+        version: 4.2.3
         <br/>This plugin connects to the Tahoma or Connexoon box either via the web API or via local access.
         <br/>Various devices are supported(RollerShutter, LightSensor, Screen, Awning, Window, VenetianBlind, etc.).
         <br/>For new devices, please raise a ticket at the Github link above.
@@ -356,13 +356,13 @@ class BasePlugin:
                 status_num = 0
                 status = None
 
-                if (self.tahoma.startup):
-                    states = dataset["states"]
-                else:
-                    states = dataset["deviceStates"]
-                    if not (dataset["name"] == "DeviceStateChangedEvent" or dataset["name"] == "DeviceState"):
-                        logging.debug("update_devices_status: dataset['name'] != DeviceStateChangedEvent: "+str(dataset["name"])+": breaking out")
-                        continue #dataset does not contain correct event, skip to next dataset
+                # if (self.tahoma.startup):
+                    # states = dataset["states"]
+                # else:
+                states = dataset["deviceStates"]
+                if not (dataset["name"] == "DeviceStateChangedEvent" or dataset["name"] == "DeviceState"):
+                    logging.debug("update_devices_status: dataset['name'] != DeviceStateChangedEvent: "+str(dataset["name"])+": breaking out")
+                    continue #dataset does not contain correct event, skip to next dataset
 
                 for state in states:
                     status_num = 0

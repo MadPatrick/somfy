@@ -26,16 +26,16 @@ class PluginTestsLocal(unittest.TestCase):
         logging.info("test end: test_createDevices Local")
 
     def test_UpdateDevicesFromState(self):
-        """test update devices status from setup for Local API"""
+        """test update devices status from setup for local API"""
         logging.info("test start: test_UpdateDevicesFromState Local")
         self.assertEqual(self.thePlug.update_devices_status(filter_states(deviceList)), 0) # should return 18 but this fails because there are no devices registered in fake domoticz
         logging.info("test end: test_UpdateDevicesFromState Local")
 
-    def test_updateDevicesLocal(self):
-        """test update devices for local API"""
-        logging.info("test start: test_updateDevices Local")
+    def test_updateDevicesFromEvents(self):
+        """test update devices from device changed events for local API"""
+        logging.info("test start: test_updateDevicesFromEvents Local")
         self.assertEqual(self.thePlug.update_devices_status(eventsLocal), 0)
-        logging.info("test end: test_updateDevices Local")
+        logging.info("test end: test_updateDevicesFromEvents Local")
 
     @unittest.skip("creating devices not working yet")
     def test_OnCommand(self):
@@ -73,11 +73,11 @@ class PluginTestsWeb(unittest.TestCase):
         self.assertEqual(self.thePlug.update_devices_status(filter_states(deviceListWeb)), 0) # should return 2 but this fails because there are no devices registered in fake domoticz
         logging.info("test end: test_UpdateDevicesFromState Web")
 
-    def test_updateDevices(self):
-        """test update devices for web API"""
-        logging.info("test start: test_updateDevices Web")
+    def test_updateDevicesFromEvents(self):
+        """test update devices from device changed events for web API"""
+        logging.info("test start: test_updateDevicesFromEvents Web")
         self.assertEqual(self.thePlug.update_devices_status(eventsWeb), 0)
-        logging.info("test end: test_updateDevices Web")
+        logging.info("test end: test_updateDevicesFromEvents Web")
 
 def main():
     logging.basicConfig(format='%(asctime)s - %(levelname)-8s - %(filename)-18s - %(message)s', filename="somfy_unit_test.log",level=logging.DEBUG)
