@@ -7,7 +7,7 @@ from tests.eventsLocal import *
 from tests.eventsWeb import *
 from tests.command import *
 from utils import *
-from params import *
+from tests.params import *
 from tahoma_local import SomfyBox
 from tahoma import Tahoma
 
