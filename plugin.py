@@ -369,8 +369,8 @@ class BasePlugin:
                     lumstatus_l = False
 
                     if ((state["name"] == "core:ClosureState") or (state["name"] == "core:DeploymentState")):
-                        #level = int(state["value"])
-                        level = 100 - level #invert open/clsoe percentage
+                        level = int(state["value"])
+                        level = 100 - level #invert open/close percentage
                         status_num = 1
                       
                     if ((state["name"] == "core:SlateOrientationState")):
