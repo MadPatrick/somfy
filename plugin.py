@@ -5,10 +5,10 @@
 # FirstFree function courtesy of @moroen https://github.com/moroen/IKEA-Tradfri-plugin
 # All credits for the plugin are for Nonolk, who is the origin plugin creator
 """
-<plugin key="tahomaIO" name="Somfy Tahoma or Connexoon plugin" author="MadPatrick" version="4.2.4" externallink="https://github.com/MadPatrick/somfy">
+<plugin key="tahomaIO" name="Somfy Tahoma or Connexoon plugin" author="MadPatrick" version="4.2.5" externallink="https://github.com/MadPatrick/somfy">
     <description>
 	<br/><h2>Somfy Tahoma/Connexoon plugin</h2><br/>
-        version: 4.2.4
+        version: 4.2.5
         <br/>This plugin connects to the Tahoma or Connexoon box either via the web API or via local access.
         <br/>Various devices are supported(RollerShutter, LightSensor, Screen, Awning, Window, VenetianBlind, etc.).
         <br/>For new devices, please raise a ticket at the Github link above.
@@ -302,7 +302,11 @@ class BasePlugin:
                         self.tahoma.register_listener()
                 event_list = []
                 try:
-                    event_list = self.tahoma.get_events()
+                    #event_list = self.tahoma.get_events()
+                    #since events are not 100% watertight, ask for device absolute status
+                    filtered_devices = self.tahoma.get_devices()
+                    self.update_devices_status(utils.filter_states(filtered_devices))
+                    
                 except (exceptions.TooManyRetries, exceptions.FailureWithErrorCode, exceptions.FailureWithoutErrorCode) as exp:
                     Domoticz.Error("Failed to request data: " + str(exp))
                     logging.error("Failed to request data: " + str(exp))
