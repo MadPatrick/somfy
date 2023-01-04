@@ -44,8 +44,22 @@ class Tahoma:
         if self.__logged_in and (self.__expiry_date >= datetime.datetime.now()):
             return True
         else:
+            self.__logged_in = self.get_login()
+        return self.__logged_in
+
+    def get_login(self):
+        logging.debug("Asking tahoma server if we're good to go")
+        url = self.base_url + "/enduser-mobile-web/enduserAPI/authenticated"
+        Headers = { 'Host': self.srvaddr,"Connection": "keep-alive","Accept-Encoding": "gzip, deflate", "Accept": "*/*", "Content-Type": "application/x-www-form-urlencoded", "Cookie": self.cookie}
+        response = requests.get(url, headers=Headers, timeout=self.timeout)
+        logging.debug("get login status response: status '" + str(response.status_code) + "' response body: '"+str(response.json())+"'")
+        if response.status_code != 200:
+            logging.error("get_login: error during get devices, status: " + str(response.status_code))
+            Domoticz.Error("get_login: error during get devices, status: " + str(response.status_code))
             return False
 
+        return response.json()['authenticated']
+        
     def tahoma_login(self, username, password):
 
         #url = self.base_url + '/enduser-mobile-web/enduserAPI/login'
