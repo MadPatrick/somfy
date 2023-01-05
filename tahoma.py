@@ -43,7 +43,8 @@ class Tahoma:
         logging.debug("checking logged in status: self.__logged_in = "+str(self.__logged_in)+" and self.__expiry_date ("+str(self.__expiry_date)+") >= datetime.datetime.now() = " + str(self.__expiry_date >= datetime.datetime.now()))
         if self.__logged_in and (self.__expiry_date >= datetime.datetime.now()):
             return True
-        else:
+        elif self.__logged_in and (self.__expiry_date < datetime.datetime.now()):
+            #only ask Tahoma server if we're logged in due to expiry time, not when we know we're not logged in
             self.__logged_in = self.get_login()
         return self.__logged_in
 

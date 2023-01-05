@@ -5,10 +5,10 @@
 # FirstFree function courtesy of @moroen https://github.com/moroen/IKEA-Tradfri-plugin
 # All credits for the plugin are for Nonolk, who is the origin plugin creator
 """
-<plugin key="tahomaIO" name="Somfy Tahoma or Connexoon plugin" author="MadPatrick" version="4.2.5" externallink="https://github.com/MadPatrick/somfy">
+<plugin key="tahomaIO" name="Somfy Tahoma or Connexoon plugin" author="MadPatrick" version="4.2.6" externallink="https://github.com/MadPatrick/somfy">
     <description>
 	<br/><h2>Somfy Tahoma/Connexoon plugin</h2><br/>
-        version: 4.2.5
+        version: 4.2.6
         <br/>This plugin connects to the Tahoma or Connexoon box either via the web API or via local access.
         <br/>Various devices are supported(RollerShutter, LightSensor, Screen, Awning, Window, VenetianBlind, etc.).
         <br/>For new devices, please raise a ticket at the Github link above.
@@ -293,13 +293,8 @@ class BasePlugin:
             self.heartbeat = False
 
             if self.local or (self.tahoma.logged_in and not self.tahoma.startup):
-                if not self.tahoma.listener.valid:
-                    self.tahoma.register_listener()
-                if (not self.local and not self.tahoma.logged_in):
-                    #this part looks useless as this condition will never be true
-                    self.tahoma.tahoma_login(str(Parameters["Username"]), str(Parameters["Password"]))
-                    if self.tahoma.logged_in:
-                        self.tahoma.register_listener()
+                # if not self.tahoma.listener.valid:
+                    # self.tahoma.register_listener()
                 event_list = []
                 try:
                     #event_list = self.tahoma.get_events()
@@ -320,18 +315,13 @@ class BasePlugin:
                     self.update_devices_status(event_list)
                     self.heartbeat = True
 
-            # elif (self.heartbeat and (self.con_delay < self.wait_delay) and (not self.tahoma.logged_in)):
-                # self.con_delay +=1
-                # Domoticz.Status("Too many connections waiting before authenticating again")
-
-            #elif (self.heartbeat and (self.con_delay == self.wait_delay) and (not self.tahoma.logged_in)):
             elif not self.tahoma.logged_in:
                 if (not self.local):
                     #web version: not logged in, so first set up a new login attempt
                     logging.debug("attempting to poll web version but not logged in")
                     self.tahoma.tahoma_login(str(Parameters["Username"]), str(Parameters["Password"]))
                     if self.tahoma.logged_in:
-                        self.tahoma.register_listener()
+                        #self.tahoma.register_listener()
                         self.runCounter = 1 #make sure that a new update is done on next heartbeat
                 # self.con_delay = 0
         elif self.enabled:
