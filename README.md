@@ -104,3 +104,7 @@ cd domoticz/plugins/somfy
 git pull
 ```
 And then either restart Domoticz or update theplugin on the Hardware page.
+
+# used information:
+- Web API description Tahoma: https://tahomalink.com/enduser-mobile-web/enduserAPI/doc
+- local API description somfy box: https://github.com/Somfy-Developer/Somfy-TaHoma-Developer-Mode
