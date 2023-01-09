@@ -5,10 +5,10 @@
 # FirstFree function courtesy of @moroen https://github.com/moroen/IKEA-Tradfri-plugin
 # All credits for the plugin are for Nonolk, who is the origin plugin creator
 """
-<plugin key="tahomaIO" name="Somfy Tahoma or Connexoon plugin" author="MadPatrick" version="4.2.7" externallink="https://github.com/MadPatrick/somfy">
+<plugin key="tahomaIO" name="Somfy Tahoma or Connexoon plugin" author="MadPatrick" version="4.2.8" externallink="https://github.com/MadPatrick/somfy">
     <description>
 	<br/><h2>Somfy Tahoma/Connexoon plugin</h2><br/>
-        version: 4.2.7
+        version: 4.2.8
         <br/>This plugin connects to the Tahoma or Connexoon box either via the web API or via local access.
         <br/>Various devices are supported(RollerShutter, LightSensor, Screen, Awning, Window, VenetianBlind, etc.).
         <br/>For new devices, please raise a ticket at the Github link above.
@@ -273,13 +273,13 @@ class BasePlugin:
                 #clear list of (failed) actions for Connexoon
                 self.actions_serialized = []
             return False
+        self.actions_serialized = []
         if event_list is not None and len(event_list) > 0:
             self.update_devices_status(event_list)
             self.heartbeat = False
         if self.tahoma.logged_in == False:
             #in case the send_command detected an error due to not logged in: force a heartbeat to get logged in again
             self.heartbeat = True
-        self.actions_serialized = []
         return True
 
     def onDisconnect(self, Connection):
