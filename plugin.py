@@ -5,10 +5,10 @@
 # FirstFree function courtesy of @moroen https://github.com/moroen/IKEA-Tradfri-plugin
 # All credits for the plugin are for Nonolk, who is the origin plugin creator
 """
-<plugin key="tahomaIO" name="Somfy Tahoma or Connexoon plugin" author="MadPatrick" version="4.2.8" externallink="https://github.com/MadPatrick/somfy">
+<plugin key="tahomaIO" name="Somfy Tahoma or Connexoon plugin" author="MadPatrick" version="4.2.9" externallink="https://github.com/MadPatrick/somfy">
     <description>
 	<br/><h2>Somfy Tahoma/Connexoon plugin</h2><br/>
-        version: 4.2.8
+        version: 4.2.9
         <br/>This plugin connects to the Tahoma or Connexoon box either via the web API or via local access.
         <br/>Various devices are supported(RollerShutter, LightSensor, Screen, Awning, Window, VenetianBlind, etc.).
         <br/>For new devices, please raise a ticket at the Github link above.
@@ -265,7 +265,6 @@ class BasePlugin:
         event_list = []
         try:
             self.tahoma.send_command(self.command_data)
-            event_list = self.tahoma.get_events()
         except (exceptions.TooManyRetries, exceptions.FailureWithErrorCode, exceptions.FailureWithoutErrorCode) as exp:
             Domoticz.Error("Failed to send command: " + str(exp))
             logging.error("Failed to send command: " + str(exp))
@@ -274,6 +273,14 @@ class BasePlugin:
                 self.actions_serialized = []
             return False
         self.actions_serialized = []
+        if not self.tahoma.listener.valid:
+            self.tahoma.register_listener()
+        try:
+            event_list = self.tahoma.get_events()
+        except (exceptions.TooManyRetries, exceptions.FailureWithErrorCode, exceptions.FailureWithoutErrorCode) as exp:
+            Domoticz.Error("Failed to get events: " + str(exp))
+            logging.error("Failed to get events: " + str(exp))
+            return False
         if event_list is not None and len(event_list) > 0:
             self.update_devices_status(event_list)
             self.heartbeat = False
