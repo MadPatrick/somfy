@@ -91,6 +91,7 @@ import tahoma
 import os
 from tahoma_local import SomfyBox
 import utils
+import requests
 
 class BasePlugin:
     def __init__(self):
@@ -108,6 +109,7 @@ class BasePlugin:
         self.log_filename = "somfy.log"
         self.version = ""
         self.local = False
+        self.runCounter = 0
     
     def onStart(self):
         if os.path.exists(Parameters["Mode5"]):
@@ -174,10 +176,6 @@ class BasePlugin:
             filtered_devices = self.tahoma.get_devices()
             self.create_devices(filtered_devices)
             self.update_devices_status(utils.filter_states(filtered_devices))
-            # event_list = []
-            # event_list = self.tahoma.get_events()
-            # if event_list is not None and len(event_list) > 0:
-                # self.update_devices_status(event_list)
         return True
             
     def onStop(self):
@@ -309,14 +307,14 @@ class BasePlugin:
                     filtered_devices = self.tahoma.get_devices()
                     self.update_devices_status(utils.filter_states(filtered_devices))
                     
-                except (exceptions.TooManyRetries, exceptions.FailureWithErrorCode, exceptions.FailureWithoutErrorCode, json.decoder.JSONDecodeError) as exp:
+                except (exceptions.TooManyRetries, exceptions.FailureWithErrorCode, exceptions.FailureWithoutErrorCode, json.decoder.JSONDecodeError, requests.exceptions.ConnectionError) as exp:
                     Domoticz.Error("Failed to request data: " + str(exp))
                     logging.error("Failed to request data: " + str(exp))
-                    return
+                    return False
                 except exceptions.NoListenerFailure:
                     self.tahoma.register_listener() #register a new listener
                     self.runCounter = 1 #make sure that a new update is done on next heartbeat
-                    return
+                    return False
                     
                 if event_list is not None and len(event_list) > 0:
                     self.update_devices_status(event_list)
@@ -326,16 +324,22 @@ class BasePlugin:
                 if (not self.local):
                     #web version: not logged in, so first set up a new login attempt
                     logging.debug("attempting to poll web version but not logged in")
-                    self.tahoma.tahoma_login(str(Parameters["Username"]), str(Parameters["Password"]))
+                    try:
+                        self.tahoma.tahoma_login(str(Parameters["Username"]), str(Parameters["Password"]))
+                    except (requests.exceptions.ConnectionError) as exp:
+                        Domoticz.Error("Failed to request data: " + str(exp))
+                        logging.error("Failed to request data: " + str(exp))
+                    return False
                     if self.tahoma.logged_in:
                         #self.tahoma.register_listener()
                         self.runCounter = 1 #make sure that a new update is done on next heartbeat
                 # self.con_delay = 0
+            return True
         elif self.enabled:
             logging.debug("Polling unit in " + str(self.runCounter) + " heartbeats.")
+            return False
 
     def update_devices_status(self, Updated_devices):
-
         logging.debug("updating device status self.tahoma.startup = "+str(self.tahoma.startup)+" on num datasets: "+str(len(Updated_devices)))
         logging.debug("updating device status on data: "+str(Updated_devices))
         if self.local:
@@ -357,9 +361,6 @@ class BasePlugin:
                 status_num = 0
                 status = None
 
-                # if (self.tahoma.startup):
-                    # states = dataset["states"]
-                # else:
                 states = dataset["deviceStates"]
                 if not (dataset["name"] == "DeviceStateChangedEvent" or dataset["name"] == "DeviceState"):
                     logging.debug("update_devices_status: dataset['name'] != DeviceStateChangedEvent: "+str(dataset["name"])+": breaking out")

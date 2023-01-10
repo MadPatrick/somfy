@@ -50,8 +50,17 @@ class PluginTestsLocal(unittest.TestCase):
     def test_OnStart(self):
         """test running onStart local"""
         logging.info("test start: test_OnStart Local")
+        print("test start: test_OnStart Local")
         self.assertEqual(self.thePlug.onStart(), False)
         logging.info("test end: test_OnStart Local")
+
+    def test_onHeartbeat(self):
+        """test running onStart local"""
+        logging.info("test start: test_onHeartbeat Local")
+        print("test start: test_onHeartbeat Local")
+        self.thePlug.enabled = True
+        self.assertEqual(self.thePlug.onHeartbeat(), False)
+        logging.info("test end: test_onHeartbeat Local")
 
 class PluginTestsWeb(unittest.TestCase):
     """test cases for web API"""
