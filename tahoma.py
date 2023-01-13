@@ -52,7 +52,13 @@ class Tahoma:
         logging.debug("Asking tahoma server if we're good to go")
         url = self.base_url + "/enduser-mobile-web/enduserAPI/authenticated"
         Headers = { 'Host': self.srvaddr,"Connection": "keep-alive","Accept-Encoding": "gzip, deflate", "Accept": "*/*", "Content-Type": "application/x-www-form-urlencoded", "Cookie": self.cookie}
-        response = requests.get(url, headers=Headers, timeout=self.timeout)
+        try:
+            response = requests.get(url, headers=Headers, timeout=self.timeout)
+        except (requests.exceptions.ConnectionError) as exp:
+            Domoticz.Error("Failed to contact server: " + str(exp))
+            logging.error("Failed to contact server: " + str(exp))
+            return False
+            
         logging.debug("get login status response: status '" + str(response.status_code) + "' response body: '"+str(response.json())+"'")
         if response.status_code != 200:
             logging.error("get_login: error during get devices, status: " + str(response.status_code))
