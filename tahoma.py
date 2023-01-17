@@ -120,13 +120,22 @@ class Tahoma:
         logging.debug("start get devices")
         Headers = { 'Host': self.srvaddr,"Connection": "keep-alive","Accept-Encoding": "gzip, deflate", "Accept": "*/*", "Content-Type": "application/x-www-form-urlencoded", "Cookie": self.cookie}
         url = self.base_url + '/enduser-mobile-web/enduserAPI/setup/devices'
-        response = requests.get(url, headers=Headers, timeout=self.timeout)
-        logging.debug("get device response: url '" + str(response.url) + "' response headers: '"+str(response.headers)+"'")
-        logging.debug("get device response: status '" + str(response.status_code) + "' response body: '"+str(response.json())+"'")
-        if response.status_code != 200:
-            logging.error("get_devices: error during get devices, status: " + str(response.status_code))
-            Domoticz.Error("get_devices: error during get devices, status: " + str(response.status_code))
-            return
+        for i in range(1,4):
+            #do several retries on reaching events end point before going to time out error
+            try:
+                response = requests.get(url, headers=Headers, timeout=self.timeout)
+                logging.debug("get device response: url '" + str(response.url) + "' response headers: '"+str(response.headers)+"'")
+                logging.debug("get device response: status '" + str(response.status_code) + "' response body: '"+str(response.json())+"'")
+                if response.status_code != 200:
+                    logging.error("get_devices: error during get devices, status: " + str(response.status_code))
+                    Domoticz.Error("get_devices: error during get devices, status: " + str(response.status_code))
+                    return
+            except requests.exceptions.RequestException as exp:
+                logging.error("get_devices RequestException: " + str(exp))
+            #wait increasing time before next try
+            time.sleep(i ** 3)
+        else:
+            raise exceptions.TooManyRetries
 
         filtered_list = utils.filter_devices(response.json())
         self.startup = False

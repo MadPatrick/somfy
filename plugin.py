@@ -5,10 +5,10 @@
 # FirstFree function courtesy of @moroen https://github.com/moroen/IKEA-Tradfri-plugin
 # All credits for the plugin are for Nonolk, who is the origin plugin creator
 """
-<plugin key="tahomaIO" name="Somfy Tahoma or Connexoon plugin" author="MadPatrick" version="4.2.11" externallink="https://github.com/MadPatrick/somfy">
+<plugin key="tahomaIO" name="Somfy Tahoma or Connexoon plugin" author="MadPatrick" version="4.2.13" externallink="https://github.com/MadPatrick/somfy">
     <description>
 	<br/><h2>Somfy Tahoma/Connexoon plugin</h2><br/>
-        version: 4.2.11
+        version: 4.2.13
         <br/>This plugin connects to the Tahoma or Connexoon box either via the web API or via local access.
         <br/>Various devices are supported(RollerShutter, LightSensor, Screen, Awning, Window, VenetianBlind, etc.).
         <br/>For new devices, please raise a ticket at the Github link above.
@@ -311,7 +311,9 @@ class BasePlugin:
                     Domoticz.Error("Failed to request data: " + str(exp))
                     logging.error("Failed to request data: " + str(exp))
                     return False
-                except exceptions.NoListenerFailure:
+                except exceptions.NoListenerFailure as exp:
+                    Domoticz.Error("Failed to request data: " + str(exp))
+                    logging.error("Failed to request data: " + str(exp))
                     self.tahoma.register_listener() #register a new listener
                     self.runCounter = 1 #make sure that a new update is done on next heartbeat
                     return False
@@ -669,3 +671,13 @@ def setConfigItem(Key=None, Value=None):
        Domoticz.Error("Domoticz.Configuration operation failed: '"+str(inst)+"'")
     return Config
 
+# def UpdateDevice(Device, Unit, nValue, sValue, AlwaysUpdate=False):
+    # # Make sure that the Domoticz device still exists (they can be deleted) before updating it
+    # if (Unit in Devices):
+        # if (Devices[Unit].nValue != nValue) or (Devices[Unit].sValue != sValue):
+            # try:
+                # Devices[Unit].Update(nValue=nValue, sValue=str(sValue), TimedOut=TimedOut)
+                # Domoticz.Debug("Update "+str(nValue)+":'"+str(sValue)+"' ("+Devices[Unit].Name+")")
+            # except:
+                # Domoticz.Log("Update of device failed: "+str(Unit)+"!")
+    # return

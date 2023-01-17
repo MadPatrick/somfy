@@ -28,7 +28,7 @@ def filter_devices(Data):
             and ((device["deviceURL"].startswith("io://")) or (device["deviceURL"].startswith("rts://"))) 
             or (device["definition"]["uiClass"] == "Pod" and device["deviceURL"].startswith("internal://"))):
             filtered_devices.append(device)
-            logging.info("supported device found: "+ str(device))
+            logging.debug("supported device found: "+ str(device))
         else:
             logging.debug("unsupported device found: "+ str(device))
 
