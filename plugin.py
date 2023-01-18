@@ -685,7 +685,8 @@ def setConfigItem(Key=None, Value=None):
 def UpdateDevice(Device, Unit, nValue, sValue, AlwaysUpdate=False):
     # Make sure that the Domoticz device still exists (they can be deleted) before updating it
     if (Device in Devices):
-        if (Devices[Device].Units[Unit].nValue != nValue) or (Devices[Device].Units[Unit] != sValue):
+        logging.debug("Updating device "+Devices[Device].Units[Unit].Name+ " with current sValue '"+Devices[Device].Units[Unit].sValue+"' to '" +sValue+"'")
+        if (Devices[Device].Units[Unit].nValue != nValue) or (Devices[Device].Units[Unit].sValue != sValue):
             try:
                 Devices[Device].Units[Unit].nValue = nValue
                 Devices[Device].Units[Unit].sValue = sValue
