@@ -5,10 +5,10 @@
 # FirstFree function courtesy of @moroen https://github.com/moroen/IKEA-Tradfri-plugin
 # All credits for the plugin are for Nonolk, who is the origin plugin creator
 """
-<plugin key="tahomaIO" name="Somfy Tahoma or Connexoon plugin" author="MadPatrick" version="4.2.13" externallink="https://github.com/MadPatrick/somfy">
+<plugin key="tahomaIO" name="Somfy Tahoma or Connexoon plugin" author="MadPatrick" version="4.2.14" externallink="https://github.com/MadPatrick/somfy">
     <description>
 	<br/><h2>Somfy Tahoma/Connexoon plugin</h2><br/>
-        version: 4.2.13
+        version: 4.2.14
         <br/>This plugin connects to the Tahoma or Connexoon box either via the web API or via local access.
         <br/>Various devices are supported(RollerShutter, LightSensor, Screen, Awning, Window, VenetianBlind, etc.).
         <br/>For new devices, please raise a ticket at the Github link above.
@@ -356,12 +356,14 @@ class BasePlugin:
             if dataset["deviceURL"] not in Devices:
                 Domoticz.Error("device not found for URL: "+str(dataset["deviceURL"]))
                 logging.error("device not found for URL: "+str(dataset["deviceURL"])+" while updating states")
-                continue #no deviceURL found that matches to domoticz Devices, skip to next dataset
+                #continue #no deviceURL found that matches to domoticz Devices, skip to next dataset
             if (dataset["deviceURL"].startswith("io://")):
                 dev = dataset["deviceURL"]
                 level = 0
                 status_num = 0
                 status = None
+                nValue = 0
+                sValue = "0"
 
                 states = dataset["deviceStates"]
                 if not (dataset["name"] == "DeviceStateChangedEvent" or dataset["name"] == "DeviceState"):
@@ -396,21 +398,27 @@ class BasePlugin:
                             Domoticz.Status("Updating device:"+Devices[dev].Units[status_num].Name)
                             logging.info("Updating device:"+Devices[dev].Units[status_num].Name)
                             if (level == 0):
-                                Devices[dev].Units[status_num].nValue = 0
-                                Devices[dev].Units[status_num].sValue = "0"
-                                Devices[dev].Units[status_num].LastLevel = 0
-                                Devices[dev].Units[status_num].Update()
+                                # Devices[dev].Units[status_num].nValue = 0
+                                # Devices[dev].Units[status_num].sValue = "0"
+                                # Devices[dev].Units[status_num].LastLevel = 0
+                                # Devices[dev].Units[status_num].Update()
+                                nValue = 0
+                                sValue = "0"
                             if (level == 100):
-                                Devices[dev].Units[status_num].nValue = 1
-                                Devices[dev].Units[status_num].sValue = "100"
-                                Devices[dev].Units[status_num].LastLevel = 100
-                                Devices[dev].Units[status_num].Update()
+                                # Devices[dev].Units[status_num].nValue = 1
+                                # Devices[dev].Units[status_num].sValue = "100"
+                                # Devices[dev].Units[status_num].LastLevel = 100
+                                # Devices[dev].Units[status_num].Update()
+                                nValue = 1
+                                sValue = "100"
                             if (level != 0 and level != 100):
-                                Devices[dev].Units[status_num].nValue = 2
-                                Devices[dev].Units[status_num].sValue = str(level)
-                                Devices[dev].Units[status_num].LastLevel = int(level)
-                                Devices[dev].Units[status_num].Update()
-                                #Devices[dev].Units[1].Update(2,str(level))
+                                # Devices[dev].Units[status_num].nValue = 2
+                                # Devices[dev].Units[status_num].sValue = str(level)
+                                # Devices[dev].Units[status_num].LastLevel = int(level)
+                                # Devices[dev].Units[status_num].Update()
+                                nValue = 2
+                                sValue = str(level)
+                            UpdateDevice(dev, status_num, nValue,sValue)
                     if lumstatus_l: #assuming for now that the luminance sensor is always a single unit in a device
                         if (Devices[dev].Units[1].sValue):
                             int_lumlevel = Devices[dev].Units[1].sValue
@@ -420,9 +428,12 @@ class BasePlugin:
                             Domoticz.Status("Updating device: "+Devices[dev].Units[1].Name)
                             logging.info("Updating device: "+Devices[dev].Units[1].Name)
                             if (lumlevel != 0 and lumlevel != 120000):
-                                Devices[dev].Units[1].nValue = 3
-                                Devices[dev].Units[1].sValue = str(lumlevel)
-                                Devices[dev].Units[1].Update()
+                                # Devices[dev].Units[1].nValue = 3
+                                # Devices[dev].Units[1].sValue = str(lumlevel)
+                                # Devices[dev].Units[1].Update()
+                                nValue = 3
+                                sValue = str(lumlevel)
+                                UpdateDevice(dev, status_num, nValue,sValue)
                     num_updates += 1
 
         return num_updates
@@ -671,13 +682,18 @@ def setConfigItem(Key=None, Value=None):
        Domoticz.Error("Domoticz.Configuration operation failed: '"+str(inst)+"'")
     return Config
 
-# def UpdateDevice(Device, Unit, nValue, sValue, AlwaysUpdate=False):
-    # # Make sure that the Domoticz device still exists (they can be deleted) before updating it
-    # if (Unit in Devices):
-        # if (Devices[Unit].nValue != nValue) or (Devices[Unit].sValue != sValue):
-            # try:
-                # Devices[Unit].Update(nValue=nValue, sValue=str(sValue), TimedOut=TimedOut)
-                # Domoticz.Debug("Update "+str(nValue)+":'"+str(sValue)+"' ("+Devices[Unit].Name+")")
-            # except:
-                # Domoticz.Log("Update of device failed: "+str(Unit)+"!")
-    # return
+def UpdateDevice(Device, Unit, nValue, sValue, AlwaysUpdate=False):
+    # Make sure that the Domoticz device still exists (they can be deleted) before updating it
+    if (Device in Devices):
+        if (Devices[Device].Units[Unit].nValue != nValue) or (Devices[Device].Units[Unit] != sValue):
+            try:
+                Devices[Device].Units[Unit].nValue = nValue
+                Devices[Device].Units[Unit].sValue = sValue
+                Devices[Device].Units[Unit].LastLevel = int(sValue)
+                Devices[Device].Units[Unit].Update()
+                
+                #Devices[Unit].Update(nValue=nValue, sValue=str(sValue), TimedOut=TimedOut)
+                Domoticz.Debug("Update "+str(nValue)+":'"+str(sValue)+"' ("+Devices[Device].Units[Unit].Name+")")
+            except:
+                Domoticz.Log("Update of device failed: "+str(Unit)+"!")
+    return
