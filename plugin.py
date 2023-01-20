@@ -5,10 +5,10 @@
 # FirstFree function courtesy of @moroen https://github.com/moroen/IKEA-Tradfri-plugin
 # All credits for the plugin are for Nonolk, who is the origin plugin creator
 """
-<plugin key="tahomaIO" name="Somfy Tahoma or Connexoon plugin" author="MadPatrick" version="4.2.14" externallink="https://github.com/MadPatrick/somfy">
+<plugin key="tahomaIO" name="Somfy Tahoma or Connexoon plugin" author="MadPatrick" version="4.2.15" externallink="https://github.com/MadPatrick/somfy">
     <description>
 	<br/><h2>Somfy Tahoma/Connexoon plugin</h2><br/>
-        version: 4.2.14
+        version: 4.2.15
         <br/>This plugin connects to the Tahoma or Connexoon box either via the web API or via local access.
         <br/>Various devices are supported(RollerShutter, LightSensor, Screen, Awning, Window, VenetianBlind, etc.).
         <br/>For new devices, please raise a ticket at the Github link above.
@@ -356,7 +356,7 @@ class BasePlugin:
             if dataset["deviceURL"] not in Devices:
                 Domoticz.Error("device not found for URL: "+str(dataset["deviceURL"]))
                 logging.error("device not found for URL: "+str(dataset["deviceURL"])+" while updating states")
-                #continue #no deviceURL found that matches to domoticz Devices, skip to next dataset
+                continue #no deviceURL found that matches to domoticz Devices, skip to next dataset
             if (dataset["deviceURL"].startswith("io://")):
                 dev = dataset["deviceURL"]
                 level = 0
@@ -433,7 +433,7 @@ class BasePlugin:
                                 # Devices[dev].Units[1].Update()
                                 nValue = 3
                                 sValue = str(lumlevel)
-                                UpdateDevice(dev, status_num, nValue,sValue)
+                                UpdateDevice(dev, 1, nValue,sValue)
                     num_updates += 1
 
         return num_updates
