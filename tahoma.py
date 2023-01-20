@@ -130,6 +130,8 @@ class Tahoma:
                     logging.error("get_devices: error during get devices, status: " + str(response.status_code))
                     Domoticz.Error("get_devices: error during get devices, status: " + str(response.status_code))
                     return
+                else:
+                    break
             except requests.exceptions.RequestException as exp:
                 logging.error("get_devices RequestException: " + str(exp))
             #wait increasing time before next try
