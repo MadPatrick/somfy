@@ -13,7 +13,9 @@ The plugin currently support the following device types: roller shutters, screen
 When upgrading to version 3.x, it is required to first remove all devices attached to the Somfy hardware. This has to do with the upgrade to the Domoticz Extended Framework, which enabled the slats/orientation control for the blinds.
  The plugin will not upgrade when there are still devices attached to the Somfy hardware.
 ### version 4.x
-As of version 4.x the plugin supports local access to the Somfy box (Connexoon not supported). Addtional installation steps mentioned below.
+As of version 4.x the plugin supports local access to the Somfy box for both Tahoma and Connexoon. Addtional installation steps mentioned below.
+
+## Somfy currently discourages the use of Web, so it could be the connection with Somfy Web is not functioning properly
 
 ## Somfy login
 
@@ -43,7 +45,7 @@ sudo apt-get install python3-requests
 - Follow instructions as provided by [Somfy](https://github.com/Somfy-Developer/Somfy-TaHoma-Developer-Mode)
 
 
-Activating this mode will enable a local API on your TaHoma box. Be aware that Somfy will not be able to provide support for usage of this API.
+Activating this mode will enable a local API on your TaHoma and Connexoon box. Be aware that Somfy will not be able to provide support for usage of this API.
 
 2. Your Somfy box needs the traceable in your network.
 To do this, you need to link your Somfy Box PIN to the Somfy Box IP address.
