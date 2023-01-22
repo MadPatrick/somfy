@@ -41,7 +41,8 @@
         <param field = "Mode4" label="Connection" width="100px">
             <description>Choose how to interact with the Somfy/Tahoma/Connexoon box:
             <br/>Web API: via Somfy web server (requires continues internet access)
-            <br/>Local API: connect directly to the box (default, not for Connexoon)</description>
+            <br/>Local API: connect directly to the box (default)
+	    <br/><br/>Somfy is depreciating the Web access, so it is better to use the local API</description>
             <options>
                 <option label="Web" value="Web"/>
                 <option label="Local" value="Local" default="true"/>
