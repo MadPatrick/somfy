@@ -1,11 +1,11 @@
 # Somfy plugin for Domoticz
 Original script was written by Nonolk : https://github.com/nonolk/domoticz_tahoma_blind.git
 
-Special thanks to Jan-Jaap who did the rewritting of the plugin
+**Special thanks to Jan-Jaap who did the rewritting of the plugin**
+
 
 Domoticz plugin writen in Python to first support Somfy IO roller shutters using Tahoma/Connexoon. 
 Basic support of RTS (Open/Close) is also included without return state (limitation due to RTS), it means for RTS the state of the device won't be updated if the device state is modified outside of domoticz.
-
 The plugin currently support the following device types: roller shutters, screens (interior/exterior), awning, pergolas, garage door, windows, luminance sensor and blinds (postions and slats control).
 
 ## Important note
@@ -15,22 +15,21 @@ When upgrading to version 3.x, it is required to first remove all devices attach
 ### version 4.x
 As of version 4.x the plugin supports local access to the Somfy box for both Tahoma and Connexoon. Addtional installation steps mentioned below.
 
-### --------------------------------------------------------------------------------------------------------------------------
-### Somfy currently discourages the use of Web, so it could be that the connection with Somfy Web is not functioning properly
-### It is advised to use the local mode. Check the Somfy instructions to set you box into Developer mode
-### --------------------------------------------------------------------------------------------------------------------------
+**``Somfy currently discourages the use of the Web function``**
+**``So the connection to Somfy Web may not work properly in the plugin``**
+**``It is therefore recommended to use local mode. Refer to Somfy instructions to put your box in development mode.``**
 
+----------------------------------------------------------------------------------------------------------------------
 ## Somfy login
 
 Before installation, you need to register you Somfy products and add them to your Tahoma or Connexoon box
-
 https://www.somfy.nl/nieuw-account-aanmaken
-
 https://www.tahomalink.com/enduser-mobile-web/steer-html5-client/tahoma/
 
 
 
 ## Installation
+---
 ### Prerequisites
 The following steps need to be taken before plugin installation (generic for any plugin)
 1. Python version 3.7 or higher required & Domoticz version 2022.1 (due to extended plugin framework) or greater. 
@@ -42,8 +41,8 @@ sudo apt-get install python3 libpython3-dev libpython3.7-dev
 sudo apt-get install python3-requests
 ```
 ### Setup local API access
-1. you need to enable developer mode on your box:
-- First connect to the [Somfy website](https://www.somfy.nl/inloggen) and navigate to the **My Account menu.**
+1. First you need to enable developer mode on your box:
+- connect to the [Somfy website](https://www.somfy.nl/inloggen) and navigate to the **My Account menu.**
 - Find the different available options for your TaHoma box and activate **Developer Mode**.
 - Follow instructions as provided by [Somfy](https://github.com/Somfy-Developer/Somfy-TaHoma-Developer-Mode)
 
@@ -60,12 +59,7 @@ Add your Somfy Box PIN number to the IP in your local network in etc/hosts or in
 1234-1234-1234 is the PIN number of your Somfy box and don't forget to add .local to the PIN number
 
 
-3. To be able to run the local test tool, also install:
- - ```pip3 install console-menu```
- - to run the test tool:
- - ```python3 test test_tahoma.py```
-
-### install plugin
+### install the plugin
 1. Go in your Domoticz directory using a command line and open the plugins directory:
  ```cd domoticz/plugins```
 2. clone the plugin:
@@ -75,8 +69,9 @@ Add your Somfy Box PIN number to the IP in your local network in etc/hosts or in
 
 ### Configure the plugin
 In the Domoticz UI, navigate to the Hardware page. 
-<br />In the hardware dropdown list there will be an entry called "Somfy Tahoma or Connexoon plugin".
-<br />Add the hardware to your Domoticz system and fill in the required fields
+In the hardware dropdown list there will be an entry called "Somfy Tahoma or Connexoon plugin".
+Add the hardware to your Domoticz system and fill in the required fields
+
 ![Domoticz - Hardware](https://user-images.githubusercontent.com/81873830/206902090-8d6cc4cb-a945-4779-87ab-a5ccadacc919.png)
 
 |Field          | Input         |
@@ -104,11 +99,12 @@ You can change this per devies if you edit the device and click the box "Reverse
 ![Domoticz - Devices_613_LightEdit](https://user-images.githubusercontent.com/81873830/206902008-46de4127-313e-4c0a-ba2a-3c729762734a.png)
 
 ## Update the plugin:
+When there an update of the plugin you can easlily do an update by:
 ```
 cd domoticz/plugins/somfy
 git pull
 ```
-And then either restart Domoticz or update theplugin on the Hardware page.
+And then either restart Domoticz or update the plugin on the Hardware page.
 
 # used information:
 - Web API description Tahoma: https://tahomalink.com/enduser-mobile-web/enduserAPI/doc
