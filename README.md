@@ -14,11 +14,14 @@ When upgrading to version 3.x, it is required to first remove all devices attach
  The plugin will not upgrade when there are still devices attached to the Somfy hardware.
 ### version 4.x
 As of version 4.x the plugin supports local access to the Somfy box for both Tahoma and Connexoon. Addtional installation steps mentioned below.
----
-**``Somfy currently discourages the use of the Web function``**
-**``So the connection to Somfy Web may not work properly in the plugin``**
-**``It is therefore recommended to use local mode. Refer to Somfy instructions to put your box in development mode.``**
----
+
+----------------------------------------------------------------------------------------------------------------------
+
+**Somfy currently discourages the use of the Web function**
+**So the connection to Somfy Web may not work properly in the plugin**
+**It is therefore recommended to use local mode. Refer to Somfy instructions to put your box in development mode.**
+
+----------------------------------------------------------------------------------------------------------------------
 
 ## Somfy login
 
