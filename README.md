@@ -14,12 +14,12 @@ When upgrading to version 3.x, it is required to first remove all devices attach
  The plugin will not upgrade when there are still devices attached to the Somfy hardware.
 ### version 4.x
 As of version 4.x the plugin supports local access to the Somfy box for both Tahoma and Connexoon. Addtional installation steps mentioned below.
-
+---
 **``Somfy currently discourages the use of the Web function``**
 **``So the connection to Somfy Web may not work properly in the plugin``**
 **``It is therefore recommended to use local mode. Refer to Somfy instructions to put your box in development mode.``**
+---
 
-----------------------------------------------------------------------------------------------------------------------
 ## Somfy login
 
 Before installation, you need to register you Somfy products and add them to your Tahoma or Connexoon box
@@ -29,7 +29,7 @@ https://www.tahomalink.com/enduser-mobile-web/steer-html5-client/tahoma/
 
 
 ## Installation
----
+
 ### Prerequisites
 The following steps need to be taken before plugin installation (generic for any plugin)
 1. Python version 3.7 or higher required & Domoticz version 2022.1 (due to extended plugin framework) or greater. 
