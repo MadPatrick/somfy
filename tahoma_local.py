@@ -148,7 +148,7 @@ class TahomaWebApi:
 
 class SomfyBox(TahomaWebApi):
     def __init__(self, pin, port):
-        self.base_url_local = "https://gateway-" + str(pin) + str(port) + "/enduser-mobile-web/1/enduserAPI"
+        self.base_url_local = "https://gateway-" + str(pin) + ":" + str(port) + "/enduser-mobile-web/1/enduserAPI"
         #self.headers_json = {"Content-Type": "application/json", "Accept": "application/json"}
         self.startup = True
         self.listener = listener.Listener(8)
