@@ -2,7 +2,7 @@ import logging
 import exceptions
 import json
 
-stateSet = {"core:ClosureState","core:OpenClosedState","core:LuminanceState"} #list of states that trigger domoticz widget update
+stateSet = {"core:ClosureState","core:OpenClosedState","core:LuminanceState","core:DeploymentState"} #list of states that trigger domoticz widget update
 
 def filter_devices(Data):
     logging.debug("start filter devices")
