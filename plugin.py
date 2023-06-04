@@ -43,6 +43,7 @@
             <br/>Web API: via Somfy web server (requires continues internet access)
             <br/>Local API: connect directly to the box (default)
 	    <br/><br/>Somfy is depreciating the Web access, so it is better to use the local API</description>
+	    <br/><br/>Somfy is depreciating the Web access, so it is better to use the local API</description>
             <options>
                 <option label="Web" value="Web"/>
                 <option label="Local" value="Local" default="true"/>
