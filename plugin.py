@@ -5,10 +5,10 @@
 # FirstFree function courtesy of @moroen https://github.com/moroen/IKEA-Tradfri-plugin
 # All credits for the plugin are for Nonolk, who is the origin plugin creator
 """
-<plugin key="tahomaIO" name="Somfy Tahoma or Connexoon plugin" author="MadPatrick" version="4.2.18b" externallink="https://github.com/MadPatrick/somfy">
+<plugin key="tahomaIO" name="Somfy Tahoma or Connexoon plugin" author="MadPatrick" version="4.2.19b" externallink="https://github.com/MadPatrick/somfy">
     <description>
 	<br/><h2>Somfy Tahoma/Connexoon plugin</h2><br/>
-        version: 4.2.18b
+        version: 4.2.19b
         <br/>This plugin connects to the Tahoma or Connexoon box either via the web API or via local access.
         <br/>Various devices are supported(RollerShutter, LightSensor, Screen, Awning, Window, VenetianBlind, etc.).
         <br/>For new devices, please raise a ticket at the Github link above.
@@ -42,8 +42,8 @@
             <description>Choose how to interact with the Somfy/Tahoma/Connexoon box:
             <br/>Web API: via Somfy web server (requires continues internet access)
             <br/>Local API: connect directly to the box (default)
-	    <br/><br/>Somfy is depreciating the Web access, so it is better to use the local API</description>
-	    <br/><br/>Somfy is depreciating the Web access, so it is better to use the local API</description>
+            <br/><br/>Somfy is depreciating the Web access, so it is better to use the local API</description>
+            <br/><br/>Somfy is depreciating the Web access, so it is better to use the local API</description>
             <options>
                 <option label="Web" value="Web"/>
                 <option label="Local" value="Local" default="true"/>
@@ -384,7 +384,7 @@ class BasePlugin:
                     if (state["name"] == "core:DeploymentState"):
                     level = int(state["value"]) #Don't invert awning open/close percentage
                     status_num = 1
-                      
+
                     if ((state["name"] == "core:SlateOrientationState")):
                         level = int(state["value"])
                         #level = 100 - level 
