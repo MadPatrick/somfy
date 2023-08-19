@@ -383,7 +383,7 @@ class BasePlugin:
                     if (state["name"] == "core:DeploymentState"):
                         level = int(state["value"]) #Don't invert awning open/close percentage
                         status_num = 1
-                      
+           
                     if ((state["name"] == "core:SlateOrientationState")):
                         level = int(state["value"])
                         #level = 100 - level 
