@@ -360,6 +360,7 @@ class BasePlugin:
                 continue #no deviceURL found that matches to domoticz Devices, skip to next dataset
             if (dataset["deviceURL"].startswith("io://")):
                 dev = dataset["deviceURL"]
+		deviceClassTrig = dataset["deviceClass"] 
                 level = 0
                 status_num = 0
                 status = None
@@ -375,13 +376,13 @@ class BasePlugin:
                     status_num = 0
                     lumstatus_l = False
 
-                    if (state["name"] == "core:ClosureState"):
+                    if ((state["name"] == "core:ClosureState") or (state["name"] == "core:DeploymentState")):
+                        if (deviceClassTrig == "Awning"):
+                        level = int(state["value"]) #Don't invert open/close percentage for an Awning
+                        status_num = 1
+                    else:
                         level = int(state["value"])
                         level = 100 - level #invert open/close percentage
-                        status_num = 1
-
-                    if (state["name"] == "core:DeploymentState"):
-                        level = int(state["value"]) #Don't invert awning open/close percentage
                         status_num = 1
            
                     if ((state["name"] == "core:SlateOrientationState")):
