@@ -56,21 +56,25 @@ def filter_states(Data):
     logging.debug("start filter states")
     filtered_states = list()
     deviceURL = ""
-    
-    for device in Data:
-        stateList = list()
-        deviceURL = device["deviceURL"]
-        if not "states" in device:
-            continue
-        for state in device["states"]:
-            if state["name"] in stateSet:
-                stateList.append(state)
-        if len(stateList)>0:
-            stateToAdd = {"deviceURL":deviceURL, 
-                "deviceStates":stateList,
-                "name":"DeviceState"}
-            filtered_states.append(stateToAdd)
-    return filtered_states
+    deviceClass = ""
+
+for device in Data:
+    stateList = list()
+    deviceURL = device["deviceURL"]
+    deviceClass = device["definition"]["uiClass"]
+    if not "states" in device:
+        continue
+    for state in device["states"]:
+        if state["name"] in stateSet:
+            stateList.append(state)
+    if len(stateList)>0:
+        stateToAdd = {"deviceURL":deviceURL, 
+            "deviceStates":stateList,
+            "deviceClass":deviceClass,
+            "name":"DeviceState"}
+        filtered_states.append(stateToAdd)
+    logging.debug("Device state: "+str(filtered_states))
+return filtered_states
 
 def handle_response(response, action):
     """handle faulty responses"""
