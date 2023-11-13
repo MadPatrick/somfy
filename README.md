@@ -62,13 +62,22 @@ Add your Somfy Box PIN number to the IP in your local network in etc/hosts or in
 1234-1234-1234 is the PIN number of your Somfy box and don't forget to add .local to the PIN number
 
 
-### install the plugin
+### Install the plugin
 1. Go in your Domoticz directory using a command line and open the plugins directory:
  ```cd domoticz/plugins```
 2. clone the plugin:
  ```git clone https://github.com/MadPatrick/somfy```
 2. Restart Domoticz:
  ```sudo systemctl restart domoticz```
+
+
+### BETA 
+You can use the latstest test version (on your own risk)
+
+ ```cd domoticz/plugins/somfy```
+ 
+ ```git checkout beta```
+
 
 ### Configure the plugin
 In the Domoticz UI, navigate to the Hardware page. 
