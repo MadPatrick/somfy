@@ -366,11 +366,11 @@ class BasePlugin:
                 status = None
                 nValue = 0
                 sValue = "0"
-
                 states = dataset["deviceStates"]
-                    if not (dataset["name"] == "DeviceStateChangedEvent" or dataset["name"] == "DeviceState"):
-                    logging.debug("update_devices_status: dataset['name'] != DeviceStateChangedEvent: "+str(dataset["name"])+": breaking out")
-                    continue #dataset does not contain correct event, skip to next dataset
+		    
+            if not (dataset["name"] == "DeviceStateChangedEvent" or dataset["name"] == "DeviceState"):
+                logging.debug("update_devices_status: dataset['name'] != DeviceStateChangedEvent: "+str(dataset["name"])+": breaking out")
+                continue #dataset does not contain correct event, skip to next dataset
 
                 for state in states:
                     status_num = 0
