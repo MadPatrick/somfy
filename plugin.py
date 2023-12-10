@@ -8,7 +8,7 @@
 <plugin key="tahomaIO" name="Somfy Tahoma or Connexoon plugin" author="MadPatrick" version="4.2.20" externallink="https://github.com/MadPatrick/somfy">
     <description>
 	<br/><h2>Somfy Tahoma/Connexoon plugin</h2><br/>
-        version: 4.2.21
+        version: 4.2.22
         <br/>This plugin connects to the Tahoma or Connexoon box either via the web API or via local access.
         <br/>Various devices are supported(RollerShutter, LightSensor, Screen, Awning, Window, VenetianBlind, etc.).
         <br/>For new devices, please raise a ticket at the Github link above.
@@ -366,25 +366,25 @@ class BasePlugin:
                 status = None
                 nValue = 0
                 sValue = "0"
+
                 states = dataset["deviceStates"]
-		    
-            if not (dataset["name"] == "DeviceStateChangedEvent" or dataset["name"] == "DeviceState"):
-                logging.debug("update_devices_status: dataset['name'] != DeviceStateChangedEvent: "+str(dataset["name"])+": breaking out")
-                continue #dataset does not contain correct event, skip to next dataset
+                if not (dataset["name"] == "DeviceStateChangedEvent" or dataset["name"] == "DeviceState"):
+                    logging.debug("update_devices_status: dataset['name'] != DeviceStateChangedEvent: "+str(dataset["name"])+": breaking out")
+                    continue #dataset does not contain correct event, skip to next dataset
 
                 for state in states:
                     status_num = 0
                     lumstatus_l = False
 
-                if ((state["name"] == "core:ClosureState") or (state["name"] == "core:DeploymentState")):
-                    if (deviceClassTrig == "Awning"):
-                        level = int(state["value"]) #Don't invert open/close percentage for an Awning
-                        status_num = 1
-                    else:
-                        level = int(state["value"])
-                        level = 100 - level #invert open/close percentage
-                        status_num = 1
-
+                    if ((state["name"] == "core:ClosureState") or (state["name"] == "core:DeploymentState")):
+                        if (deviceClassTrig == "Awning"):
+                            level = int(state["value"]) #Don't invert open/close percentage for an Awning
+                            status_num = 1
+                        else:
+                            level = int(state["value"])
+                            level = 100 - level #invert open/close percentage
+                            status_num = 1
+           
                     if ((state["name"] == "core:SlateOrientationState")):
                         level = int(state["value"])
                         #level = 100 - level 
