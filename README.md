@@ -40,7 +40,15 @@ The following steps need to be taken before plugin installation (generic for any
 3. install the required libraries:
 ```
 sudo apt-get update
-sudo apt-get install python3 libpython3-dev libpython3.7-dev
+```
+Check you Python version 
+```
+sudo python3 -V
+```
+for example Python 3.9.2
+Then install the libpython3.9-dev according your version
+```
+sudo apt-get install python3 libpython3-dev libpython3.9-dev
 sudo apt-get install python3-requests
 ```
 ### Setup local API access
