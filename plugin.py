@@ -5,10 +5,10 @@
 # FirstFree function courtesy of @moroen https://github.com/moroen/IKEA-Tradfri-plugin
 # All credits for the plugin are for Nonolk, who is the origin plugin creator
 """
-<plugin key="tahomaIO" name="Somfy Tahoma or Connexoon plugin" author="MadPatrick" version="4.2.16" externallink="https://github.com/MadPatrick/somfy">
+<plugin key="tahomaIO" name="Somfy Tahoma or Connexoon plugin" author="MadPatrick" version="4.2.22" externallink="https://github.com/MadPatrick/somfy">
     <description>
 	<br/><h2>Somfy Tahoma/Connexoon plugin</h2><br/>
-        version: 4.2.16
+        version: 4.2.22
         <br/>This plugin connects to the Tahoma or Connexoon box either via the web API or via local access.
         <br/>Various devices are supported(RollerShutter, LightSensor, Screen, Awning, Window, VenetianBlind, etc.).
         <br/>For new devices, please raise a ticket at the Github link above.
@@ -360,6 +360,7 @@ class BasePlugin:
                 continue #no deviceURL found that matches to domoticz Devices, skip to next dataset
             if (dataset["deviceURL"].startswith("io://")):
                 dev = dataset["deviceURL"]
+                deviceClassTrig = dataset["deviceClass"] 
                 level = 0
                 status_num = 0
                 status = None
@@ -376,10 +377,14 @@ class BasePlugin:
                     lumstatus_l = False
 
                     if ((state["name"] == "core:ClosureState") or (state["name"] == "core:DeploymentState")):
-                        level = int(state["value"])
-                        level = 100 - level #invert open/close percentage
-                        status_num = 1
-                      
+                        if (deviceClassTrig == "Awning"):
+                            level = int(state["value"]) #Don't invert open/close percentage for an Awning
+                            status_num = 1
+                        else:
+                            level = int(state["value"])
+                            level = 100 - level #invert open/close percentage
+                            status_num = 1
+           
                     if ((state["name"] == "core:SlateOrientationState")):
                         level = int(state["value"])
                         #level = 100 - level 
