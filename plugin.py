@@ -358,6 +358,8 @@ class BasePlugin:
                 Domoticz.Error("device not found for URL: "+str(dataset["deviceURL"]))
                 logging.error("device not found for URL: "+str(dataset["deviceURL"])+" while updating states")
                 continue #no deviceURL found that matches to domoticz Devices, skip to next dataset
+            if (dataset["name"] == "DeviceStateChangedEvent"):
+                continue #dataset does not contain correct event, skip to next dataset
             if (dataset["deviceURL"].startswith("io://")):
                 dev = dataset["deviceURL"]
                 deviceClassTrig = dataset["deviceClass"] 
